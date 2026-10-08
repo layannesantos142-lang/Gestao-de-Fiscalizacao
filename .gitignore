@@ -1,0 +1,14 @@
+# Segredos e chaves (nunca enviar ao GitHub)
+.env
+.env.*
+*.key
+config.local.js
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Temporários
+*.tmp
+~$*

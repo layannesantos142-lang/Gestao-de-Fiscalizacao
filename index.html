@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Fiscaliza+ &#8212; Esbo&#231;o do App | Ferreira Costa</title>
+<style>
+:root{
+  --bg:#F7F6F4;--card:#FFF;--warm:#F2EFEB;--red:#bd2335;--red-l:rgba(189,35,53,.08);
+  --green:#5f7a45;--green-l:rgba(95,122,69,.11);--slate:#4c525b;--slate-l:rgba(76,82,91,.09);
+  --amber:#a8811f;--amber-l:rgba(168,129,31,.12);--blue:#536f8a;--blue-l:rgba(83,111,138,.12);
+  --txt:#191919;--txt2:#585858;--txt3:#8e8e8e;
+  --bdr:rgba(0,0,0,.08);--bdr2:rgba(0,0,0,.14);--sh:0 1px 2px rgba(0,0,0,.05);--shm:0 8px 30px rgba(0,0,0,.12)
+}
+body.dark{
+  --bg:#131315;--card:#1D1D21;--warm:#252529;--green:#93ad76;--slate:#a1a7b0;--amber:#d0aa4e;
+  --blue:#86a5c0;--txt:#EEE;--txt2:#a6a6a6;--txt3:#747474;
+  --bdr:rgba(255,255,255,.08);--bdr2:rgba(255,255,255,.15);--sh:0 1px 2px rgba(0,0,0,.3);--shm:0 8px 30px rgba(0,0,0,.5)
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ===== Topo ===== */
+.top{background:var(--card);border-bottom:2px solid var(--red);position:sticky;top:0;z-index:50}
+.top-in{max-width:1320px;margin:0 auto;padding:.7rem 1.4rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}
+.top .ttl{display:flex;flex-direction:column;line-height:1.2;padding-left:1rem;border-left:1px solid var(--bdr)}
+.top .ttl b{font-size:1rem}.top .ttl span{font-size:.66rem;color:var(--txt3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.perfis{margin-left:auto;display:flex;gap:.3rem;background:var(--warm);padding:.3rem;border-radius:12px}
+.perfis button{border:none;background:transparent;padding:.5rem .95rem;border-radius:9px;font-size:.8rem;font-weight:700;color:var(--txt2);cursor:pointer;display:flex;align-items:center;gap:.45rem}
+.perfis button i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.perfis button.on{background:var(--card);color:var(--txt);box-shadow:var(--sh)}
+.btn-dark{border:1px solid var(--bdr2);background:var(--card);border-radius:9px;padding:.45rem .7rem;font-size:.74rem;font-weight:600;color:var(--txt2);cursor:pointer}
+.aviso{max-width:1320px;margin:.8rem auto 0;padding:0 1.4rem}
+.aviso div{font-size:.7rem;color:var(--txt2);background:var(--amber-l);border:1px solid rgba(168,129,31,.25);border-radius:8px;padding:.45rem .8rem}
+.aviso b{color:var(--txt)}
+
+/* ===== Layout ===== */
+.app{max-width:1320px;margin:0 auto;padding:1rem 1.4rem 3rem;display:grid;grid-template-columns:230px 1fr;gap:1.2rem;align-items:start}
+.side{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:.9rem;position:sticky;top:84px;box-shadow:var(--sh)}
+.who{display:flex;gap:.6rem;align-items:center;padding:.3rem .2rem .85rem;border-bottom:1px solid var(--bdr);margin-bottom:.6rem}
+.av{width:36px;height:36px;border-radius:10px;color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.who b{font-size:.82rem;display:block;line-height:1.2}.who span{font-size:.68rem;color:var(--txt3)}
+.nav button{width:100%;text-align:left;border:none;background:transparent;padding:.6rem .7rem;border-radius:8px;font-size:.8rem;font-weight:600;color:var(--txt2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem}
+.nav button:hover{background:var(--warm)}
+.nav button.on{background:var(--red-l);color:var(--red)}
+.p-juridico .nav button.on{background:var(--blue-l);color:var(--blue)}
+.p-compliance .nav button.on{background:var(--green-l);color:var(--green)}
+.nav .cnt{font-size:.62rem;font-weight:800;background:var(--red);color:#fff;border-radius:20px;padding:.05rem .45rem}
+.side .papel{margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--bdr);font-size:.68rem;color:var(--txt2);line-height:1.45}
+.side .papel b{display:block;color:var(--txt);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
+
+.main{min-width:0}
+.ph{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.ph h2{font-size:1.35rem;letter-spacing:-.02em}.ph p{font-size:.78rem;color:var(--txt2)}
+.lbl{font-size:.64rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin:1.4rem 0 .7rem;display:flex;align-items:center;gap:.6rem}
+.lbl::before{content:"";width:18px;height:2px;background:var(--red)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;box-shadow:var(--sh);padding:1.1rem 1.2rem}
+.card+.card{margin-top:1rem}
+.card h3{font-size:.9rem;margin-bottom:.15rem}.card .sub{font-size:.7rem;color:var(--txt3);margin-bottom:.8rem}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1rem}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1rem 1.1rem;box-shadow:var(--sh)}
+.kpis.k5{grid-template-columns:repeat(5,1fr)}
+.kpi .v{font-size:1.9rem;font-weight:700;line-height:1;letter-spacing:-.02em}
+.kpi .l{font-size:.72rem;color:var(--txt2);margin-top:.45rem;font-weight:500}
+.kpi.click{cursor:pointer}.kpi.click:hover{border-color:var(--bdr2)}
+
+/* Bot&#245;es */
+.btn{border:1px solid var(--bdr2);background:var(--card);border-radius:9px;padding:.55rem .95rem;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--txt)}
+.btn:hover{background:var(--warm)}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.sm{padding:.35rem .65rem;font-size:.7rem}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap}
+
+/* Tabelas */
+.tbl-wrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
+.t th{background:var(--warm);padding:.55rem .7rem;text-align:left;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3);border-bottom:2px solid var(--bdr)}
+.t td{padding:.6rem .7rem;border-bottom:1px solid var(--bdr);color:var(--txt2);vertical-align:middle}
+.t td b{color:var(--txt)}
+.t tr.row{cursor:pointer}.t tr.row:hover td{background:var(--warm)}
+.empty{padding:1.2rem;text-align:center;font-size:.78rem;color:var(--txt3)}
+
+.badge{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:.22rem .5rem;border-radius:5px;white-space:nowrap}
+.b-aberto{background:var(--red-l);color:var(--red)}
+.b-analise{background:var(--blue-l);color:var(--blue)}
+.b-aguard_filial{background:var(--amber-l);color:var(--amber)}
+.b-respondido{background:var(--slate-l);color:var(--slate)}
+.b-encerrado{background:var(--green-l);color:var(--green)}
+.tag{display:inline-block;font-size:.62rem;font-weight:600;padding:.15rem .45rem;border-radius:20px;background:var(--warm);border:1px solid var(--bdr);color:var(--txt2);margin:.1rem .15rem .1rem 0;white-space:nowrap}
+.tag.apr{background:var(--red-l);color:var(--red);border-color:rgba(189,35,53,.2)}
+.tag.not{background:var(--amber-l);color:var(--amber);border-color:rgba(168,129,31,.25)}
+.tag.mul{background:#7B0B18;color:#fff;border-color:#7B0B18}
+.tag.sem{background:var(--slate-l);color:var(--slate)}
+.prazo{font-weight:700;white-space:nowrap}
+.prazo.venc{color:var(--red)}.prazo.urg{color:var(--amber)}.prazo.ok{color:var(--txt2)}
+
+/* Formul&#225;rio */
+.form-sec{border-top:1px solid var(--bdr);padding-top:1rem;margin-top:1rem}
+.form-sec:first-child{border-top:none;padding-top:0;margin-top:0}
+.form-sec h4{font-size:.8rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.form-sec h4 .n{width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-size:.62rem;display:flex;align-items:center;justify-content:center}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem}
+.f label{display:block;font-size:.68rem;font-weight:700;color:var(--txt2);margin-bottom:.3rem}
+.f label .req{color:var(--red)}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--bdr2);background:var(--card);border-radius:8px;padding:.55rem .65rem;font-size:.8rem}
+.f textarea{min-height:70px;resize:vertical}
+.f .hint{font-size:.64rem;color:var(--txt3);margin-top:.25rem}
+.chk{display:flex;flex-wrap:wrap;gap:.4rem}
+.chk label{display:flex;align-items:center;gap:.4rem;font-size:.74rem;font-weight:600;color:var(--txt2);border:1px solid var(--bdr2);border-radius:20px;padding:.35rem .7rem;cursor:pointer;background:var(--card);margin:0}
+.chk input{width:auto;accent-color:var(--red)}
+.chk label.on{background:var(--red-l);border-color:rgba(189,35,53,.35);color:var(--red)}
+.cond{display:none;margin-top:.7rem;background:var(--warm);border-radius:10px;padding:.8rem}
+.cond.show{display:block}
+
+/* Detalhe */
+.det-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.det-head h2{font-size:1.2rem}.det-head p{font-size:.76rem;color:var(--txt2)}
+.det{display:grid;grid-template-columns:1.35fr 1fr;gap:1rem;align-items:start}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1rem}
+.info div span{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)}
+.info div b{font-size:.8rem;font-weight:600}
+.info .full{grid-column:1/-1}
+.info .full p{font-size:.78rem;color:var(--txt2)}
+.box{background:var(--warm);border-radius:9px;padding:.7rem .85rem;font-size:.75rem;color:var(--txt2);margin-top:.8rem}
+.box b{color:var(--txt)}
+.box.multa{background:rgba(123,11,24,.07);border-left:3px solid #7B0B18}
+.pbanner{display:grid;grid-template-columns:1fr 1.4fr;gap:.8rem;margin-bottom:1rem}
+.pbanner>div{border-radius:12px;padding:.85rem 1.1rem;border:1px solid var(--bdr);background:var(--card);border-left:5px solid var(--txt3);display:flex;flex-direction:column;gap:.1rem;box-shadow:var(--sh)}
+.pbanner span{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
+.pbanner b{font-size:1.25rem;letter-spacing:-.01em}
+.pbanner .pb-ret b{font-size:1rem}
+.pbanner em{font-style:normal;font-size:.74rem;font-weight:700}
+.pbanner .venc{border-left-color:var(--red);background:var(--red-l)}.pbanner .venc em,.pbanner .venc b{color:var(--red)}
+.pbanner .urg{border-left-color:var(--amber);background:var(--amber-l)}.pbanner .urg em{color:var(--amber)}
+.pbanner .ok{border-left-color:var(--green)}.pbanner .ok em{color:var(--green)}
+.pbanner .sem{border-left-color:var(--amber);border-style:dashed}.pbanner .sem em{color:var(--amber)}
+.prazo.okv{color:var(--green)}
+.seta{font-weight:700}.seta.filial{color:var(--red)}.seta.juridico{color:var(--blue)}
+.fr .t tr.org td{background:var(--warm);border-top:2px solid var(--bdr2)}
+.card.fr{margin-bottom:1rem}
+@media(max-width:640px){.pbanner{grid-template-columns:1fr}}
+.env{font-size:.7rem;color:var(--txt2);background:var(--warm);border-radius:8px;padding:.45rem .65rem}
+.env b{color:var(--txt)}
+.env.ult{background:var(--amber-l);color:var(--amber)}.env.ult b{color:var(--amber)}
+.env.bloq{background:var(--red-l);color:var(--txt2);border-left:3px solid var(--red);line-height:1.5}.env.bloq b{color:var(--red)}
+.ml-box{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--bdr2)}
+.box.ml{background:var(--amber-l);border-left:3px solid var(--amber)}
+.box.ml.confirmada{background:rgba(123,11,24,.07);border-left-color:#7B0B18}
+.box.ml.nao_aplicada{background:var(--slate-l);border-left-color:var(--slate)}
+.ml-acao{background:var(--amber-l);border:1px solid rgba(168,129,31,.3);border-radius:10px;padding:.8rem;margin-bottom:.9rem}
+.ml-acao h4{margin-top:0 !important}
+
+/* Linha do tempo */
+.tl{position:relative;padding-left:1.1rem}
+.tl::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--bdr)}
+.ev{position:relative;padding:.1rem 0 .85rem}
+.ev::before{content:"";position:absolute;left:-1.1rem;top:.35rem;width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--txt3)}
+.ev.filial::before{border-color:var(--red)}.ev.juridico::before{border-color:var(--blue)}.ev.compliance::before{border-color:var(--green)}
+.ev .eh{font-size:.64rem;color:var(--txt3);font-weight:600}
+.ev .eh b{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em}
+.ev.filial .eh b{color:var(--red)}.ev.juridico .eh b{color:var(--blue)}.ev.compliance .eh b{color:var(--green)}
+.ev .et{font-size:.76rem;color:var(--txt);margin-top:.1rem}
+.ev.compliance .et{background:var(--green-l);border-radius:8px;padding:.45rem .6rem}
+
+.acoes .f{margin-bottom:.6rem}
+.acoes h4{font-size:.78rem;margin:.9rem 0 .5rem}
+.acoes h4:first-child{margin-top:0}
+
+/* Painel Compliance */
+.foco-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.foco-card .n{width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;font-size:.66rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-right:.4rem}
+.foco-card h3{display:flex;align-items:center;font-size:.84rem}
+.bar-row{display:grid;grid-template-columns:120px 1fr 34px;gap:.6rem;align-items:center;margin:.45rem 0;font-size:.72rem}
+.bar-row .nm{color:var(--txt2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:8px;background:var(--warm);border-radius:20px;overflow:hidden}.bar span{display:block;height:100%;border-radius:20px;background:var(--red)}
+.bar-row .nu{text-align:right;font-weight:700}
+.multa-list{font-size:.7rem;color:var(--txt2);margin-top:.6rem;border-top:1px solid var(--bdr);padding-top:.5rem}
+.multa-list div{padding:.2rem 0}
+
+.filters{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+.filters select,.filters input{border:1px solid var(--bdr2);background:var(--card);border-radius:8px;padding:.45rem .6rem;font-size:.76rem}
+
+.cad{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.cad ul{list-style:none;margin:.4rem 0 .7rem}
+.cad li{display:flex;justify-content:space-between;align-items:center;padding:.4rem .2rem;border-bottom:1px solid var(--bdr);font-size:.76rem}
+.cad li button{border:none;background:none;color:var(--txt3);cursor:pointer;font-size:.9rem}
+.cad li button:hover{color:var(--red)}
+.cad .add{display:flex;gap:.4rem}.cad .add input{flex:1;border:1px solid var(--bdr2);border-radius:8px;padding:.45rem .6rem;font-size:.76rem;background:var(--card)}
+
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);background:#242428;color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.78rem;font-weight:600;opacity:0;transition:.25s;z-index:200;box-shadow:var(--shm);max-width:calc(100vw - 2rem)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1000px){.app{grid-template-columns:1fr}.side{position:static}.nav{display:flex;gap:.3rem;overflow-x:auto}.nav button{width:auto;white-space:nowrap}.side .papel{display:none}.det{grid-template-columns:1fr}.foco-grid{grid-template-columns:1fr 1fr}.kpis,.kpis.k5{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.top-in,.app,.aviso{padding-left:1rem;padding-right:1rem}.perfis{margin-left:0;width:100%}.perfis button{flex:1;justify-content:center;padding:.5rem .4rem}.g2,.g3,.info,.cad,.foco-grid{grid-template-columns:1fr}.top .ttl{display:none}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <img src="data:image/png;base64,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" style="height:46px;width:auto;display:block;" alt="Logo">
+  <div class="ttl"><b>Fiscaliza+</b><span>Esbo&#231;o do app de fiscaliza&#231;&#227;o</span></div>
+  <div class="perfis" id="perfis">
+    <button data-p="filial"><i style="background:var(--red)"></i>Filial</button>
+    <button data-p="juridico"><i style="background:var(--blue)"></i>Jur&#237;dico</button>
+    <button data-p="compliance"><i style="background:var(--green)"></i>Compliance</button>
+  </div>
+  <button class="btn-dark" onclick="document.body.classList.toggle('dark')">Modo escuro</button>
+</div></div>
+<div class="aviso"><div><b>Esbo&#231;o naveg&#225;vel com dados fict&#237;cios.</b> Troque o perfil no topo para ver a tela de quem abre o chamado (Filial), de quem atende (Jur&#237;dico) e de quem monitora (Compliance). Nada &#233; salvo: ao recarregar, os dados voltam ao exemplo.</div></div>
+
+<div class="app" id="app">
+  <aside class="side" id="side"></aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= Dados fict\u00EDcios =================
+var HOJE = new Date(2026, 9, 6);
+var FILIAL_USUARIO = 'IMB';
+var FILIAIS = ['IMB','TAM','GUS','CAU','PAL','BAR','JPA','PNG','REC'];
+var ORGAOS = ['Procon','Inmetro / IPEM','Vigil\u00E2ncia Sanit\u00E1ria','Corpo de Bombeiros','Minist\u00E9rio do Trabalho','Minist\u00E9rio P\u00FAblico','\u00D3rg\u00E3o de tributa\u00E7\u00E3o','\u00D3rg\u00E3o ambiental','Crea / CAU','Prefeitura'];
+var MOTIVOS = ['Licen\u00E7a','Den\u00FAncia','Iniciativa do \u00F3rg\u00E3o','Retorno ou reinspe\u00E7\u00E3o','Requisi\u00E7\u00E3o de outra autoridade','Apura\u00E7\u00E3o de acidente ou incidente'];
+var FORMAS = ['Presencial','Documental','Digital'];
+var UNIDADES = ['Loja','Loja do Mall','CD','Obra'];
+var LIMITE_ENVIOS = 2; // envios Filial <-> Jur\u00EDdico por lado; depois disso, s\u00F3 com libera\u00E7\u00E3o do Compliance
+var NCS = ['Pre\u00E7o ou etiqueta divergente','Produto sem selo / certifica\u00E7\u00E3o','Licen\u00E7a ou alvar\u00E1','Preven\u00E7\u00E3o de inc\u00EAndio (AVCB)','Condi\u00E7\u00F5es sanit\u00E1rias','Documenta\u00E7\u00E3o trabalhista','Atendimento ou troca ao consumidor','Quest\u00E3o ambiental'];
+var RESULTADOS = {notificacao:'Notifica\u00E7\u00E3o', apreensao:'Apreens\u00E3o', multa:'Multa (auto de infra\u00E7\u00E3o)', sem_doc:'Visita sem notifica\u00E7\u00E3o'};
+var STATUS = {aberto:'Aberto \u00B7 aguardando Jur\u00EDdico', analise:'Em an\u00E1lise no Jur\u00EDdico', aguard_filial:'Aguardando filial', respondido:'Respondido ao \u00F3rg\u00E3o', encerrado:'Encerrado'};
+var DESFECHOS = ['Encerrado sem san\u00E7\u00E3o','Multa aplicada','Nova irregularidade (novo chamado)','Audi\u00EAncia / a\u00E7\u00E3o judicial'];
+
+function ev(data, papel, autor, texto){ return {data:data, papel:papel, autor:autor, texto:texto}; }
+function mk(o){
+  o.unidade = o.unidade || 'Loja'; o.lojista = o.lojista || ''; o.obra = o.obra || '';
+  o.envios = o.envios || {juridico:0, filial:0}; o.limite = o.limite || LIMITE_ENVIOS; o.libPend = o.libPend || null;
+  o.eventos = o.eventos || [];
+  o.eventos.unshift(ev(o.data, 'filial', 'ADM \u00B7 ' + o.filial, 'Chamado aberto pela filial.'));
+  return o;
+}
+var chamados = [
+  mk({id:'FIS-0001', filial:'IMB', orgao:'Procon', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'18/09/2026', fiscal:'R. Almeida \u00B7 mat. 4471', recebeu:'Frente de loja (Preven\u00E7\u00E3o)', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NT-2026-118', prazo:'28/09/2026', ncs:['Pre\u00E7o ou etiqueta divergente'], noAto:'Etiquetas de 6 itens corrigidas na hora.', apreensao:'', relato:'Fiscal conferiu pre\u00E7os da se\u00E7\u00E3o de ferramentas.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null,
+    eventos:[ev('19/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('26/09/2026','juridico','Jur\u00EDdico','Resposta protocolada no \u00F3rg\u00E3o com fotos das etiquetas corrigidas.'), ev('30/09/2026','juridico','Jur\u00EDdico','Desfecho: Encerrado sem san\u00E7\u00E3o. Filial informada.')]}),
+  mk({id:'FIS-0002', filial:'CAU', orgao:'Inmetro / IPEM', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'22/09/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['apreensao','notificacao'], doc:'AA-5531', prazo:'02/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'12 disjuntores sem selo Inmetro (c\u00F3d. 88412).', relato:'Fiscaliza\u00E7\u00E3o de produtos el\u00E9tricos de certifica\u00E7\u00E3o compuls\u00F3ria.', status:'respondido', desfecho:'', multa:null,
+    eventos:[ev('23/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Comercial e Auditoria acionados sobre os itens apreendidos.'), ev('24/09/2026','compliance','Compliance','Pontua\u00E7\u00E3o: verificar se o mesmo fornecedor abastece outras filiais com o mesmo lote.'), ev('01/10/2026','juridico','Jur\u00EDdico','Defesa protocolada no \u00F3rg\u00E3o.')]}),
+  mk({id:'FIS-0003', filial:'JPA', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Licen\u00E7a', forma:'Presencial', data:'24/09/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Vistoria para renova\u00E7\u00E3o da licen\u00E7a sanit\u00E1ria. Sem irregularidades.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null,
+    eventos:[ev('25/09/2026','juridico','Jur\u00EDdico','Ci\u00EAncia registrada. Desfecho: Encerrado sem san\u00E7\u00E3o.')]}),
+  mk({id:'FIS-0004', filial:'GUS', orgao:'Procon', motivo:'Den\u00FAncia', forma:'Documental', data:'25/09/2026', fiscal:'Of\u00EDcio n\u00BA 233/2026', recebeu:'Recep\u00E7\u00E3o (correspond\u00EAncia)', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'OF-233/2026', prazo:'08/10/2026', ncs:['Atendimento ou troca ao consumidor'], noAto:'', apreensao:'', relato:'Den\u00FAncia de cliente sobre troca de produto com defeito.', status:'analise', desfecho:'', multa:null,
+    envios:{juridico:2, filial:2}, libPend:{por:'juridico', data:'05/10/2026', motivo:'Falta o comprovante de cr\u00E9dito ao cliente para fechar a defesa. Preciso pedir de novo \u00E0 filial.'},
+    eventos:[ev('26/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('29/09/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: hist\u00F3rico do SAC, comprovante de troca ou cr\u00E9dito e NF da compra.'),
+      ev('30/09/2026','filial','ADM \u00B7 GUS','Envio 1/2 \u00B7 Resposta ao Jur\u00EDdico: NF e hist\u00F3rico do SAC anexados.'), ev('01/10/2026','juridico','Jur\u00EDdico','Envio 2/2 \u00B7 Solicitado \u00E0 filial: comprovante de troca ou cr\u00E9dito ao cliente.'),
+      ev('03/10/2026','filial','ADM \u00B7 GUS','Envio 2/2 \u00B7 Resposta ao Jur\u00EDdico: comprovante de troca enviado (falta o cr\u00E9dito).'), ev('05/10/2026','juridico','Jur\u00EDdico','Limite de 2 envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: falta o comprovante de cr\u00E9dito ao cliente.')]}),
+  mk({id:'FIS-0005', filial:'IMB', orgao:'Corpo de Bombeiros', motivo:'Licen\u00E7a', forma:'Presencial', data:'26/09/2026', fiscal:'Ten. S. Costa', recebeu:'Frente de loja', acompanhou:'ADM + Manuten\u00E7\u00E3o', resultados:['notificacao'], doc:'NB-0098', prazo:'10/10/2026', ncs:['Preven\u00E7\u00E3o de inc\u00EAndio (AVCB)'], noAto:'', apreensao:'', relato:'Vistoria do AVCB. Apontada sinaliza\u00E7\u00E3o de rota de fuga obstru\u00EDda no dep\u00F3sito.', status:'aguard_filial', desfecho:'', multa:null, envios:{juridico:1, filial:0},
+    eventos:[ev('27/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Manuten\u00E7\u00E3o acionada para corre\u00E7\u00E3o.'), ev('03/10/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: fotos da rota de fuga desobstru\u00EDda e da sinaliza\u00E7\u00E3o corrigida no dep\u00F3sito.')]}),
+  mk({id:'FIS-0006', filial:'TAM', orgao:'Procon', motivo:'Retorno ou reinspe\u00E7\u00E3o', forma:'Presencial', data:'29/09/2026', fiscal:'R. Almeida \u00B7 mat. 4471', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['multa'], doc:'AI-2026-077', prazo:'', ncs:['Pre\u00E7o ou etiqueta divergente'], noAto:'', apreensao:'', relato:'Retorno do fiscal: diverg\u00EAncia de pre\u00E7o persistiu.', status:'encerrado', desfecho:'Multa aplicada', multa:{valor:8500, motivo:'Reincid\u00EAncia em diverg\u00EAncia de pre\u00E7o'},
+    eventos:[ev('30/09/2026','juridico','Jur\u00EDdico','Desfecho: Multa aplicada (R$ 8.500). Avaliando recurso.'), ev('01/10/2026','compliance','Compliance','Pontua\u00E7\u00E3o: reincid\u00EAncia. Incluir a filial no plano de confer\u00EAncia semanal de pre\u00E7os.')]}),
+  mk({id:'FIS-0007', filial:'PAL', unidade:'CD', orgao:'Minist\u00E9rio do Trabalho', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'30/09/2026', fiscal:'AFT J. Nunes', recebeu:'Frente de loja', acompanhou:'ADM + RH/DP', resultados:['notificacao'], doc:'NDT-4410', prazo:'14/10/2026', ncs:['Documenta\u00E7\u00E3o trabalhista'], noAto:'', apreensao:'', relato:'Solicitados registros de jornada e escalas de domingo.', status:'aberto', desfecho:'', multa:null}),
+  mk({id:'FIS-0008', filial:'BAR', orgao:'Inmetro / IPEM', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'01/10/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['apreensao'], doc:'AA-5602', prazo:'11/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'30 tomadas sem selo (c\u00F3d. 70211).', relato:'Mesma opera\u00E7\u00E3o do Inmetro vista em CAU.', status:'analise', desfecho:'', multa:null, envios:{juridico:2, filial:2},
+    eventos:[ev('02/10/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('02/10/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: NF de compra das tomadas e dados do fornecedor.'),
+      ev('03/10/2026','filial','ADM \u00B7 BAR','Envio 1/2 \u00B7 Resposta ao Jur\u00EDdico: NF anexada.'), ev('04/10/2026','juridico','Jur\u00EDdico','Envio 2/2 \u00B7 Solicitado \u00E0 filial: certificado do fornecedor.'),
+      ev('05/10/2026','filial','ADM \u00B7 BAR','Envio 2/2 \u00B7 Resposta ao Jur\u00EDdico: fornecedor n\u00E3o enviou o certificado.')]}),
+  mk({id:'FIS-0009', filial:'PNG', orgao:'\u00D3rg\u00E3o ambiental', motivo:'Licen\u00E7a', forma:'Presencial', data:'02/10/2026', fiscal:'Eng. P. Lima', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Vistoria da licen\u00E7a de opera\u00E7\u00E3o. Sem documento emitido.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null}),
+  mk({id:'FIS-0010', filial:'CAU', unidade:'Loja do Mall', lojista:'\u00D3tica Vis\u00E3o (locat\u00E1rio)', orgao:'Procon', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'03/10/2026', fiscal:'A. Rocha', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Fiscal procurou a filial e foi orientado at\u00E9 a loja do lojista. Nenhuma irregularidade. Registro para ci\u00EAncia.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null}),
+  mk({id:'FIS-0011', filial:'JPA', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Den\u00FAncia', forma:'Presencial', data:'05/10/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NVS-0712', prazo:'07/10/2026', ncs:['Condi\u00E7\u00F5es sanit\u00E1rias'], noAto:'Limpeza do refeit\u00F3rio iniciada no ato.', apreensao:'', relato:'Den\u00FAncia sobre condi\u00E7\u00F5es do refeit\u00F3rio dos colaboradores.', status:'aberto', desfecho:'', multa:null}),
+  mk({id:'FIS-0012', filial:'IMB', orgao:'Inmetro / IPEM', motivo:'Retorno ou reinspe\u00E7\u00E3o', forma:'Presencial', data:'06/10/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['apreensao','multa'], doc:'AI-2026-091', prazo:'16/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'8 chuveiros sem certifica\u00E7\u00E3o (c\u00F3d. 66120).', relato:'Retorno: produtos sem certifica\u00E7\u00E3o continuavam expostos.', status:'respondido', desfecho:'', multa:{valor:4200, motivo:'Produto sem certifica\u00E7\u00E3o ap\u00F3s prazo'},
+    eventos:[ev('06/10/2026','juridico','Jur\u00EDdico','Recebido. Defesa em prepara\u00E7\u00E3o.')]}),
+  mk({id:'FIS-0013', filial:'TAM', unidade:'Obra', obra:'Reforma da fachada \u00B7 Construtora Alfa (terceirizada) \u00B7 RT: Eng. F. Souza', orgao:'Crea / CAU', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'04/10/2026', fiscal:'Ag. fiscal R. Melo', recebeu:'Frente de loja', acompanhou:'ADM + Manuten\u00E7\u00E3o', resultados:['notificacao'], doc:'NCREA-3381', prazo:'13/10/2026', ncs:['Licen\u00E7a ou alvar\u00E1'], noAto:'', apreensao:'', relato:'Fiscal solicitou a ART do respons\u00E1vel t\u00E9cnico e o alvar\u00E1 de obra. ART n\u00E3o estava no canteiro.', status:'analise', desfecho:'', multa:null,
+    eventos:[ev('05/10/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Manuten\u00E7\u00E3o acionada para obter a ART com a empreiteira.')]})
+  ,mk({id:'FIS-0014', filial:'IMB', unidade:'Loja do Mall', lojista:'Farm\u00E1cia Bem Estar (locat\u00E1rio)', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'06/10/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NVS-0730', prazo:'16/10/2026', ncs:['Licen\u00E7a ou alvar\u00E1'], noAto:'', apreensao:'', relato:'Fiscaliza\u00E7\u00E3o na loja do lojista. Certificado de licen\u00E7a sanit\u00E1ria vencido desde agosto; lojista autuado pelo \u00F3rg\u00E3o.', status:'aberto', desfecho:'', multa:null,
+    multaLojista:{valor:3000, motivo:'Certificado vencido', status:'pendente'},
+    eventos:[ev('06/10/2026','filial','ADM \u00B7 IMB','Proposta de multa contratual ao lojista Farm\u00E1cia Bem Estar (locat\u00E1rio): R$ 3.000 \u2014 Certificado vencido. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.')]})
+];
+var seq = 15;
+
+// ----- Retornos entre setores (cada envio tem um prazo de retorno, sempre antes do prazo do \u00F3rg\u00E3o) -----
+function rt(de, para, enviado, prazo, respondido){ return {de:de, para:para, enviado:enviado, prazo:prazo, respondido:respondido||null}; }
+var RETORNOS_EXEMPLO = {
+  'FIS-0004':[rt('filial','juridico','25/09/2026','27/09/2026','26/09/2026'), rt('juridico','filial','29/09/2026','01/10/2026','30/09/2026'), rt('filial','juridico','30/09/2026','02/10/2026','01/10/2026'), rt('juridico','filial','01/10/2026','03/10/2026','03/10/2026'), rt('filial','juridico','03/10/2026','07/10/2026')],
+  'FIS-0005':[rt('filial','juridico','26/09/2026','28/09/2026','27/09/2026'), rt('juridico','filial','03/10/2026','05/10/2026')],
+  'FIS-0008':[rt('filial','juridico','01/10/2026','03/10/2026','02/10/2026'), rt('juridico','filial','02/10/2026','03/10/2026','03/10/2026'), rt('filial','juridico','03/10/2026','05/10/2026','04/10/2026'), rt('juridico','filial','04/10/2026','05/10/2026','05/10/2026'), rt('filial','juridico','05/10/2026','10/10/2026')]
+};
+chamados.forEach(function(c){
+  c.retornos = RETORNOS_EXEMPLO[c.id] || [];
+  if (!c.retornos.length) {
+    var lim = prazoRetorno(c, c.data, 2);
+    c.retornos.push(rt('filial','juridico', c.data, lim, c.status==='aberto' ? null : addDias(c.data, 1)));
+  }
+});
+
+// ================= Estado =================
+var perfil = 'filial';
+var tela = {filial:'inicio', juridico:'fila', compliance:'painel'};
+var sel = null, editando = false, filtros = {filial:'', unidade:'', orgao:'', status:''};
+var USERS = {
+  filial:{nome:'ADM da filial', sub:'Filial ' + FILIAL_USUARIO + ' \u00B7 abre o chamado', ini:'AD', cor:'var(--red)', papel:'Registra a fiscaliza\u00E7\u00E3o no mesmo dia, acompanha o caso e responde \u00E0s solicita\u00E7\u00F5es do Jur\u00EDdico.'},
+  juridico:{nome:'Jur\u00EDdico', sub:'Atende os chamados', ini:'JU', cor:'var(--blue)', papel:'Analisa, pede documentos \u00E0 filial, responde ao \u00F3rg\u00E3o dentro do prazo e registra o desfecho.'},
+  compliance:{nome:'Compliance', sub:'Cria o app e monitora', ini:'CO', cor:'var(--green)', papel:'V\u00EA todos os chamados, pode pontuar ou editar qualquer etapa, mant\u00E9m os cadastros e acompanha os indicadores.'}
+};
+
+// ================= Utilidades =================
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function pBR(s){ var a = s.split('/'); return new Date(+a[2], +a[1]-1, +a[0]); }
+function hojeBR(){ var d = HOJE; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+function dias(s){ return Math.round((pBR(s) - HOJE) / 864e5); }
+function fmtBR(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+function addDias(s, n){ var d = pBR(s); d.setDate(d.getDate()+n); return fmtBR(d); }
+// prazo de retorno interno: "desde + n dias", mas nunca depois da v\u00E9spera do prazo do \u00F3rg\u00E3o
+function prazoRetorno(c, desde, n){
+  var p = addDias(desde, n);
+  if (c.prazo) { var vesp = addDias(c.prazo, -1); if (pBR(p) > pBR(vesp)) p = pBR(vesp) < pBR(desde) ? desde : vesp; }
+  return p;
+}
+function pendente(c){ for (var i=c.retornos.length-1;i>=0;i--) if (!c.retornos[i].respondido) return c.retornos[i]; return null; }
+function fecharPendente(c, para){ c.retornos.forEach(function(r){ if (r.para===para && !r.respondido) r.respondido = hojeBR(); }); }
+var NOME_SETOR = {filial:'Filial', juridico:'Jur\u00EDdico'};
+function contagem(s){ var d = dias(s); return d < 0 ? 'atrasado ' + (-d) + (d===-1?' dia':' dias') : d === 0 ? 'vence hoje' : d === 1 ? 'amanh\u00E3' : 'em ' + d + ' dias'; }
+function clsDias(s){ var d = dias(s); return d < 0 ? 'venc' : d <= 2 ? 'urg' : 'ok'; }
+function retornoHtml(c){
+  var p = pendente(c); if (!p || c.status==='encerrado') return '<span class="prazo ok">\u2014</span>';
+  return '<span class="prazo '+clsDias(p.prazo)+'">'+NOME_SETOR[p.para]+' at\u00E9 '+p.prazo.slice(0,5)+' \u00B7 '+contagem(p.prazo)+'</span>';
+}
+function brl(v){ return 'R$ ' + v.toLocaleString('pt-BR'); }
+function toast(t){ var e = $('toast'); e.textContent = t; e.classList.add('show'); clearTimeout(e._t); e._t = setTimeout(function(){ e.classList.remove('show'); }, 2600); }
+function byId(id){ for (var i=0;i<chamados.length;i++) if (chamados[i].id===id) return chamados[i]; }
+function badge(s){ return '<span class="badge b-'+s+'">'+STATUS[s]+'</span>'; }
+function tags(c){
+  return c.resultados.map(function(r){ var cl = {notificacao:'not', apreensao:'apr', multa:'mul', sem_doc:'sem'}[r]; return '<span class="tag '+cl+'">'+RESULTADOS[r]+'</span>'; }).join('');
+}
+function prazoHtml(c){
+  if (!c.prazo || c.status==='encerrado') return '<span class="prazo ok">'+(c.prazo ? c.prazo.slice(0,5) : '\u2014')+'</span>';
+  if (c.status==='respondido') return '<span class="prazo okv">'+c.prazo.slice(0,5)+' \u00B7 protocolado</span>';
+  var d = dias(c.prazo), cl = d < 0 ? 'venc' : d <= 3 ? 'urg' : 'ok';
+  var txt = d < 0 ? 'vencido' : d === 0 ? 'hoje' : d === 1 ? 'amanh\u00E3' : 'em ' + d + ' dias';
+  return '<span class="prazo '+cl+'">'+c.prazo.slice(0,5)+' \u00B7 '+txt+'</span>';
+}
+function addEv(c, papel, texto){ c.eventos.push(ev(hojeBR(), papel, papel==='filial' ? 'ADM \u00B7 '+c.filial : USERS[papel].nome, texto)); }
+function opts(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(''); }
+
+// ================= Render geral =================
+function go(p, t, id){ if (p) perfil = p; if (t) tela[perfil] = t; sel = id || null; editando = false; render(); window.scrollTo(0,0); }
+function render(){
+  document.body.className = document.body.className.replace(/\bp-\w+/g,'').trim() + ' p-' + perfil;
+  [].forEach.call(document.querySelectorAll('#perfis button'), function(b){ b.classList.toggle('on', b.getAttribute('data-p')===perfil); });
+  renderSide();
+  var m = $('main');
+  if (sel) { m.innerHTML = detalhe(byId(sel)); bindDetalhe(); return; }
+  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, cadastros:cCadastros}})[perfil][tela[perfil]]();
+  if (perfil==='filial' && tela.filial==='novo') bindNovo();
+}
+function renderSide(){
+  var u = USERS[perfil], items;
+  var meus = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; });
+  if (perfil==='filial') items = [['inicio','In\u00EDcio', meus.filter(function(c){return c.status==='aguard_filial';}).length], ['novo','+ Novo chamado'], ['meus','Meus chamados']];
+  if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
+  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['cadastros','Cadastros do app']];
+  $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+u.ini+'</div><div><b>'+u.nome+'</b><span>'+u.sub+'</span></div></div>' +
+    '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
+    '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>';
+}
+function tabela(lista, cols){
+  if (!lista.length) return '<div class="empty">Nenhum chamado.</div>';
+  var H = {id:'Chamado', filial:'Filial', unidade:'Local', orgao:'\u00D3rg\u00E3o', data:'Data', res:'Resultado', prazo:'Prazo do \u00F3rg\u00E3o', retorno:'Retorno interno pendente', status:'Status'};
+  return '<div class="tbl-wrap"><table class="t"><thead><tr>'+cols.map(function(k){return '<th>'+H[k]+'</th>';}).join('')+'</tr></thead><tbody>' +
+    lista.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')">'+cols.map(function(k){
+      if (k==='id') return '<td><b>'+c.id+'</b></td>';
+      if (k==='res') return '<td>'+tags(c)+'</td>';
+      if (k==='prazo') return '<td>'+prazoHtml(c)+'</td>';
+      if (k==='retorno') return '<td>'+retornoHtml(c)+'</td>';
+      if (k==='status') return '<td>'+badge(c.status)+'</td>';
+      if (k==='data') return '<td>'+c.data.slice(0,5)+'</td>';
+      return '<td>'+esc(c[k])+'</td>';
+    }).join('')+'</tr>'; }).join('') + '</tbody></table></div>';
+}
+function porPrazo(a,b){ var x = a.prazo ? pBR(a.prazo) : new Date(2100,0,1), y = b.prazo ? pBR(b.prazo) : new Date(2100,0,1); return x - y; }
+function recentes(a,b){ return pBR(b.data) - pBR(a.data); }
+
+// ================= FILIAL =================
+function fInicio(){
+  var meus = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; });
+  var pend = meus.filter(function(c){ return c.status==='aguard_filial'; });
+  var abertos = meus.filter(function(c){ return c.status!=='encerrado'; });
+  return '<div class="ph"><div><h2>Ol\u00E1! Filial '+FILIAL_USUARIO+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
+    '<div class="kpis"><div class="kpi click" onclick="go(null,\'meus\')"><div class="v" style="color:var(--red)">'+abertos.length+'</div><div class="l">Chamados em andamento</div></div>' +
+    '<div class="kpi"><div class="v" style="color:var(--amber)">'+pend.length+'</div><div class="l">Aguardando resposta da filial</div></div>' +
+    '<div class="kpi"><div class="v" style="color:var(--green)">'+meus.filter(function(c){return c.status==='encerrado';}).length+'</div><div class="l">Encerrados</div></div>' +
+    '<div class="kpi"><div class="v">'+meus.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div></div>' +
+    '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA</h3><div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es</div>' + tabela(pend, ['id','orgao','prazo','retorno','status']) + '</div>' +
+    '<div class="card"><h3>Lembretes do POP</h3><div class="sub">Na hora da fiscaliza\u00E7\u00E3o</div><div class="box" style="margin-top:0">Confira o crach\u00E1 do fiscal (nome, matr\u00EDcula e \u00F3rg\u00E3o) \u00B7 acompanhe a vistoria at\u00E9 o fim \u00B7 assinar confirma o recebimento, n\u00E3o concorda com a infra\u00E7\u00E3o \u00B7 nunca retire um item apreendido sem alinhar com o Jur\u00EDdico.</div></div>';
+}
+function fNovo(){
+  var chk = function(name, list, type){ return '<div class="chk">'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, l = arr ? o[1] : o; return '<label><input type="'+(type||'checkbox')+'" name="'+name+'" value="'+esc(v)+'"> '+esc(l)+'</label>'; }).join('')+'</div>'; };
+  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado \u00E9 gerado ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' +
+  '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
+  '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
+    '<div class="f"><label>Filial</label><input value="'+FILIAL_USUARIO+'" disabled></div>' +
+    '<div class="f"><label>Onde foi a fiscaliza\u00E7\u00E3o <span class="req">*</span></label><select name="unidade" required><option value="">Selecione</option>'+opts(UNIDADES)+'</select></div>' +
+    '<div class="f"><label>Data da fiscaliza\u00E7\u00E3o <span class="req">*</span></label><input name="data" value="'+hojeBR()+'" required></div>' +
+    '<div class="f"><label>Forma <span class="req">*</span></label><select name="forma">'+opts(FORMAS)+'</select></div></div>' +
+    '<div class="cond" id="cMall"><div class="f"><label>Nome do lojista (locat\u00E1rio) <span class="req">*</span></label><input name="lojista" placeholder="Ex.: \u00D3tica do Mall"></div>' +
+    '<div class="hint" style="margin-top:.4rem">Na loja do Mall, o lojista responde pela pr\u00F3pria fiscaliza\u00E7\u00E3o. A filial registra o caso para ci\u00EAncia e pede a c\u00F3pia da notifica\u00E7\u00E3o. Se envolver \u00E1rea comum (AVCB, rotas de fuga, estacionamento), trate como fiscaliza\u00E7\u00E3o da filial.</div>' +
+    '<div class="ml-box"><div class="f"><label>Propor multa contratual ao lojista por certificado ou licen\u00E7a vencida?</label><div class="chk">' +
+      '<label><input type="radio" name="mlProp" value="nao" checked> N\u00E3o</label><label><input type="radio" name="mlProp" value="sim"> Sim, propor multa</label></div></div>' +
+      '<div class="cond" id="cMultaLoj" style="background:var(--card);border:1px solid var(--bdr)"><div class="g2">' +
+        '<div class="f"><label>Documento vencido <span class="req">*</span></label><select name="mlMotivo"><option>Certificado vencido</option><option>Licen\u00E7a de funcionamento vencida</option><option>Licen\u00E7a sanit\u00E1ria vencida</option><option>AVCB vencido</option><option>Outro documento vencido</option></select></div>' +
+        '<div class="f"><label>Valor proposto da multa <span class="req">*</span></label><input name="mlValor" placeholder="R$"></div></div>' +
+        '<div class="hint" style="margin-top:.4rem">A multa \u00E9 aplicada pela Ferreira Costa (locadora) ao lojista, conforme o contrato de loca\u00E7\u00E3o (cl\u00E1usulas 22.2 e 22.3). <b>O Jur\u00EDdico confirma se aplica e o valor final.</b> O pagamento n\u00E3o dispensa a regulariza\u00E7\u00E3o.</div></div></div></div>' +
+    '<div class="cond" id="cObra"><div class="g2"><div class="f"><label>Obra / empreiteira <span class="req">*</span></label><input name="obra" placeholder="Ex.: Amplia\u00E7\u00E3o do dep\u00F3sito \u00B7 Construtora X"></div>' +
+    '<div class="f"><label>Respons\u00E1vel t\u00E9cnico (ART / RRT)</label><input name="respTec" placeholder="Nome e n\u00BA da ART ou RRT"></div></div>' +
+    '<div class="hint" style="margin-top:.4rem">Vale tamb\u00E9m para obras executadas por terceiros. Tenha \u00E0 m\u00E3o o alvar\u00E1 de obra e a ART/RRT do respons\u00E1vel t\u00E9cnico.</div></div></div>' +
+  '<div class="form-sec"><h4><span class="n">2</span>\u00D3rg\u00E3o e motivo</h4><div class="g3">' +
+    '<div class="f"><label>\u00D3rg\u00E3o fiscalizador <span class="req">*</span></label><select name="orgao" required><option value="">Selecione</option>'+opts(ORGAOS)+'</select></div>' +
+    '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'</select></div>' +
+    '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"></div></div></div>' +
+  '<div class="form-sec"><h4><span class="n">3</span>Quem recebeu e acompanhou</h4><div class="g2">' +
+    '<div class="f"><label>Quem recebeu o fiscal <span class="req">*</span></label><select name="recebeu"><option>Frente de loja</option><option>Preven\u00E7\u00E3o</option><option>Recep\u00E7\u00E3o (correspond\u00EAncia)</option><option>GR de plant\u00E3o</option><option>ADM</option></select></div>' +
+    '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><input name="acompanhou" value="ADM \u2014 supervisor" required><div class="hint">Inclua a \u00E1rea t\u00E9cnica, se foi acionada (TST, Manuten\u00E7\u00E3o).</div></div></div></div>' +
+  '<div class="form-sec"><h4><span class="n">4</span>Resultado da fiscaliza\u00E7\u00E3o</h4>' + chk('res', [['notificacao','Notifica\u00E7\u00E3o'],['apreensao','Apreens\u00E3o'],['multa','Multa (auto de infra\u00E7\u00E3o)'],['sem_doc','Visita sem notifica\u00E7\u00E3o']]) +
+    '<div class="cond" id="cDoc"><div class="g2"><div class="f"><label>N\u00BA do documento</label><input name="doc"></div><div class="f"><label>Prazo dado pelo \u00F3rg\u00E3o <span class="req">* crucial</span></label><input name="prazo" placeholder="dd/mm/aaaa"><div class="hint">Os retornos entre filial e Jur\u00EDdico s\u00E3o calculados a partir deste prazo.</div></div></div></div>' +
+    '<div class="cond" id="cApr"><div class="f"><label>Itens apreendidos (c\u00F3digo, descri\u00E7\u00E3o e quantidade)</label><textarea name="apreensao"></textarea><div class="hint">Confira com o auto de apreens\u00E3o e guarde a via da loja.</div></div></div>' +
+    '<div class="cond" id="cMul"><div class="g2"><div class="f"><label>Valor da multa</label><input name="multaValor" placeholder="R$"></div><div class="f"><label>Motivo da multa</label><input name="multaMotivo"></div></div></div></div>' +
+  '<div class="form-sec"><h4><span class="n">5</span>N\u00E3o conformidades apontadas</h4>' + chk('ncs', NCS) + '</div>' +
+  '<div class="form-sec"><h4><span class="n">6</span>Relato</h4><div class="g2">' +
+    '<div class="f"><label>O que o fiscal avaliou</label><textarea name="relato"></textarea></div>' +
+    '<div class="f"><label>O que foi corrigido no ato</label><textarea name="noAto"></textarea></div></div>' +
+    '<div class="f" style="margin-top:.7rem"><label>Anexos</label><div class="box" style="margin-top:0">\uD83D\uDCCE Notifica\u00E7\u00E3o digitalizada, fotos e auto de apreens\u00E3o (simulado no esbo\u00E7o)</div></div></div>' +
+  '<div class="btns" style="margin-top:1.1rem"><button class="btn pri" type="submit">Enviar ao Jur\u00EDdico</button><button class="btn" type="button" onclick="go(null,\'inicio\')">Cancelar</button></div>' +
+  '</form></div>';
+}
+function bindNovo(){
+  var f = $('fNovo');
+  f.addEventListener('change', function(e){
+    if (e.target.type==='checkbox') e.target.parentNode.classList.toggle('on', e.target.checked);
+    if (e.target.type==='radio') [].forEach.call(f.querySelectorAll('input[name='+e.target.name+']'), function(i){ i.parentNode.classList.toggle('on', i.checked); });
+    var mp = f.querySelector('input[name=mlProp]:checked');
+    $('cMultaLoj').classList.toggle('show', !!mp && mp.value==='sim');
+    var r = [].map.call(f.querySelectorAll('input[name=res]:checked'), function(i){ return i.value; });
+    $('cDoc').classList.toggle('show', r.some(function(x){ return x!=='sem_doc'; }));
+    $('cApr').classList.toggle('show', r.indexOf('apreensao')>=0);
+    $('cMul').classList.toggle('show', r.indexOf('multa')>=0);
+    $('cMall').classList.toggle('show', f.elements.unidade.value==='Loja do Mall');
+    $('cObra').classList.toggle('show', f.elements.unidade.value==='Obra');
+  });
+}
+function enviarNovo(e){
+  e.preventDefault();
+  var f = e.target, g = function(n){ return f.elements[n] ? f.elements[n].value.trim() : ''; };
+  var res = [].map.call(f.querySelectorAll('input[name=res]:checked'), function(i){ return i.value; });
+  if (!res.length) { toast('Marque o resultado da fiscaliza\u00E7\u00E3o (ex.: visita sem notifica\u00E7\u00E3o).'); return false; }
+  if (g('unidade')==='Loja do Mall' && !g('lojista')) { toast('Informe o nome do lojista do Mall.'); return false; }
+  if (g('unidade')==='Obra' && !g('obra')) { toast('Informe a obra ou a empreiteira.'); return false; }
+  var mlp = f.querySelector('input[name=mlProp]:checked'), propoe = g('unidade')==='Loja do Mall' && mlp && mlp.value==='sim';
+  var mlv = parseFloat(g('mlValor').replace(/[^\d,]/g,'').replace(',','.'));
+  if (propoe && !mlv) { toast('Informe o valor proposto da multa ao lojista.'); return false; }
+  var temPrazo = /^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo'));
+  if (res.indexOf('notificacao')>=0 && !temPrazo) { toast('Informe o prazo dado pelo \u00F3rg\u00E3o (dd/mm/aaaa). Ele \u00E9 crucial para o chamado.'); f.elements.prazo.focus(); return false; }
+  var mv = parseFloat(g('multaValor').replace(/[^\d,]/g,'').replace(',','.'));
+  var c = mk({id:'FIS-' + ('000'+(seq++)).slice(-4), filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:g('orgao'), motivo:g('motivo'), forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:g('acompanhou'),
+    resultados:res, doc:g('doc'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
+    noAto:g('noAto'), apreensao:g('apreensao'), relato:g('relato'), status:'aberto', desfecho:'', multa: res.indexOf('multa')>=0 && mv ? {valor:mv, motivo:g('multaMotivo')||'N\u00E3o informado'} : null});
+  c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
+  chamados.push(c);
+  if (propoe) { c.multaLojista = {valor:mlv, motivo:g('mlMotivo'), status:'pendente'}; addEv(c, 'filial', 'Proposta de multa contratual ao lojista ' + c.lojista + ': ' + brl(mlv) + ' \u2014 ' + g('mlMotivo') + '. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.'); }
+  toast('Chamado ' + c.id + ' aberto e enviado ao Jur\u00EDdico.');
+  go(null, null, c.id);
+  return false;
+}
+function fMeus(){
+  var l = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; }).sort(recentes);
+  return '<div class="ph"><div><h2>Meus chamados</h2><p>Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO+'</p></div></div><div class="card">'+tabela(l, ['id','orgao','data','res','prazo','status'])+'</div>';
+}
+
+// ================= JUR\u00CDDICO =================
+function jFila(){
+  var l = chamados.filter(function(c){ return c.status!=='encerrado'; }).sort(porPrazo);
+  var venc = l.filter(function(c){ return c.prazo && dias(c.prazo) <= 3; }).length;
+  return '<div class="ph"><div><h2>Fila de chamados</h2><p>Ordenada pelo prazo do \u00F3rg\u00E3o. O prazo do \u00F3rg\u00E3o \u00E9 o que vale.</p></div></div>' +
+    '<div class="kpis"><div class="kpi"><div class="v" style="color:var(--red)">'+l.filter(function(c){return c.status==='aberto';}).length+'</div><div class="l">Novos, aguardando an\u00E1lise</div></div>' +
+    '<div class="kpi"><div class="v" style="color:var(--amber)">'+venc+'</div><div class="l">Prazo em at\u00E9 3 dias</div></div>' +
+    '<div class="kpi"><div class="v" style="color:var(--blue)">'+l.filter(function(c){return c.status==='analise';}).length+'</div><div class="l">Em an\u00E1lise</div></div>' +
+    '<div class="kpi"><div class="v">'+l.filter(function(c){return c.status==='aguard_filial';}).length+'</div><div class="l">Aguardando filial</div></div></div>' +
+    '<div class="card">'+tabela(l, ['id','filial','orgao','prazo','retorno','status'])+'</div>';
+}
+function jEncerrados(){
+  var l = chamados.filter(function(c){ return c.status==='encerrado'; }).sort(recentes);
+  return '<div class="ph"><div><h2>Chamados encerrados</h2><p>Encerrados com evid\u00EAncia do desfecho</p></div></div><div class="card">'+tabela(l, ['id','filial','orgao','data','res','status'])+'</div>';
+}
+
+// ================= COMPLIANCE =================
+function contar(lista, fn){ var m = {}; lista.forEach(function(c){ [].concat(fn(c)).forEach(function(k){ if (k) m[k] = (m[k]||0) + 1; }); }); return Object.keys(m).map(function(k){ return [k, m[k]]; }).sort(function(a,b){ return b[1]-a[1]; }); }
+function barras(pares, cor){
+  if (!pares.length) return '<div class="empty">Sem registros.</div>';
+  var max = pares[0][1];
+  return pares.map(function(p){ return '<div class="bar-row"><span class="nm" title="'+esc(p[0])+'">'+esc(p[0])+'</span><div class="bar"><span style="width:'+(p[1]/max*100)+'%;background:'+(cor||'var(--red)')+'"></span></div><span class="nu">'+p[1]+'</span></div>'; }).join('');
+}
+function cPainel(){
+  var com = function(r){ return chamados.filter(function(c){ return c.resultados.indexOf(r)>=0; }); };
+  var multas = chamados.filter(function(c){ return c.multa; });
+  var total = multas.reduce(function(s,c){ return s + c.multa.valor; }, 0);
+  var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
+  var card = function(n, t, sub, body){ return '<div class="card foco-card" style="margin:0"><h3><span class="n">'+n+'</span>'+t+'</h3><div class="sub">'+sub+'</div>'+body+'</div>'; };
+  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 dados fict\u00EDcios de setembro e outubro de 2026</p></div><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div>' +
+    '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div>' +
+    (function(){ var at = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
+      return '<div class="kpi click" onclick="filtros.status=\'\';go(null,\'todos\')"><div class="v" style="color:var(--red)">'+at.length+'</div><div class="l">Retornos internos atrasados'+(at.length ? ' ('+at.map(function(c){ return c.id; }).join(', ')+')' : '')+'</div></div>'; })() +
+    '<div class="kpi"><div class="v" style="color:var(--blue)">'+abertos.length+'</div><div class="l">Em andamento</div></div>' +
+    '<div class="kpi"><div class="v" style="color:var(--amber)">'+abertos.filter(function(c){ return c.prazo && dias(c.prazo)<=3; }).length+'</div><div class="l">Prazo do \u00F3rg\u00E3o em at\u00E9 3 dias</div></div>' +
+    '<div class="kpi"><div class="v" style="color:#7B0B18">'+brl(total)+'</div><div class="l">Em multas aplicadas</div></div></div>' +
+    '<div class="lbl">Foco do processo</div><div class="foco-grid">' +
+    card(1, '\u00D3rg\u00E3os que fizeram apreens\u00E3o', com('apreensao').length+' apreens\u00F5es', barras(contar(com('apreensao'), function(c){ return c.orgao; }))) +
+    card(2, '\u00D3rg\u00E3os que emitiram notifica\u00E7\u00E3o', com('notificacao').length+' notifica\u00E7\u00F5es', barras(contar(com('notificacao'), function(c){ return c.orgao; }), 'var(--amber)')) +
+    card(3, 'Visitas sem notifica\u00E7\u00E3o', com('sem_doc').length+' visitas', barras(contar(com('sem_doc'), function(c){ return c.orgao; }), 'var(--slate)')) +
+    card(4, 'Frequ\u00EAncia de visitas por \u00F3rg\u00E3o', chamados.length+' visitas no per\u00EDodo', barras(contar(chamados, function(c){ return c.orgao; }), 'var(--blue)')) +
+    card(5, 'N\u00E3o conformidades mais apontadas', 'Por n\u00FAmero de ocorr\u00EAncias', barras(contar(chamados, function(c){ return c.ncs; }), 'var(--amber)')) +
+    card(6, '\u00D3rg\u00E3os que aplicaram multa', multas.length+' multas \u00B7 '+brl(total), barras(contar(multas, function(c){ return c.orgao; }), '#7B0B18') +
+      '<div class="multa-list">'+multas.map(function(c){ return '<div><b>'+c.id+'</b> \u00B7 '+c.filial+' \u00B7 '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>'; }).join('')+'</div>') +
+    '</div>' +
+    '<div class="foco-grid" style="grid-template-columns:2fr 1fr;margin-top:1rem">' +
+    '<div class="card" style="margin:0"><h3>Visitas por filial</h3><div class="sub">Onde os \u00F3rg\u00E3os mais est\u00E3o presentes</div>'+barras(contar(chamados, function(c){ return c.filial; }), 'var(--green)')+'</div>' +
+    '<div class="card" style="margin:0"><h3>Visitas por local</h3><div class="sub">Loja, Loja do Mall, CD e Obra</div>'+barras(contar(chamados, function(c){ return c.unidade; }), 'var(--slate)')+'</div></div>' +
+    (function(){ var ml = chamados.filter(function(c){ return c.multaLojista; });
+      return '<div class="card" style="margin-top:1rem"><h3>Multas contratuais a lojistas do Mall</h3><div class="sub">Propostas pela filial e confirmadas pelo Jur\u00EDdico</div>' +
+        (ml.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>Lojista</th><th>Motivo</th><th>Proposto</th><th>Confirmado</th><th>Situa\u00E7\u00E3o</th></tr></thead><tbody>' +
+          ml.map(function(c){ var m = c.multaLojista; return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+c.filial+'</td><td>'+esc(c.lojista)+'</td><td>'+esc(m.motivo)+'</td><td>'+brl(m.valor)+'</td><td>'+(m.valorFinal ? brl(m.valorFinal) : '\u2014')+'</td><td><span class="badge '+({pendente:'b-aguard_filial', confirmada:'b-aberto', nao_aplicada:'b-respondido'})[m.status]+'">'+ML_ST[m.status]+'</span></td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<div class="empty">Nenhuma multa proposta.</div>') + '</div>'; })();
+}
+function cTodos(){
+  var l = chamados.filter(function(c){ return (!filtros.filial || c.filial===filtros.filial) && (!filtros.unidade || c.unidade===filtros.unidade) && (!filtros.orgao || c.orgao===filtros.orgao) && (!filtros.status || c.status===filtros.status); }).sort(recentes);
+  var sel_ = function(k, list, ph){ return '<select onchange="filtros.'+k+'=this.value;render()"><option value="">'+ph+'</option>'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, t = arr ? o[1] : o; return '<option value="'+esc(v)+'"'+(filtros[k]===v?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
+  return '<div class="ph"><div><h2>Todos os chamados</h2><p>'+l.length+' de '+chamados.length+' chamados \u00B7 clique para abrir, pontuar ou editar</p></div></div>' +
+    '<div class="card"><div class="filters">'+sel_('filial', FILIAIS, 'Todas as filiais')+sel_('unidade', UNIDADES, 'Todos os locais')+sel_('orgao', ORGAOS, 'Todos os \u00F3rg\u00E3os')+sel_('status', Object.keys(STATUS).map(function(k){ return [k, STATUS[k]]; }), 'Todos os status')+'</div>'+tabela(l, ['id','filial','unidade','orgao','res','prazo','retorno','status'])+'</div>';
+}
+function cLiberacoes(){
+  var l = chamados.filter(function(c){ return c.libPend; });
+  return '<div class="ph"><div><h2>Libera\u00E7\u00F5es de reenvio</h2><p>Filial e Jur\u00EDdico podem trocar at\u00E9 '+LIMITE_ENVIOS+' envios cada. Depois disso, s\u00F3 o Compliance libera novos envios, sempre de '+LIMITE_ENVIOS+' em '+LIMITE_ENVIOS+'.</p></div></div>' +
+    '<div class="card">' + (l.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>\u00D3rg\u00E3o</th><th>Pedido por</th><th>Motivo</th><th>Envios (J \u2192 F / F \u2192 J)</th></tr></thead><tbody>' +
+      l.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+c.filial+'</td><td>'+esc(c.orgao)+'</td><td>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'Filial')+' \u00B7 '+c.libPend.data+'</td><td>'+esc(c.libPend.motivo)+'</td><td>'+c.envios.juridico+'/'+c.limite+' \u00B7 '+c.envios.filial+'/'+c.limite+'</td></tr>'; }).join('') +
+      '</tbody></table></div>' : '<div class="empty">Nenhum pedido de libera\u00E7\u00E3o pendente.</div>') + '</div>';
+}
+function cCadastros(){
+  var lista = function(nome, arr, key){ return '<div class="card" style="margin:0"><h3>'+nome+'</h3><div class="sub">Alimenta o formul\u00E1rio da filial</div><ul>'+arr.map(function(o,i){ return '<li>'+esc(o)+'<button title="Remover" onclick="remCad(\''+key+'\','+i+')">\u00D7</button></li>'; }).join('')+'</ul><div class="add"><input id="add_'+key+'" placeholder="Adicionar..."><button class="btn sm green" onclick="addCad(\''+key+'\')">Adicionar</button></div></div>'; };
+  return '<div class="ph"><div><h2>Cadastros do app</h2><p>O Compliance cria e mant\u00E9m as listas usadas em todos os chamados</p></div></div>' +
+    '<div class="cad">'+lista('\u00D3rg\u00E3os fiscalizadores', ORGAOS, 'ORGAOS')+lista('Tipos de n\u00E3o conformidade', NCS, 'NCS')+lista('Motivos de fiscaliza\u00E7\u00E3o', MOTIVOS, 'MOTIVOS')+lista('Filiais', FILIAIS, 'FILIAIS')+'</div>';
+}
+function addCad(k){ var i = $('add_'+k), v = i.value.trim(); if (!v) return; window[k].push(v); toast('Item adicionado.'); render(); }
+function remCad(k, i){ window[k].splice(i,1); toast('Item removido.'); render(); }
+
+// ================= DETALHE (compartilhado) =================
+function detalhe(c){
+  var voltar = {filial:'meus', juridico: c.status==='encerrado' ? 'encerrados' : 'fila', compliance:'todos'}[perfil];
+  var I = function(l, v, full){ return '<div'+(full?' class="full"':'')+'><span>'+l+'</span>'+(full ? '<p>'+(esc(v)||'\u2014')+'</p>' : '<b>'+(esc(v)||'\u2014')+'</b>')+'</div>'; };
+  var edit = perfil==='compliance' && editando;
+  var info = edit ?
+    '<div class="info">' +
+      '<div class="f"><label>\u00D3rg\u00E3o</label><select id="e_orgao">'+opts(ORGAOS, c.orgao)+'</select></div>' +
+      '<div class="f"><label>Motivo</label><select id="e_motivo">'+opts(MOTIVOS, c.motivo)+'</select></div>' +
+      '<div class="f"><label>Prazo do \u00F3rg\u00E3o</label><input id="e_prazo" value="'+esc(c.prazo)+'"></div>' +
+      '<div class="f"><label>Status</label><select id="e_status">'+Object.keys(STATUS).map(function(k){ return '<option value="'+k+'"'+(k===c.status?' selected':'')+'>'+STATUS[k]+'</option>'; }).join('')+'</select></div>' +
+      '<div class="f full"><label>N\u00E3o conformidades</label><div class="chk">'+NCS.map(function(n){ var on = c.ncs.indexOf(n)>=0; return '<label class="'+(on?'on':'')+'"><input type="checkbox" class="e_nc" value="'+esc(n)+'"'+(on?' checked':'')+'> '+esc(n)+'</label>'; }).join('')+'</div></div>' +
+      '<div class="f full"><label>Relato</label><textarea id="e_relato">'+esc(c.relato)+'</textarea></div>' +
+      '<div class="full btns"><button class="btn green" onclick="salvarEdicao(\''+c.id+'\')">Salvar altera\u00E7\u00F5es</button><button class="btn" onclick="editando=false;render()">Cancelar</button></div>' +
+    '</div>' :
+    '<div class="info">' + I('Filial', c.filial) + I('Local da fiscaliza\u00E7\u00E3o', c.unidade) +
+      (c.lojista ? I('Lojista do Mall', c.lojista) : '') + (c.obra ? I('Obra / respons\u00E1vel t\u00E9cnico', c.obra) : '') + I('Data', c.data) + I('\u00D3rg\u00E3o', c.orgao) + I('Motivo', c.motivo) + I('Forma', c.forma) + I('Fiscal', c.fiscal) +
+      I('Quem recebeu o fiscal', c.recebeu) + I('Quem acompanhou', c.acompanhou) + I('N\u00BA do documento', c.doc) + '<div><span>Prazo do \u00F3rg\u00E3o</span>'+prazoHtml(c)+'</div>' +
+      '<div class="full"><span>Resultado</span>'+tags(c)+'</div>' +
+      '<div class="full"><span>N\u00E3o conformidades</span>'+(c.ncs.length ? c.ncs.map(function(n){ return '<span class="tag">'+esc(n)+'</span>'; }).join('') : '<p>\u2014</p>')+'</div>' +
+      I('O que o fiscal avaliou', c.relato, 1) + I('Corrigido no ato', c.noAto, 1) + '</div>' +
+      (c.apreensao ? '<div class="box"><b>Itens apreendidos:</b> '+esc(c.apreensao)+'</div>' : '') +
+      (c.multa ? '<div class="box multa"><b>Multa:</b> '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>' : '') +
+      (c.desfecho ? '<div class="box"><b>Desfecho:</b> '+esc(c.desfecho)+'</div>' : '') + mlBox(c);
+  return '<div class="det-head"><div><button class="btn sm" onclick="go(null,\''+voltar+'\')">\u2190 Voltar</button>' +
+    '<h2 style="margin-top:.6rem">'+c.id+' \u00B7 '+esc(c.orgao)+'</h2><p>Filial '+c.filial+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
+    prazoBanner(c) +
+    '<div class="det"><div>' + fluxoRetorno(c) + '<div class="card"><h3>Dados da fiscaliza\u00E7\u00E3o</h3><div class="sub">'+(edit ? 'Modo de edi\u00E7\u00E3o do Compliance' : 'Registro enviado pela filial')+'</div>'+info+'</div>' +
+    '<div class="card"><h3>Hist\u00F3rico do chamado</h3><div class="sub">Tudo o que foi feito, por quem e quando</div><div class="tl">' +
+      c.eventos.map(function(e){ return '<div class="ev '+e.papel+'"><div class="eh"><b>'+esc(e.autor)+'</b> \u00B7 '+e.data+'</div><div class="et">'+esc(e.texto)+'</div></div>'; }).join('') + '</div></div></div>' +
+    '<div class="card acoes">'+acoes(c)+'</div></div>';
+}
+function prazoBanner(c){
+  var p = pendente(c), enc = c.status==='encerrado';
+  var org = c.prazo ? '<div class="pb-org '+(enc ? 'ok' : clsDias(c.prazo))+'"><span>Prazo do \u00F3rg\u00E3o</span><b>'+c.prazo+'</b><em>'+(enc ? 'caso encerrado' : contagem(c.prazo))+'</em></div>'
+                    : '<div class="pb-org sem"><span>Prazo do \u00F3rg\u00E3o</span><b>N\u00E3o informado</b><em>'+(enc ? 'caso encerrado' : 'registre o prazo assim que o \u00F3rg\u00E3o informar')+'</em></div>';
+  var ret = (!enc && p) ? '<div class="pb-ret '+clsDias(p.prazo)+'"><span>Retorno pendente</span><b>'+NOME_SETOR[p.para]+' deve retornar at\u00E9 '+p.prazo+'</b><em>'+contagem(p.prazo)+' \u00B7 enviado por '+NOME_SETOR[p.de]+' em '+p.enviado.slice(0,5)+'</em></div>'
+                        : '<div class="pb-ret ok"><span>Retorno pendente</span><b>Nenhum</b><em>'+(enc ? 'todos os retornos conclu\u00EDdos' : 'aguardando resposta do \u00F3rg\u00E3o')+'</em></div>';
+  return '<div class="pbanner">'+org+ret+'</div>';
+}
+function fluxoRetorno(c){
+  var linhas = c.retornos.map(function(r){
+    var sit, cl;
+    if (r.respondido) { var atras = pBR(r.respondido) > pBR(r.prazo); sit = (atras ? 'Respondido com atraso' : 'Respondido no prazo') + ' \u00B7 ' + r.respondido.slice(0,5); cl = atras ? 'venc' : 'okv'; }
+    else { sit = c.status==='encerrado' ? 'Encerrado' : 'Pendente \u00B7 ' + contagem(r.prazo); cl = c.status==='encerrado' ? 'ok' : clsDias(r.prazo); }
+    return '<tr><td><span class="seta '+r.de+'">'+NOME_SETOR[r.de]+'</span> \u2192 <span class="seta '+r.para+'">'+NOME_SETOR[r.para]+'</span></td><td>'+r.enviado.slice(0,5)+'</td><td><b>'+r.prazo.slice(0,5)+'</b></td><td><span class="prazo '+cl+'">'+sit+'</span></td></tr>';
+  }).join('');
+  var orgLinha = '<tr class="org"><td><span class="seta juridico">Jur\u00EDdico</span> \u2192 <b>\u00D3rg\u00E3o</b></td><td>\u2014</td><td><b>'+(c.prazo ? c.prazo.slice(0,5) : '\u2014')+'</b></td><td>'+
+    (c.status==='respondido' || c.status==='encerrado' ? '<span class="prazo okv">Resposta protocolada</span>' : c.prazo ? '<span class="prazo '+clsDias(c.prazo)+'">Protocolar \u00B7 '+contagem(c.prazo)+'</span>' : '<span class="prazo ok">Prazo n\u00E3o informado</span>')+'</td></tr>';
+  return '<div class="card fr"><h3>Fluxo de retorno entre setores</h3><div class="sub">Cada envio tem um prazo de retorno, sempre antes do prazo do \u00F3rg\u00E3o</div>' +
+    '<div class="tbl-wrap"><table class="t" style="min-width:520px"><thead><tr><th>Envio</th><th>Enviado em</th><th>Retornar at\u00E9</th><th>Situa\u00E7\u00E3o</th></tr></thead><tbody>'+linhas+orgLinha+'</tbody></table></div></div>';
+}
+var ML_ST = {pendente:'Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico', confirmada:'Confirmada pelo Jur\u00EDdico', nao_aplicada:'N\u00E3o aplicada'};
+function mlBox(c){
+  var m = c.multaLojista; if (!m) return '';
+  return '<div class="box ml '+m.status+'"><b>Multa contratual ao lojista:</b> '+esc(c.lojista)+' \u00B7 '+esc(m.motivo)+'<br>' +
+    'Valor proposto pela filial: <b>'+brl(m.valor)+'</b>' + (m.status==='confirmada' ? ' \u00B7 Valor confirmado: <b>'+brl(m.valorFinal)+'</b>' : '') +
+    '<br>Situa\u00E7\u00E3o: <b>'+ML_ST[m.status]+'</b>' + (m.obs ? '<br>Observa\u00E7\u00E3o do Jur\u00EDdico: '+esc(m.obs) : '') + '</div>';
+}
+function mlAcaoJuridico(c){
+  var m = c.multaLojista; if (!m || m.status!=='pendente') return '';
+  return '<div class="ml-acao"><h4>Multa contratual ao lojista</h4><p style="font-size:.72rem;color:var(--txt2);margin-bottom:.6rem">A filial prop\u00F4s multa a <b>'+esc(c.lojista)+'</b> por '+esc(m.motivo).toLowerCase()+'. Confirme se ser\u00E1 aplicada e o valor, conforme o contrato de loca\u00E7\u00E3o.</p>' +
+    '<div class="g2"><div class="f"><label>Valor confirmado</label><input id="ml_v" value="'+m.valor.toLocaleString('pt-BR')+'"></div>' +
+    '<div class="f"><label>Base contratual</label><select id="ml_base"><option>Cl\u00E1usula 22.2</option><option>Cl\u00E1usula 22.3</option><option>Cl\u00E1usulas 22.2 e 22.3</option></select></div></div>' +
+    '<div class="f"><label>Observa\u00E7\u00E3o (obrigat\u00F3ria se n\u00E3o aplicar)</label><textarea id="ml_obs" placeholder="Ex.: notificar o lojista para regularizar antes da multa"></textarea></div>' +
+    '<div class="btns"><button class="btn blue" onclick="acao(\''+c.id+'\',\'ml_ok\')">Confirmar e aplicar multa</button><button class="btn" onclick="acao(\''+c.id+'\',\'ml_nao\')">N\u00E3o aplicar</button></div></div>';
+}
+// ----- Regra de envios Filial <-> Jur\u00EDdico (2 por lado; depois, libera\u00E7\u00E3o do Compliance) -----
+var LADO = {filial:'Filial \u2192 Jur\u00EDdico', juridico:'Jur\u00EDdico \u2192 Filial'};
+function podeEnviar(c, lado){ return c.envios[lado] < c.limite; }
+function contador(c, lado){
+  var usados = c.envios[lado], rest = c.limite - usados;
+  return '<div class="env '+(rest<=1?'ult':'')+'">Envios '+LADO[lado]+': <b>'+usados+' de '+c.limite+'</b>'+(rest===1 ? ' \u00B7 este \u00E9 o \u00FAltimo envio antes de precisar do Compliance' : '')+'</div>';
+}
+function contadorTxt(c){ return '<b>Envios entre setores:</b> Jur\u00EDdico \u2192 Filial '+c.envios.juridico+'/'+c.limite+' \u00B7 Filial \u2192 Jur\u00EDdico '+c.envios.filial+'/'+c.limite+(c.limite>LIMITE_ENVIOS ? ' \u00B7 limite ampliado pelo Compliance' : ''); }
+function bloqueio(c, lado){
+  if (c.libPend) return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Libera\u00E7\u00E3o '+(c.libPend.por===lado ? 'solicitada' : 'j\u00E1 solicitada pelo '+(c.libPend.por==='juridico'?'Jur\u00EDdico':'filial'))+' ao Compliance em '+c.libPend.data+'. Aguardando resposta.</div>';
+  return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Para enviar de novo, o Compliance precisa liberar o reenvio.</div>' +
+    '<div class="f" style="margin-top:.5rem"><textarea id="a_lib" placeholder="Por que \u00E9 preciso enviar de novo?"></textarea></div>' +
+    '<div class="btns"><button class="btn" onclick="acao(\''+c.id+'\',\'pedir_lib_'+lado+'\')">Solicitar libera\u00E7\u00E3o ao Compliance</button></div>';
+}
+function libAcaoCompliance(c){
+  if (!c.libPend) return '';
+  return '<div class="ml-acao" style="background:var(--green-l);border-color:rgba(95,122,69,.35)"><h4>Libera\u00E7\u00E3o de reenvio solicitada</h4>' +
+    '<p style="font-size:.72rem;color:var(--txt2);margin-bottom:.5rem">Pedido do <b>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'ADM da filial')+'</b> em '+c.libPend.data+':<br>"'+esc(c.libPend.motivo)+'"</p>' +
+    '<div class="box" style="margin:0 0 .6rem">'+contadorTxt(c)+'</div>' +
+    '<div class="f"><label>Observa\u00E7\u00E3o</label><textarea id="lib_obs" placeholder="Obrigat\u00F3ria se n\u00E3o liberar"></textarea></div>' +
+    '<div class="btns"><button class="btn green" onclick="acao(\''+c.id+'\',\'liberar\')">Liberar +'+LIMITE_ENVIOS+' envios por setor</button><button class="btn" onclick="acao(\''+c.id+'\',\'nao_liberar\')">N\u00E3o liberar</button></div></div>';
+}
+function acoes(c){
+  var id = c.id, enc = c.status==='encerrado';
+  if (perfil==='filial') {
+    if (c.status==='aguard_filial') return '<h4>Responder ao Jur\u00EDdico</h4><div class="box" style="margin-top:0">'+esc(ultimo(c,'juridico'))+'</div>' +
+      (podeEnviar(c,'filial') ?
+        contador(c,'filial') + '<div class="f" style="margin-top:.6rem"><textarea id="a_txt" placeholder="Descreva o que est\u00E1 enviando"></textarea></div><div class="box">\uD83D\uDCCE Anexar documentos (simulado)</div><div class="btns" style="margin-top:.7rem"><button class="btn pri" onclick="acao(\''+id+'\',\'filial_resp\')">Enviar ao Jur\u00EDdico</button></div>'
+        : bloqueio(c,'filial'));
+    return '<h4>Acompanhamento</h4><p style="font-size:.76rem;color:var(--txt2)">'+(enc ? 'Caso encerrado. O desfecho fica no hist\u00F3rico.' : 'O Jur\u00EDdico est\u00E1 tratando o caso. Voc\u00EA ser\u00E1 avisado se precisar enviar algo.')+'</p>' +
+      (enc ? '' : '<h4>Adicionar informa\u00E7\u00E3o</h4><div class="f"><textarea id="a_txt" placeholder="Ex.: corre\u00E7\u00E3o conclu\u00EDda, fiscal retornou..."></textarea></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'filial_info\')">Adicionar ao hist\u00F3rico</button></div>');
+  }
+  if (perfil==='juridico') {
+    if (enc) return mlAcaoJuridico(c) + '<h4>Caso encerrado</h4><p style="font-size:.76rem;color:var(--txt2)">Desfecho: '+esc(c.desfecho)+'.</p>';
+    var h = mlAcaoJuridico(c);
+    if (c.status==='aberto') h += '<h4>Novo chamado</h4><div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'assumir\')">Iniciar an\u00E1lise</button></div>';
+    h += '<h4>Solicitar \u00E0 filial</h4>' + (podeEnviar(c,'juridico') ?
+      contador(c,'juridico') + '<div class="f" style="margin-top:.5rem"><textarea id="a_sol" placeholder="Documentos ou informa\u00E7\u00F5es necess\u00E1rias"></textarea></div>' +
+      '<div class="f"><label>Filial deve retornar at\u00E9 <span class="req">*</span></label><input id="a_ret" value="'+prazoRetorno(c, hojeBR(), 2)+'"><div class="hint">'+(c.prazo ? 'Precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+'), para dar tempo de protocolar.' : 'Sem prazo do \u00F3rg\u00E3o registrado: confirme o prazo com a filial.')+'</div></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'solicitar\')">Enviar solicita\u00E7\u00E3o</button></div>'
+      : bloqueio(c,'juridico'));
+    h += '<h4>Resposta ao \u00F3rg\u00E3o</h4><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'responder\')">Registrar resposta protocolada</button></div>';
+    h += '<h4>Registrar desfecho</h4><div class="f"><select id="a_desf" onchange="document.getElementById(\'a_mul\').style.display=this.value===\'Multa aplicada\'?\'block\':\'none\'">'+opts(DESFECHOS)+'</select></div>' +
+      '<div id="a_mul" style="display:none"><div class="g2"><div class="f"><label>Valor</label><input id="a_mv" placeholder="R$"></div><div class="f"><label>Motivo</label><input id="a_mm"></div></div></div>' +
+      '<div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'encerrar\')">Encerrar e informar a filial</button></div>';
+    return h;
+  }
+  return libAcaoCompliance(c) + '<h4>A\u00E7\u00F5es do Compliance</h4><p style="font-size:.72rem;color:var(--txt2);margin-bottom:.6rem">O Compliance pode entrar em qualquer etapa do chamado.</p>' +
+    '<div class="box" style="margin:0 0 .7rem">'+contadorTxt(c)+'</div>' +
+    '<div class="f"><label>Pontuar algo no chamado</label><textarea id="a_pont" placeholder="Observa\u00E7\u00E3o, orienta\u00E7\u00E3o ou alerta"></textarea></div>' +
+    '<div class="f"><label>Avisar</label><select id="a_dest"><option>Jur\u00EDdico e filial</option><option>Somente Jur\u00EDdico</option><option>Somente filial</option></select></div>' +
+    '<div class="btns"><button class="btn green" onclick="acao(\''+id+'\',\'pontuar\')">Registrar pontua\u00E7\u00E3o</button></div>' +
+    '<h4>Editar o chamado</h4><div class="btns"><button class="btn" onclick="editando=true;render()">Editar dados</button>' + (enc ? '<button class="btn" onclick="acao(\''+id+'\',\'reabrir\')">Reabrir chamado</button>' : '') + '</div>';
+}
+function ultimo(c, papel){ for (var i=c.eventos.length-1;i>=0;i--) if (c.eventos[i].papel===papel) return c.eventos[i].texto; return ''; }
+function val(id){ var e = $(id); return e ? e.value.trim() : ''; }
+function acao(id, tipo){
+  var c = byId(id);
+  if (tipo==='filial_resp'){ if (c.status!=='aguard_filial') return toast('O Jur\u00EDdico n\u00E3o est\u00E1 aguardando resposta neste chamado.'); if (!podeEnviar(c,'filial')) return toast('Limite de envios atingido.'); if (!val('a_txt')) return toast('Escreva a resposta.'); c.envios.filial++; fecharPendente(c,'filial'); var rj = prazoRetorno(c, hojeBR(), 2); c.retornos.push(rt('filial','juridico', hojeBR(), rj));
+    addEv(c,'filial', 'Envio '+c.envios.filial+'/'+c.limite+' \u00B7 Resposta ao Jur\u00EDdico (Jur\u00EDdico retorna at\u00E9 '+rj.slice(0,5)+'): '+val('a_txt')); c.status='analise'; toast('Resposta enviada ao Jur\u00EDdico.'); }
+  if (tipo==='pedir_lib_filial' || tipo==='pedir_lib_juridico'){
+    var lado = tipo.slice(10); if (!val('a_lib')) return toast('Explique por que precisa enviar de novo.');
+    c.libPend = {por:lado, data:hojeBR(), motivo:val('a_lib')}; addEv(c, lado, 'Limite de '+c.limite+' envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: '+val('a_lib')); toast('Pedido de libera\u00E7\u00E3o enviado ao Compliance.');
+  }
+  if (tipo==='liberar'){ c.limite += LIMITE_ENVIOS; addEv(c,'compliance','Reenvio liberado: +'+LIMITE_ENVIOS+' envios para cada setor (novo limite: '+c.limite+')'+(val('lib_obs') ? '. '+val('lib_obs') : '.')); c.libPend = null; toast('Reenvio liberado. A regra de 2 envios continua valendo.'); }
+  if (tipo==='nao_liberar'){ if (!val('lib_obs')) return toast('Explique por que n\u00E3o vai liberar.'); addEv(c,'compliance','Reenvio n\u00E3o liberado: '+val('lib_obs')); c.libPend = null; toast('Pedido de reenvio negado.'); }
+  if (tipo==='filial_info'){ if (!val('a_txt')) return toast('Escreva a informa\u00E7\u00E3o.'); addEv(c,'filial', val('a_txt')); toast('Informa\u00E7\u00E3o adicionada.'); }
+  if (tipo==='assumir'){ addEv(c,'juridico','An\u00E1lise iniciada.'); c.status='analise'; toast('Chamado em an\u00E1lise.'); }
+  if (tipo==='solicitar'){ if (!podeEnviar(c,'juridico')) return toast('Limite de envios atingido.'); if (!val('a_sol')) return toast('Descreva o que a filial deve enviar.');
+    var ret = val('a_ret'); if (!/^\d{2}\/\d{2}\/\d{4}$/.test(ret)) return toast('Informe at\u00E9 quando a filial deve retornar (dd/mm/aaaa).');
+    if (pBR(ret) < HOJE) return toast('O prazo de retorno n\u00E3o pode estar no passado.');
+    if (c.prazo && pBR(ret) >= pBR(c.prazo)) return toast('O retorno da filial precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+').');
+    c.envios.juridico++; fecharPendente(c,'juridico'); c.retornos.push(rt('juridico','filial', hojeBR(), ret));
+    addEv(c,'juridico','Envio '+c.envios.juridico+'/'+c.limite+' \u00B7 Solicitado \u00E0 filial (retornar at\u00E9 '+ret.slice(0,5)+'): '+val('a_sol')); c.status='aguard_filial'; toast('Solicita\u00E7\u00E3o enviada \u00E0 filial.'); }
+  if (tipo==='responder'){ fecharPendente(c,'juridico'); addEv(c,'juridico','Resposta protocolada no \u00F3rg\u00E3o dentro do prazo.'); c.status='respondido'; toast('Resposta registrada.'); }
+  if (tipo==='encerrar'){
+    var d = val('a_desf');
+    if (d==='Multa aplicada'){ var v = parseFloat(val('a_mv').replace(/[^\d,]/g,'').replace(',','.')); if (!v) return toast('Informe o valor da multa.'); c.multa = {valor:v, motivo: val('a_mm') || 'N\u00E3o informado'}; if (c.resultados.indexOf('multa')<0) c.resultados.push('multa'); }
+    c.desfecho = d; c.status='encerrado'; fecharPendente(c,'juridico'); fecharPendente(c,'filial'); addEv(c,'juridico','Desfecho: '+d+(c.multa && d==='Multa aplicada' ? ' ('+brl(c.multa.valor)+')' : '')+'. Filial informada.'); toast('Chamado encerrado e filial informada.');
+  }
+  if (tipo==='pontuar'){ if (!val('a_pont')) return toast('Escreva a pontua\u00E7\u00E3o.'); addEv(c,'compliance','Pontua\u00E7\u00E3o ('+val('a_dest')+'): '+val('a_pont')); toast('Pontua\u00E7\u00E3o registrada e enviada.'); }
+  if (tipo==='ml_ok'){
+    var vf = parseFloat(val('ml_v').replace(/\./g,'').replace(',','.'));
+    if (!vf) return toast('Informe o valor confirmado.');
+    c.multaLojista.status = 'confirmada'; c.multaLojista.valorFinal = vf; c.multaLojista.obs = val('ml_obs') ? val('ml_obs') + ' (' + val('ml_base') + ')' : val('ml_base');
+    addEv(c,'juridico','Multa contratual ao lojista '+c.lojista+' confirmada: '+brl(vf)+' ('+val('ml_base')+'). Filial orientada a notificar o lojista.'); toast('Multa ao lojista confirmada.');
+  }
+  if (tipo==='ml_nao'){
+    if (!val('ml_obs')) return toast('Explique por que a multa n\u00E3o ser\u00E1 aplicada.');
+    c.multaLojista.status = 'nao_aplicada'; c.multaLojista.obs = val('ml_obs');
+    addEv(c,'juridico','Multa contratual ao lojista n\u00E3o aplicada: '+val('ml_obs')); toast('Registrado: multa n\u00E3o aplicada.');
+  }
+  if (tipo==='reabrir'){ c.status='analise'; c.desfecho=''; addEv(c,'compliance','Chamado reaberto pelo Compliance.'); toast('Chamado reaberto.'); }
+  render();
+}
+function salvarEdicao(id){
+  var c = byId(id), mud = [];
+  var set = function(campo, nome, novo){ if (String(c[campo]) !== String(novo)) { mud.push(nome+': "'+(c[campo]||'\u2014')+'" \u2192 "'+(novo||'\u2014')+'"'); c[campo] = novo; } };
+  set('orgao','\u00D3rg\u00E3o', val('e_orgao')); set('motivo','Motivo', val('e_motivo')); set('prazo','Prazo', val('e_prazo')); set('relato','Relato', val('e_relato'));
+  var st = val('e_status'); if (st !== c.status) { mud.push('Status: '+STATUS[c.status]+' \u2192 '+STATUS[st]); c.status = st; }
+  var ncs = [].map.call(document.querySelectorAll('.e_nc:checked'), function(i){ return i.value; });
+  if (ncs.join('|') !== c.ncs.join('|')) { mud.push('N\u00E3o conformidades atualizadas'); c.ncs = ncs; }
+  editando = false;
+  if (mud.length) { addEv(c,'compliance','Editou o chamado \u2014 '+mud.join('; ')); toast('Altera\u00E7\u00F5es salvas e registradas no hist\u00F3rico.'); } else toast('Nada foi alterado.');
+  render();
+}
+function bindDetalhe(){
+  [].forEach.call(document.querySelectorAll('.e_nc'), function(i){ i.addEventListener('change', function(){ i.parentNode.classList.toggle('on', i.checked); }); });
+}
+
+[].forEach.call(document.querySelectorAll('#perfis button'), function(b){ b.onclick = function(){ go(b.getAttribute('data-p')); }; });
+render();
+</script>
+</body></html>
