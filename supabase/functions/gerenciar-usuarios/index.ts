@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
         if (!filial || !setor || !b.senha) return json({ erro: 'Informe filial, setor e senha.' }, 400);
         if (String(b.senha).length < 8) return json({ erro: 'A senha precisa ter pelo menos 8 caracteres.' }, 400);
         if (!PAPEIS.includes(papel)) return json({ erro: 'Perfil inválido.' }, 400);
-        const email = conta(filial, setor);
+        // e-mail da pessoa (login = filial + setor + e-mail + senha); sem e-mail, usa o interno filial.setor@fiscalizacao.fc
+        const email = String(b.email || '').trim().toLowerCase() || conta(filial, setor);
         const nome = String(b.nome || (filial + ' · ' + setor)).trim();
         // o que a conta pode visualizar (vazio = padrão do perfil)
         const vis = Array.isArray(b.filiais_visiveis) && b.filiais_visiveis.length ? b.filiais_visiveis.map((x: string) => String(x).toUpperCase()) : null;
@@ -96,7 +97,7 @@ function conta(filial: string, setor: string) {
 }
 
 function traduz(msg: string) {
-  if (/already been registered|already registered|exists/i.test(msg)) return 'Já existe uma conta para esta filial e setor.';
+  if (/already been registered|already registered|exists/i.test(msg)) return 'Já existe uma conta com este e-mail.';
   if (/password/i.test(msg) && /weak|short|least/i.test(msg)) return 'Senha fraca: use pelo menos 8 caracteres, com letras e números.';
   if (/invalid.*email/i.test(msg)) return 'E-mail inválido.';
   return msg;
