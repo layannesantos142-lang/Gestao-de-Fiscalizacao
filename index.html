@@ -496,7 +496,7 @@ async function telaLogin(msg){
         '<div class="f"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>') +
     '<div class="f"><label>Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>' +
     '<button class="btn pri" style="width:100%;margin-top:1.4rem" type="submit">Entrar</button></form>' +
-    '<div class="lg-rodape"><span>Esqueceu a senha? Fale com o Compliance.</span>' +
+    '<div class="lg-rodape"><span>Esqueceu a senha? Fale com o Compliance: <a href="mailto:compliance@ferreiracosta.com.br">compliance@ferreiracosta.com.br</a> \u00B7 ramal 8619</span>' +
     '<a href="#" onclick="_loginComEmail=!_loginComEmail;telaLogin();return false">' + (_loginComEmail ? 'Entrar por filial e setor' : 'Entrar com e-mail') + '</a></div></div></div>';
 }
 async function entrar(e){
