@@ -51,8 +51,9 @@ Deno.serve(async (req) => {
         const nome = String(b.nome || (filial + ' · ' + setor)).trim();
         // o que a conta pode visualizar (vazio = padrão do perfil)
         const vis = Array.isArray(b.filiais_visiveis) && b.filiais_visiveis.length ? b.filiais_visiveis.map((x: string) => String(x).toUpperCase()) : null;
+        // senha definida pelo Compliance é provisória: no 1º acesso o app obriga a pessoa a criar uma senha nova
         const { data, error } = await admin.auth.admin.createUser({
-          email, password: b.senha, email_confirm: true, user_metadata: { nome, deve_trocar_senha: false }
+          email, password: b.senha, email_confirm: true, user_metadata: { nome, deve_trocar_senha: true }
         });
         if (error) return json({ erro: traduz(error.message) }, 400);
         const { error: e2 } = await admin.from('perfis')
