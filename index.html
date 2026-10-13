@@ -557,7 +557,7 @@ function renderSide(){
   var sub = (EU && EU.papel === perfil) ? 'Filial ' + (EU.filial||'\u2014') + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + FILIAL_USUARIO : u.sub;
   var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+opts(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
   $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+esc(ini)+'</div><div><b>'+esc(nome)+'</b><span>'+esc(sub)+'</span></div></div>' + troca +
-    '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
+    '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="filtroFilial=\'\';go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
     '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>' +
     '<button class="btn sm" style="margin-top:.8rem;width:100%" onclick="sair()">Sair</button>';
 }
@@ -579,15 +579,20 @@ function porPrazo(a,b){ var x = a.prazo ? pBR(a.prazo) : new Date(2100,0,1), y =
 function recentes(a,b){ return pBR(b.data) - pBR(a.data); }
 
 // ================= FILIAL =================
+// grupos de situa\u00E7\u00E3o vistos pela filial
+var GRUPO_FILIAL = {
+  aberto:   {nome:'Chamados em aberto',             teste:function(c){ return c.status!=='encerrado'; }},
+  juridico: {nome:'Aguardando retorno do Jur\u00EDdico', teste:function(c){ return c.status==='aberto' || c.status==='analise'; }},
+  filial:   {nome:'Pendente de retorno da filial',  teste:function(c){ return c.status==='aguard_filial'; }},
+  encerrado:{nome:'Encerrados',                     teste:function(c){ return c.status==='encerrado'; }}
+};
+var filtroFilial = '';
 function fInicio(){
   var meus = meusChamados();
-  var pend = meus.filter(function(c){ return c.status==='aguard_filial'; });
-  var abertos = meus.filter(function(c){ return c.status!=='encerrado'; });
+  var pend = meus.filter(GRUPO_FILIAL.filial.teste);
+  var kpi = function(k, cor){ return '<div class="kpi click" onclick="filtroFilial=\''+k+'\';go(null,\'meus\')"><div class="v" style="color:'+cor+'">'+meus.filter(GRUPO_FILIAL[k].teste).length+'</div><div class="l">'+GRUPO_FILIAL[k].nome+'</div></div>'; };
   return '<div class="ph"><div><h2>Ol\u00E1! Filial '+FILIAL_USUARIO+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
-    '<div class="kpis"><div class="kpi click" onclick="go(null,\'meus\')"><div class="v" style="color:var(--red)">'+abertos.length+'</div><div class="l">Chamados em andamento</div></div>' +
-    '<div class="kpi"><div class="v" style="color:var(--amber)">'+pend.length+'</div><div class="l">Aguardando resposta da filial</div></div>' +
-    '<div class="kpi"><div class="v" style="color:var(--green)">'+meus.filter(function(c){return c.status==='encerrado';}).length+'</div><div class="l">Encerrados</div></div>' +
-    '<div class="kpi"><div class="v">'+meus.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div></div>' +
+    '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' +
     '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA</h3><div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es</div>' + tabela(pend, ['id','orgao','prazo','retorno','status']) + '</div>' +
     '<div class="card"><h3>Lembretes do POP</h3><div class="sub">Na hora da fiscaliza\u00E7\u00E3o</div><div class="box" style="margin-top:0">Confira o crach\u00E1 do fiscal (nome, matr\u00EDcula e \u00F3rg\u00E3o) \u00B7 acompanhe a vistoria at\u00E9 o fim \u00B7 assinar confirma o recebimento, n\u00E3o concorda com a infra\u00E7\u00E3o \u00B7 nunca retire um item apreendido sem alinhar com o Jur\u00EDdico.</div></div>';
 }
@@ -677,9 +682,14 @@ function enviarNovo(e){
   return false;
 }
 function fMeus(){
-  var l = meusChamados().sort(recentes);
-  var multi = l.some(function(c){ return c.filial !== FILIAL_USUARIO; });
-  return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO)+'</p></div></div><div class="card">'+tabela(l, multi ? ['id','filial','orgao','data','res','prazo','status'] : ['id','orgao','data','res','prazo','status'])+'</div>';
+  var todos = meusChamados().sort(recentes);
+  var l = filtroFilial ? todos.filter(GRUPO_FILIAL[filtroFilial].teste) : todos;
+  var multi = todos.some(function(c){ return c.filial !== FILIAL_USUARIO; });
+  var chip = function(k, nome){ var n = k ? todos.filter(GRUPO_FILIAL[k].teste).length : todos.length;
+    return '<button class="btn sm'+(filtroFilial===k?' pri':'')+'" onclick="filtroFilial=\''+k+'\';render()">'+nome+' ('+n+')</button>'; };
+  return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO)+'</p></div></div>' +
+    '<div class="card"><div class="btns" style="margin-bottom:.8rem">' + chip('', 'Todos') + chip('aberto', GRUPO_FILIAL.aberto.nome) + chip('juridico', GRUPO_FILIAL.juridico.nome) + chip('filial', GRUPO_FILIAL.filial.nome) + chip('encerrado', GRUPO_FILIAL.encerrado.nome) + '</div>' +
+    tabela(l, multi ? ['id','filial','orgao','data','res','prazo','retorno','status'] : ['id','orgao','data','res','prazo','retorno','status'])+'</div>';
 }
 
 // ================= JUR\u00CDDICO =================
