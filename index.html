@@ -149,6 +149,17 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 .env b{color:var(--txt)}
 .env.ult{background:var(--amber-l);color:var(--amber)}.env.ult b{color:var(--amber)}
 .env.bloq{background:var(--red-l);color:var(--txt2);border-left:3px solid var(--red);line-height:1.5}.env.bloq b{color:var(--red)}
+.pend-lista{display:flex;flex-direction:column;gap:.7rem}
+.pend-card{border:1px solid rgba(168,129,31,.35);border-left:5px solid var(--amber);background:var(--amber-l);border-radius:12px;padding:.85rem 1rem;cursor:pointer;transition:transform .12s, box-shadow .12s}
+.pend-card:hover{transform:translateY(-1px);box-shadow:var(--shm)}
+.pend-card.venc{border-color:rgba(189,35,53,.35);border-left-color:var(--red);background:var(--red-l)}
+.pend-card .pc-top{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;font-size:.86rem}
+.pend-card .pc-pedido{font-size:.8rem;color:var(--txt);margin:.45rem 0 .55rem;line-height:1.45}
+.pend-card .pc-pedido span{font-weight:700;color:var(--txt2)}
+.pend-card .pc-rod{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.72rem;color:var(--txt2)}
+.pop-lembrete{background:var(--amber-l);border:1px solid rgba(168,129,31,.3);border-left:5px solid var(--amber);border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:.8rem;color:var(--txt)}
+.pop-lembrete ul{margin:.4rem 0 0 1.1rem;display:grid;grid-template-columns:1fr 1fr;gap:.2rem 1.4rem;color:var(--txt2)}
+@media(max-width:640px){.pop-lembrete ul{grid-template-columns:1fr}}
 .ml-box{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--bdr2)}
 .box.ml{background:var(--amber-l);border-left:3px solid var(--amber)}
 .box.ml.confirmada{background:rgba(123,11,24,.07);border-left-color:#7B0B18}
@@ -593,12 +604,27 @@ function fInicio(){
   var kpi = function(k, cor){ return '<div class="kpi click" onclick="filtroFilial=\''+k+'\';go(null,\'meus\')"><div class="v" style="color:'+cor+'">'+meus.filter(GRUPO_FILIAL[k].teste).length+'</div><div class="l">'+GRUPO_FILIAL[k].nome+'</div></div>'; };
   return '<div class="ph"><div><h2>Ol\u00E1! Filial '+FILIAL_USUARIO+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
     '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' +
-    '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA</h3><div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es</div>' + tabela(pend, ['id','orgao','prazo','retorno','status']) + '</div>' +
-    '<div class="card"><h3>Lembretes do POP</h3><div class="sub">Na hora da fiscaliza\u00E7\u00E3o</div><div class="box" style="margin-top:0">Confira o crach\u00E1 do fiscal (nome, matr\u00EDcula e \u00F3rg\u00E3o) \u00B7 acompanhe a vistoria at\u00E9 o fim \u00B7 assinar confirma o recebimento, n\u00E3o concorda com a infra\u00E7\u00E3o \u00B7 nunca retire um item apreendido sem alinhar com o Jur\u00EDdico.</div></div>';
+    '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA' + (pend.length ? ' <span class="badge b-aguard_filial" style="vertical-align:middle">' + pend.length + ' pendente' + (pend.length>1?'s':'') + '</span>' : '') + '</h3>' +
+    '<div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es \u00B7 clique para abrir o chamado e responder</div>' +
+    (pend.length ? '<div class="pend-lista">' + pend.slice().sort(function(a,b){ var pa = pendente(a), pb = pendente(b); return (pa ? pBR(pa.prazo) : 0) - (pb ? pBR(pb.prazo) : 0); }).map(cartaoPendente).join('') + '</div>'
+                 : '<div class="empty">\u2705 Nenhuma pend\u00EAncia. O Jur\u00EDdico n\u00E3o est\u00E1 aguardando retorno da filial.</div>') + '</div>';
 }
+// cart\u00E3o destacado de um chamado em que o Jur\u00EDdico aguarda retorno da filial
+function cartaoPendente(c){
+  var p = pendente(c), cl = p ? clsDias(p.prazo) : 'ok';
+  var pedido = ultimo(c, 'juridico').replace(/^Envio \d+\/\d+ \u00B7 /, '').replace(/^Solicitado \u00E0 filial( \(retornar at\u00E9 [^)]*\))?: /, '');
+  return '<div class="pend-card ' + cl + '" onclick="go(null,null,\'' + c.id + '\')">' +
+    '<div class="pc-top"><b>' + c.id + ' \u00B7 ' + esc(c.orgao) + '</b>' + (p ? '<span class="prazo ' + cl + '">Responder at\u00E9 ' + p.prazo.slice(0,5) + ' \u00B7 ' + contagem(p.prazo) + '</span>' : '') + '</div>' +
+    '<div class="pc-pedido"><span>O Jur\u00EDdico pediu:</span> ' + esc(pedido || 'Retorno da filial') + '</div>' +
+    '<div class="pc-rod"><span>Prazo do \u00F3rg\u00E3o: ' + (c.prazo ? c.prazo.slice(0,5) + ' \u00B7 ' + contagem(c.prazo) : 'n\u00E3o informado') + '</span><button class="btn pri sm" onclick="event.stopPropagation();go(null,null,\'' + c.id + '\')">Responder agora \u2192</button></div></div>';
+}
+var LEMBRETES_POP = '<div class="pop-lembrete"><b>\uD83D\uDCCB Lembretes do POP \u2014 na hora da fiscaliza\u00E7\u00E3o</b><ul>' +
+  '<li>Confira o crach\u00E1 do fiscal: nome, matr\u00EDcula e \u00F3rg\u00E3o.</li><li>Acompanhe a vistoria do in\u00EDcio ao fim.</li>' +
+  '<li>Assinar confirma o recebimento; n\u00E3o significa concordar com a infra\u00E7\u00E3o.</li><li>Nunca retire um item apreendido sem alinhar com o Jur\u00EDdico.</li>' +
+  '<li>Registre o chamado no mesmo dia, com ou sem documento entregue pelo fiscal.</li></ul></div>';
 function fNovo(){
   var chk = function(name, list, type){ return '<div class="chk">'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, l = arr ? o[1] : o; return '<label><input type="'+(type||'checkbox')+'" name="'+name+'" value="'+esc(v)+'"> '+esc(l)+'</label>'; }).join('')+'</div>'; };
-  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado \u00E9 gerado ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' +
+  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado \u00E9 gerado ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' + LEMBRETES_POP +
   '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
   '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
     '<div class="f"><label>Filial</label><input value="'+FILIAL_USUARIO+'" disabled></div>' +
