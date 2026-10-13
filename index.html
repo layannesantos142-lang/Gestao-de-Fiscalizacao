@@ -711,7 +711,7 @@ function cPainel(){
   var total = multas.reduce(function(s,c){ return s + c.multa.valor; }, 0);
   var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
   var card = function(n, t, sub, body){ return '<div class="card foco-card" style="margin:0"><h3><span class="n">'+n+'</span>'+t+'</h3><div class="sub">'+sub+'</div>'+body+'</div>'; };
-  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div>' +
+  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><div class="btns"><button class="btn" id="btn_exp" onclick="exportarPainel()">\u2B07 Exportar painel (Excel)</button><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div></div>' +
     '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div>' +
     (function(){ var at = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
       return '<div class="kpi click" onclick="filtros.status=\'\';go(null,\'todos\')"><div class="v" style="color:var(--red)">'+at.length+'</div><div class="l">Retornos internos atrasados'+(at.length ? ' ('+at.map(function(c){ return c.id; }).join(', ')+')' : '')+'</div></div>'; })() +
@@ -790,6 +790,47 @@ async function carregarSistema(){
 }
 function carregarSheetJS(){
   return window.XLSX ? Promise.resolve() : new Promise(function(ok, falha){ var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = falha; document.head.appendChild(s); });
+}
+// ----- Exportar o painel de monitoramento em Excel (resumo, foco do processo e lista de chamados) -----
+async function exportarPainel(){
+  var btn = $('btn_exp'); if (btn) { btn.disabled = true; btn.textContent = 'Gerando Excel\u2026'; }
+  try {
+    await carregarSheetJS();
+    var com = function(r){ return chamados.filter(function(c){ return c.resultados.indexOf(r)>=0; }); };
+    var multas = chamados.filter(function(c){ return c.multa; });
+    var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
+    var atrasados = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
+    var tab = function(pares, col){ return pares.length ? pares.map(function(p){ var o = {}; o[col] = p[0]; o['Quantidade'] = p[1]; return o; }) : [{}]; };
+    var wb = XLSX.utils.book_new();
+    var add = function(nome, linhas){ XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(linhas.length ? linhas : [{'(sem registros)':''}]), nome.slice(0,31)); };
+    add('Resumo', [
+      {'Indicador':'Fiscaliza\u00E7\u00F5es registradas', 'Valor':chamados.length},
+      {'Indicador':'Em andamento', 'Valor':abertos.length},
+      {'Indicador':'Retornos internos atrasados', 'Valor':atrasados.length},
+      {'Indicador':'Prazo do \u00F3rg\u00E3o em at\u00E9 3 dias', 'Valor':abertos.filter(function(c){ return c.prazo && dias(c.prazo)<=3; }).length},
+      {'Indicador':'Multas aplicadas (quantidade)', 'Valor':multas.length},
+      {'Indicador':'Multas aplicadas (R$)', 'Valor':multas.reduce(function(s,c){ return s + c.multa.valor; }, 0)},
+      {'Indicador':'Exportado em', 'Valor':fmtDH(new Date())},
+      {'Indicador':'Exportado por', 'Valor':(EU && EU.nome) || ''}
+    ]);
+    add('1 Apreens\u00E3o por \u00F3rg\u00E3o', tab(contar(com('apreensao'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
+    add('2 Notifica\u00E7\u00E3o por \u00F3rg\u00E3o', tab(contar(com('notificacao'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
+    add('3 Visita sem notifica\u00E7\u00E3o', tab(contar(com('sem_doc'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
+    add('4 Frequ\u00EAncia por \u00F3rg\u00E3o', tab(contar(chamados, function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
+    add('5 N\u00E3o conformidades', tab(contar(chamados, function(c){ return c.ncs; }), 'N\u00E3o conformidade'));
+    add('6 Multas', multas.map(function(c){ return {'Chamado':c.id, 'Filial':c.filial, '\u00D3rg\u00E3o':c.orgao, 'Valor (R$)':c.multa.valor, 'Motivo':c.multa.motivo, 'Data':c.data}; }));
+    add('Visitas por filial', tab(contar(chamados, function(c){ return c.filial; }), 'Filial'));
+    add('Visitas por local', tab(contar(chamados, function(c){ return c.unidade; }), 'Local'));
+    add('Multas a lojistas', chamados.filter(function(c){ return c.multaLojista; }).map(function(c){ var m = c.multaLojista; return {'Chamado':c.id, 'Filial':c.filial, 'Lojista':c.lojista, 'Motivo':m.motivo, 'Proposto (R$)':m.valor, 'Confirmado (R$)':m.valorFinal != null ? m.valorFinal : '', 'Situa\u00E7\u00E3o':ML_ST[m.status]}; }));
+    add('Chamados', chamados.slice().sort(recentes).map(function(c){ var p = pendente(c); return {
+      'Chamado':c.id, 'Filial':c.filial, 'Local':c.unidade, 'Lojista / Obra':c.lojista || c.obra || '', '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
+      'Data':c.data, 'Fiscal':c.fiscal, 'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc,
+      'Prazo do \u00F3rg\u00E3o':c.prazo, 'N\u00E3o conformidades':c.ncs.join(', '), 'Status':STATUS[c.status], 'Desfecho':c.desfecho,
+      'Multa (R$)':c.multa ? c.multa.valor : '', 'Retorno pendente':(p && c.status!=='encerrado') ? NOME_SETOR[p.para] + ' at\u00E9 ' + p.prazo : '' }; }));
+    XLSX.writeFile(wb, 'Painel_Fiscalizacao_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.xlsx');
+    toast('Painel exportado em Excel.');
+  } catch (e) { toast('N\u00E3o foi poss\u00EDvel exportar: ' + (e && e.message ? e.message : e)); }
+  if (btn) { btn.disabled = false; btn.textContent = '\u2B07 Exportar painel (Excel)'; }
 }
 async function baixarBackup(){
   var btn = $('btn_bkp'); btn.disabled = true; btn.textContent = 'Gerando backup\u2026';
