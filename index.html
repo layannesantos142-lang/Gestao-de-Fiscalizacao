@@ -486,24 +486,26 @@ async function telaLogin(msg){
   var set = (s.data||[]).map(function(x){ return '<option>'+esc(x.valor)+'</option>'; }).join('');
   $('login').innerHTML = DECO_LOGIN + '<div class="lg-wrap">' +
     (logo ? '<div class="lg-logo">' + logo.outerHTML + '</div>' : '') +
-    '<div class="login-box"><h2>Gest\u00E3o de Fiscaliza\u00E7\u00E3o</h2><p>' + (_loginComEmail ? 'Entre com o e-mail cadastrado:' : 'Entre com a conta da sua filial e setor:') + '</p>' +
+    '<div class="login-box"><h2>Gest\u00E3o de Fiscaliza\u00E7\u00E3o</h2><p>Entre com sua filial, setor, e-mail e senha:</p>' +
     '<div class="lg-selo">F+</div>' +
     (msg ? '<div class="env bloq" style="margin-bottom:.4rem">'+msg+'</div>' : '') +
     '<form onsubmit="return entrar(event)">' +
-    (_loginComEmail
-      ? '<div class="f"><label>E-mail</label><input id="l_email" type="email" autocomplete="username" required></div>'
-      : '<div class="f"><label>Filial</label><select id="l_filial" required><option value="">Selecione</option>'+fil+'</select></div>' +
-        '<div class="f"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>') +
+    '<div class="f"><label>Filial</label><select id="l_filial" required><option value="">Selecione</option>'+fil+'</select></div>' +
+    '<div class="f"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>' +
+    '<div class="f"><label>E-mail</label><input id="l_email" type="email" autocomplete="username" placeholder="nome@ferreiracosta.com.br" required></div>' +
     '<div class="f"><label>Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>' +
     '<button class="btn pri" style="width:100%;margin-top:1.4rem" type="submit">Entrar</button></form>' +
-    '<div class="lg-rodape"><span>Esqueceu a senha? Fale com o Compliance: <a href="mailto:compliance@ferreiracosta.com.br">compliance@ferreiracosta.com.br</a> \u00B7 ramal 8619</span>' +
-    '<a href="#" onclick="_loginComEmail=!_loginComEmail;telaLogin();return false">' + (_loginComEmail ? 'Entrar por filial e setor' : 'Entrar com e-mail') + '</a></div></div></div>';
+    '<div class="lg-rodape"><span>Esqueceu a senha? Fale com o Compliance: <a href="mailto:compliance@ferreiracosta.com.br">compliance@ferreiracosta.com.br</a> \u00B7 ramal 8619</span></div></div></div>';
+  // lembra a \u00FAltima filial e setor usados neste computador
+  try { var u = JSON.parse(localStorage.getItem('fisc_ultimo') || '{}'); if (u.f) $('l_filial').value = u.f; if (u.s) $('l_setor').value = u.s; if (u.e) $('l_email').value = u.e; } catch (e) {}
 }
+var _escolhaLogin = null;
 async function entrar(e){
   e.preventDefault();
-  var email = _loginComEmail ? val('l_email') : contaEmail(val('l_filial'), val('l_setor'));
-  var r = await sb.auth.signInWithPassword({email:email, password:$('l_senha').value});
-  if (r.error) { telaLogin(_loginComEmail ? 'E-mail ou senha incorretos.' : 'Filial, setor ou senha incorretos (ou a conta ainda n\u00E3o foi criada pelo Compliance).'); return false; }
+  _escolhaLogin = {filial: val('l_filial'), setor: val('l_setor')};
+  var r = await sb.auth.signInWithPassword({email: val('l_email').toLowerCase(), password: $('l_senha').value});
+  if (r.error) { _escolhaLogin = null; telaLogin('E-mail ou senha incorretos (ou a conta ainda n\u00E3o foi criada pelo Compliance).'); return false; }
+  try { localStorage.setItem('fisc_ultimo', JSON.stringify({f:_escolhaLogin.filial, s:_escolhaLogin.setor, e:val('l_email').toLowerCase()})); } catch (x) {}
   iniciar(); return false;
 }
 async function sair(){ await sb.auth.signOut(); location.reload(); }
@@ -518,6 +520,12 @@ async function iniciar(){
   if (EU.ativo === false) { await sb.auth.signOut(); telaLogin('Esta conta est\u00E1 desativada. Fale com o Compliance.'); return; }
   if (EU.papel === 'pendente') { await sb.auth.signOut(); telaLogin('Esta conta est\u00E1 aguardando o Compliance definir o perfil (Filial, Jur\u00EDdico ou Compliance).'); return; }
   if (EU.papel === 'filial' && !EU.filial) { await sb.auth.signOut(); telaLogin('Esta conta de Filial ainda n\u00E3o tem filial definida. Fale com o Compliance.'); return; }
+  // a filial e o setor escolhidos na entrada precisam ser os da conta
+  if (_escolhaLogin && (_escolhaLogin.filial !== (EU.filial||'') || _escolhaLogin.setor !== (EU.setor||''))) {
+    _escolhaLogin = null; await sb.auth.signOut();
+    telaLogin('Este e-mail n\u00E3o est\u00E1 cadastrado na filial e no setor escolhidos. Confira a filial e o setor ou fale com o Compliance.'); return;
+  }
+  _escolhaLogin = null;
   document.body.classList.remove('sem-login');
   perfil = EU.papel; FILIAL_USUARIO = EU.filial || '';
   $('perfis').style.display = EU.papel === 'compliance' ? '' : 'none';
@@ -815,7 +823,7 @@ var _editUser = null;
 function cUsuarios(){
   var linhas = PERFIS.map(function(p){
     var ed = _editUser === p.id;
-    return '<tr><td><b>'+esc((p.filial||'\u2014') + ' \u00B7 ' + (p.setor||'\u2014'))+'</b>'+(p.ativo===false ? ' <span class="badge b-respondido">Desativada</span>' : '')+'<br><span style="font-size:.66rem">'+esc(p.email||'')+'</span></td>' +
+    return '<tr><td><b>'+esc(p.nome||'\u2014')+'</b>'+(p.ativo===false ? ' <span class="badge b-respondido">Desativada</span>' : '')+'<br><span style="font-size:.68rem">'+esc((p.filial||'\u2014') + ' \u00B7 ' + (p.setor||'\u2014'))+'</span><br><span style="font-size:.66rem">'+esc(p.email||'')+'</span></td>' +
       '<td>'+(ed ? '<select id="up_'+p.id+'">'+Object.keys(NOME_PAPEL).map(function(x){ return '<option value="'+x+'"'+(p.papel===x?' selected':'')+'>'+NOME_PAPEL[x]+'</option>'; }).join('')+'</select>' : esc(NOME_PAPEL[p.papel]||p.papel))+'</td>' +
       '<td style="max-width:320px">'+(ed ? '<div style="font-size:.66rem;margin-bottom:.3rem">Marque as filiais que esta conta pode visualizar (nenhuma = padr\u00E3o do perfil)</div>' + visCheckboxes('uv_'+p.id, p.filiais_visiveis||[]) : esc(visTexto(p)))+'</td>' +
       '<td style="white-space:nowrap">' + (ed
@@ -824,16 +832,17 @@ function cUsuarios(){
           '<button class="btn sm" onclick="senhaUsuario(\''+p.id+'\')">Nova senha</button> ' +
           (p.id !== (EU&&EU.id) ? '<button class="btn sm" onclick="statusUsuario(\''+p.id+'\','+(p.ativo===false)+')">'+(p.ativo===false?'Reativar':'Desativar')+'</button>' : '')) + '</td></tr>';
   }).join('');
-  return '<div class="ph"><div><h2>Contas de acesso</h2><p>Cada conta \u00E9 de uma <b>filial + setor</b>. O login \u00E9 feito escolhendo a filial e o setor e digitando a senha.</p></div></div>' +
+  return '<div class="ph"><div><h2>Contas de acesso</h2><p>Cada conta \u00E9 de uma pessoa (e-mail) vinculada a uma <b>filial + setor</b>. Para entrar, a pessoa informa filial, setor, e-mail e senha.</p></div></div>' +
     '<div class="card"><h3>Criar conta</h3><div class="sub">Defina o perfil (o que a conta pode fazer) e as filiais que ela pode visualizar</div>' +
     '<div class="g3"><div class="f"><label>Filial <span class="req">*</span></label><select id="nu_filial"><option value="">Selecione</option>'+opts(FILIAIS_TODAS)+'</select></div>' +
     '<div class="f"><label>Setor <span class="req">*</span></label><select id="nu_setor"><option value="">Selecione</option>'+opts(SETORES, 'Administrativo')+'</select></div>' +
     '<div class="f"><label>Perfil <span class="req">*</span></label><select id="nu_papel"><option value="filial">'+NOME_PAPEL.filial+'</option><option value="juridico">'+NOME_PAPEL.juridico+'</option><option value="compliance">'+NOME_PAPEL.compliance+'</option></select></div></div>' +
     '<div class="f" style="margin-top:.7rem"><label>Pode visualizar</label><div class="hint" style="margin:0 0 .35rem">Nenhuma marcada = padr\u00E3o do perfil (Filial v\u00EA s\u00F3 a pr\u00F3pria filial; Jur\u00EDdico e Compliance veem todas). Marque para ampliar ou restringir.</div>'+visCheckboxes('nu_vis', [])+'</div>' +
-    '<div class="g2" style="margin-top:.7rem"><div class="f"><label>Senha provis\u00F3ria <span class="req">*</span></label><input id="nu_senha" type="text" placeholder="M\u00EDnimo 8 caracteres"></div>' +
-    '<div class="f"><label>Nome de exibi\u00E7\u00E3o (opcional)</label><input id="nu_nome" placeholder="Ex.: IMB \u00B7 Administrativo"></div></div>' +
+    '<div class="g3" style="margin-top:.7rem"><div class="f"><label>E-mail da pessoa <span class="req">*</span></label><input id="nu_email" type="email" placeholder="nome@ferreiracosta.com.br"></div>' +
+    '<div class="f"><label>Nome da pessoa <span class="req">*</span></label><input id="nu_nome" placeholder="Nome e sobrenome"></div>' +
+    '<div class="f"><label>Senha provis\u00F3ria <span class="req">*</span></label><input id="nu_senha" type="text" placeholder="M\u00EDnimo 8 caracteres"></div></div>' +
     '<div class="btns" style="margin-top:.8rem"><button class="btn green" id="nu_btn" onclick="criarConta()">Criar conta</button></div></div>' +
-    '<div class="card"><h3>Contas cadastradas</h3><div class="sub">'+PERFIS.length+' conta(s)</div><div class="tbl-wrap"><table class="t"><thead><tr><th>Filial \u00B7 Setor</th><th>Perfil</th><th>Visualiza</th><th></th></tr></thead><tbody>'+(linhas || '<tr><td colspan="4" class="empty">Nenhuma conta.</td></tr>')+'</tbody></table></div></div>';
+    '<div class="card"><h3>Contas cadastradas</h3><div class="sub">'+PERFIS.length+' conta(s)</div><div class="tbl-wrap"><table class="t"><thead><tr><th>Pessoa \u00B7 Filial \u00B7 Setor</th><th>Perfil</th><th>Visualiza</th><th></th></tr></thead><tbody>'+(linhas || '<tr><td colspan="4" class="empty">Nenhuma conta.</td></tr>')+'</tbody></table></div></div>';
 }
 async function chamarAdmin(corpo){
   var s = await sb.auth.getSession();
@@ -844,15 +853,17 @@ async function chamarAdmin(corpo){
   return dados;
 }
 async function criarConta(){
-  var filial = val('nu_filial'), setor = val('nu_setor'), papel = val('nu_papel'), senha = val('nu_senha');
+  var filial = val('nu_filial'), setor = val('nu_setor'), papel = val('nu_papel'), senha = val('nu_senha'), email = val('nu_email').toLowerCase(), nome = val('nu_nome');
   if (!filial || !setor) return toast('Escolha a filial e o setor.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Informe um e-mail v\u00E1lido.');
+  if (!nome) return toast('Informe o nome da pessoa.');
   if (senha.length < 8) return toast('A senha provis\u00F3ria precisa ter pelo menos 8 caracteres.');
   if (papel === 'filial' && FILIAIS.indexOf(filial) < 0) return toast('Conta de Filial precisa ser de uma loja (n\u00E3o Corporativo).');
   var btn = $('nu_btn'); btn.disabled = true; btn.textContent = 'Criando...';
-  var r = await chamarAdmin({acao:'criar', filial:filial, setor:setor, papel:papel, senha:senha, nome:val('nu_nome') || '', filiais_visiveis:lerVis('nu_vis')});
+  var r = await chamarAdmin({acao:'criar', email:email, filial:filial, setor:setor, papel:papel, senha:senha, nome:nome, filiais_visiveis:lerVis('nu_vis')});
   btn.disabled = false; btn.textContent = 'Criar conta';
   if (!r) return;
-  toast('Conta ' + filial + ' \u00B7 ' + setor + ' criada. Login: filial ' + filial + ', setor ' + setor + ' e a senha provis\u00F3ria.');
+  toast('Conta criada para ' + nome + '. Para entrar: filial ' + filial + ', setor ' + setor + ', o e-mail e a senha provis\u00F3ria.');
   await carregarTudo(); render();
 }
 async function salvarUsuario(id){
