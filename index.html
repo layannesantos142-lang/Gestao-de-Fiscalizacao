@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Fiscaliza+ &#8212; Esbo&#231;o do App | Ferreira Costa</title>
+<title>Fiscaliza+ &#8212; Gest&#227;o de Fiscaliza&#231;&#227;o | Ferreira Costa</title>
 <style>
 :root{
   --bg:#F7F6F4;--card:#FFF;--warm:#F2EFEB;--red:#bd2335;--red-l:rgba(189,35,53,.08);
@@ -195,16 +195,23 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 
 .toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);background:#242428;color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.78rem;font-weight:600;opacity:0;transition:.25s;z-index:200;box-shadow:var(--shm);max-width:calc(100vw - 2rem)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#login{display:none}
+body.sem-login #login{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1rem}
+body.sem-login .top .perfis,body.sem-login .top .btn-dark,body.sem-login .app{display:none}
+body.sem-login .top{display:none}
+.login-box{background:var(--card);border:1px solid var(--bdr);border-top:3px solid var(--red);border-radius:0 0 14px 14px;box-shadow:var(--shm);padding:1.8rem 1.6rem;width:100%;max-width:380px}
+.login-box h2{font-size:1.2rem;text-align:center}.login-box>p{font-size:.78rem;color:var(--txt2);text-align:center;margin-bottom:1.1rem}
+.login-box input{width:100%}
 
 @media(max-width:1000px){.app{grid-template-columns:1fr}.side{position:static}.nav{display:flex;gap:.3rem;overflow-x:auto}.nav button{width:auto;white-space:nowrap}.side .papel{display:none}.det{grid-template-columns:1fr}.foco-grid{grid-template-columns:1fr 1fr}.kpis,.kpis.k5{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.top-in,.app,.aviso{padding-left:1rem;padding-right:1rem}.perfis{margin-left:0;width:100%}.perfis button{flex:1;justify-content:center;padding:.5rem .4rem}.g2,.g3,.info,.cad,.foco-grid{grid-template-columns:1fr}.top .ttl{display:none}}
 </style>
 </head>
-<body>
+<body class="sem-login">
 
 <div class="top"><div class="top-in">
   <img src="data:image/png;base64,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" style="height:46px;width:auto;display:block;" alt="Logo">
-  <div class="ttl"><b>Fiscaliza+</b><span>Esbo&#231;o do app de fiscaliza&#231;&#227;o</span></div>
+  <div class="ttl"><b>Fiscaliza+</b><span>Gest&#227;o de Fiscaliza&#231;&#227;o</span></div>
   <div class="perfis" id="perfis">
     <button data-p="filial"><i style="background:var(--red)"></i>Filial</button>
     <button data-p="juridico"><i style="background:var(--blue)"></i>Jur&#237;dico</button>
@@ -212,92 +219,56 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
   </div>
   <button class="btn-dark" onclick="document.body.classList.toggle('dark')">Modo escuro</button>
 </div></div>
-<div class="aviso"><div><b>Esbo&#231;o naveg&#225;vel com dados fict&#237;cios.</b> Troque o perfil no topo para ver a tela de quem abre o chamado (Filial), de quem atende (Jur&#237;dico) e de quem monitora (Compliance). Nada &#233; salvo: ao recarregar, os dados voltam ao exemplo.</div></div>
 
 <div class="app" id="app">
   <aside class="side" id="side"></aside>
   <main class="main" id="main"></main>
 </div>
 <div class="toast" id="toast"></div>
+<div id="login"><div class="login-box" style="text-align:center;font-size:.85rem;color:var(--txt2)">Carregando&#8230;</div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ================= Dados fict\u00EDcios =================
-var HOJE = new Date(2026, 9, 6);
-var FILIAL_USUARIO = 'IMB';
-var FILIAIS = ['IMB','TAM','GUS','CAU','PAL','BAR','JPA','PNG','REC'];
-var ORGAOS = ['Procon','Inmetro / IPEM','Vigil\u00E2ncia Sanit\u00E1ria','Corpo de Bombeiros','Minist\u00E9rio do Trabalho','Minist\u00E9rio P\u00FAblico','\u00D3rg\u00E3o de tributa\u00E7\u00E3o','\u00D3rg\u00E3o ambiental','Crea / CAU','Prefeitura'];
-var MOTIVOS = ['Licen\u00E7a','Den\u00FAncia','Iniciativa do \u00F3rg\u00E3o','Retorno ou reinspe\u00E7\u00E3o','Requisi\u00E7\u00E3o de outra autoridade','Apura\u00E7\u00E3o de acidente ou incidente'];
+// Configura\u00E7\u00E3o do Supabase \u2014 projeto "Gestao de Fiscalizacao"
+// A chave abaixo \u00E9 a PUBLIC\u00C1VEL (feita para ficar no navegador). Os dados s\u00E3o protegidos
+// pelo login e pelas regras de acesso (RLS) do banco. NUNCA colocar aqui a chave secreta (service_role / sb_secret).
+window.FISC_CONFIG = {
+  url: 'https://dtbkfbwlfpwcgqykxvcz.supabase.co',
+  key: 'sb_publishable_jKbcVjcW4rh359NH-oqX3w_L-FAbxRE'
+};
+
+</script>
+<script>
+// ================= Configura\u00E7\u00E3o e cadastros (v\u00EAm do banco) =================
+var HOJE = (function(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
+var FILIAL_USUARIO = '';
+var FILIAIS = [], FILIAIS_TODAS = [], SETORES = [], ORGAOS = [], MOTIVOS = [], NCS = [];
+// chamados que a conta de filial enxerga (o banco j\u00E1 filtra pelo que o Compliance liberou); Compliance "vendo como" filtra pela filial escolhida
+function meusChamados(){ return chamados.filter(function(c){ return (EU && EU.papel === 'filial') ? true : c.filial === FILIAL_USUARIO; }); }
 var FORMAS = ['Presencial','Documental','Digital'];
 var UNIDADES = ['Loja','Loja do Mall','CD','Obra'];
 var LIMITE_ENVIOS = 2; // envios Filial <-> Jur\u00EDdico por lado; depois disso, s\u00F3 com libera\u00E7\u00E3o do Compliance
-var NCS = ['Pre\u00E7o ou etiqueta divergente','Produto sem selo / certifica\u00E7\u00E3o','Licen\u00E7a ou alvar\u00E1','Preven\u00E7\u00E3o de inc\u00EAndio (AVCB)','Condi\u00E7\u00F5es sanit\u00E1rias','Documenta\u00E7\u00E3o trabalhista','Atendimento ou troca ao consumidor','Quest\u00E3o ambiental'];
 var RESULTADOS = {notificacao:'Notifica\u00E7\u00E3o', apreensao:'Apreens\u00E3o', multa:'Multa (auto de infra\u00E7\u00E3o)', sem_doc:'Visita sem notifica\u00E7\u00E3o'};
 var STATUS = {aberto:'Aberto \u00B7 aguardando Jur\u00EDdico', analise:'Em an\u00E1lise no Jur\u00EDdico', aguard_filial:'Aguardando filial', respondido:'Respondido ao \u00F3rg\u00E3o', encerrado:'Encerrado'};
 var DESFECHOS = ['Encerrado sem san\u00E7\u00E3o','Multa aplicada','Nova irregularidade (novo chamado)','Audi\u00EAncia / a\u00E7\u00E3o judicial'];
 
 function ev(data, papel, autor, texto){ return {data:data, papel:papel, autor:autor, texto:texto}; }
+function rt(de, para, enviado, prazo, respondido){ return {de:de, para:para, enviado:enviado, prazo:prazo, respondido:respondido||null}; }
 function mk(o){
   o.unidade = o.unidade || 'Loja'; o.lojista = o.lojista || ''; o.obra = o.obra || '';
   o.envios = o.envios || {juridico:0, filial:0}; o.limite = o.limite || LIMITE_ENVIOS; o.libPend = o.libPend || null;
-  o.eventos = o.eventos || [];
-  o.eventos.unshift(ev(o.data, 'filial', 'ADM \u00B7 ' + o.filial, 'Chamado aberto pela filial.'));
+  o.eventos = o.eventos || []; o.retornos = o.retornos || [];
+  o.eventos.unshift(ev(o.data, 'filial', autorNome('filial', o.filial), 'Chamado aberto pela filial.'));
   return o;
 }
-var chamados = [
-  mk({id:'FIS-0001', filial:'IMB', orgao:'Procon', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'18/09/2026', fiscal:'R. Almeida \u00B7 mat. 4471', recebeu:'Frente de loja (Preven\u00E7\u00E3o)', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NT-2026-118', prazo:'28/09/2026', ncs:['Pre\u00E7o ou etiqueta divergente'], noAto:'Etiquetas de 6 itens corrigidas na hora.', apreensao:'', relato:'Fiscal conferiu pre\u00E7os da se\u00E7\u00E3o de ferramentas.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null,
-    eventos:[ev('19/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('26/09/2026','juridico','Jur\u00EDdico','Resposta protocolada no \u00F3rg\u00E3o com fotos das etiquetas corrigidas.'), ev('30/09/2026','juridico','Jur\u00EDdico','Desfecho: Encerrado sem san\u00E7\u00E3o. Filial informada.')]}),
-  mk({id:'FIS-0002', filial:'CAU', orgao:'Inmetro / IPEM', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'22/09/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['apreensao','notificacao'], doc:'AA-5531', prazo:'02/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'12 disjuntores sem selo Inmetro (c\u00F3d. 88412).', relato:'Fiscaliza\u00E7\u00E3o de produtos el\u00E9tricos de certifica\u00E7\u00E3o compuls\u00F3ria.', status:'respondido', desfecho:'', multa:null,
-    eventos:[ev('23/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Comercial e Auditoria acionados sobre os itens apreendidos.'), ev('24/09/2026','compliance','Compliance','Pontua\u00E7\u00E3o: verificar se o mesmo fornecedor abastece outras filiais com o mesmo lote.'), ev('01/10/2026','juridico','Jur\u00EDdico','Defesa protocolada no \u00F3rg\u00E3o.')]}),
-  mk({id:'FIS-0003', filial:'JPA', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Licen\u00E7a', forma:'Presencial', data:'24/09/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Vistoria para renova\u00E7\u00E3o da licen\u00E7a sanit\u00E1ria. Sem irregularidades.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null,
-    eventos:[ev('25/09/2026','juridico','Jur\u00EDdico','Ci\u00EAncia registrada. Desfecho: Encerrado sem san\u00E7\u00E3o.')]}),
-  mk({id:'FIS-0004', filial:'GUS', orgao:'Procon', motivo:'Den\u00FAncia', forma:'Documental', data:'25/09/2026', fiscal:'Of\u00EDcio n\u00BA 233/2026', recebeu:'Recep\u00E7\u00E3o (correspond\u00EAncia)', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'OF-233/2026', prazo:'08/10/2026', ncs:['Atendimento ou troca ao consumidor'], noAto:'', apreensao:'', relato:'Den\u00FAncia de cliente sobre troca de produto com defeito.', status:'analise', desfecho:'', multa:null,
-    envios:{juridico:2, filial:2}, libPend:{por:'juridico', data:'05/10/2026', motivo:'Falta o comprovante de cr\u00E9dito ao cliente para fechar a defesa. Preciso pedir de novo \u00E0 filial.'},
-    eventos:[ev('26/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('29/09/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: hist\u00F3rico do SAC, comprovante de troca ou cr\u00E9dito e NF da compra.'),
-      ev('30/09/2026','filial','ADM \u00B7 GUS','Envio 1/2 \u00B7 Resposta ao Jur\u00EDdico: NF e hist\u00F3rico do SAC anexados.'), ev('01/10/2026','juridico','Jur\u00EDdico','Envio 2/2 \u00B7 Solicitado \u00E0 filial: comprovante de troca ou cr\u00E9dito ao cliente.'),
-      ev('03/10/2026','filial','ADM \u00B7 GUS','Envio 2/2 \u00B7 Resposta ao Jur\u00EDdico: comprovante de troca enviado (falta o cr\u00E9dito).'), ev('05/10/2026','juridico','Jur\u00EDdico','Limite de 2 envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: falta o comprovante de cr\u00E9dito ao cliente.')]}),
-  mk({id:'FIS-0005', filial:'IMB', orgao:'Corpo de Bombeiros', motivo:'Licen\u00E7a', forma:'Presencial', data:'26/09/2026', fiscal:'Ten. S. Costa', recebeu:'Frente de loja', acompanhou:'ADM + Manuten\u00E7\u00E3o', resultados:['notificacao'], doc:'NB-0098', prazo:'10/10/2026', ncs:['Preven\u00E7\u00E3o de inc\u00EAndio (AVCB)'], noAto:'', apreensao:'', relato:'Vistoria do AVCB. Apontada sinaliza\u00E7\u00E3o de rota de fuga obstru\u00EDda no dep\u00F3sito.', status:'aguard_filial', desfecho:'', multa:null, envios:{juridico:1, filial:0},
-    eventos:[ev('27/09/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Manuten\u00E7\u00E3o acionada para corre\u00E7\u00E3o.'), ev('03/10/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: fotos da rota de fuga desobstru\u00EDda e da sinaliza\u00E7\u00E3o corrigida no dep\u00F3sito.')]}),
-  mk({id:'FIS-0006', filial:'TAM', orgao:'Procon', motivo:'Retorno ou reinspe\u00E7\u00E3o', forma:'Presencial', data:'29/09/2026', fiscal:'R. Almeida \u00B7 mat. 4471', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['multa'], doc:'AI-2026-077', prazo:'', ncs:['Pre\u00E7o ou etiqueta divergente'], noAto:'', apreensao:'', relato:'Retorno do fiscal: diverg\u00EAncia de pre\u00E7o persistiu.', status:'encerrado', desfecho:'Multa aplicada', multa:{valor:8500, motivo:'Reincid\u00EAncia em diverg\u00EAncia de pre\u00E7o'},
-    eventos:[ev('30/09/2026','juridico','Jur\u00EDdico','Desfecho: Multa aplicada (R$ 8.500). Avaliando recurso.'), ev('01/10/2026','compliance','Compliance','Pontua\u00E7\u00E3o: reincid\u00EAncia. Incluir a filial no plano de confer\u00EAncia semanal de pre\u00E7os.')]}),
-  mk({id:'FIS-0007', filial:'PAL', unidade:'CD', orgao:'Minist\u00E9rio do Trabalho', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'30/09/2026', fiscal:'AFT J. Nunes', recebeu:'Frente de loja', acompanhou:'ADM + RH/DP', resultados:['notificacao'], doc:'NDT-4410', prazo:'14/10/2026', ncs:['Documenta\u00E7\u00E3o trabalhista'], noAto:'', apreensao:'', relato:'Solicitados registros de jornada e escalas de domingo.', status:'aberto', desfecho:'', multa:null}),
-  mk({id:'FIS-0008', filial:'BAR', orgao:'Inmetro / IPEM', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'01/10/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['apreensao'], doc:'AA-5602', prazo:'11/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'30 tomadas sem selo (c\u00F3d. 70211).', relato:'Mesma opera\u00E7\u00E3o do Inmetro vista em CAU.', status:'analise', desfecho:'', multa:null, envios:{juridico:2, filial:2},
-    eventos:[ev('02/10/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada.'), ev('02/10/2026','juridico','Jur\u00EDdico','Envio 1/2 \u00B7 Solicitado \u00E0 filial: NF de compra das tomadas e dados do fornecedor.'),
-      ev('03/10/2026','filial','ADM \u00B7 BAR','Envio 1/2 \u00B7 Resposta ao Jur\u00EDdico: NF anexada.'), ev('04/10/2026','juridico','Jur\u00EDdico','Envio 2/2 \u00B7 Solicitado \u00E0 filial: certificado do fornecedor.'),
-      ev('05/10/2026','filial','ADM \u00B7 BAR','Envio 2/2 \u00B7 Resposta ao Jur\u00EDdico: fornecedor n\u00E3o enviou o certificado.')]}),
-  mk({id:'FIS-0009', filial:'PNG', orgao:'\u00D3rg\u00E3o ambiental', motivo:'Licen\u00E7a', forma:'Presencial', data:'02/10/2026', fiscal:'Eng. P. Lima', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Vistoria da licen\u00E7a de opera\u00E7\u00E3o. Sem documento emitido.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null}),
-  mk({id:'FIS-0010', filial:'CAU', unidade:'Loja do Mall', lojista:'\u00D3tica Vis\u00E3o (locat\u00E1rio)', orgao:'Procon', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'03/10/2026', fiscal:'A. Rocha', recebeu:'Frente de loja', acompanhou:'ADM \u2014 auxiliar', resultados:['sem_doc'], doc:'', prazo:'', ncs:[], noAto:'', apreensao:'', relato:'Fiscal procurou a filial e foi orientado at\u00E9 a loja do lojista. Nenhuma irregularidade. Registro para ci\u00EAncia.', status:'encerrado', desfecho:'Encerrado sem san\u00E7\u00E3o', multa:null}),
-  mk({id:'FIS-0011', filial:'JPA', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Den\u00FAncia', forma:'Presencial', data:'05/10/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NVS-0712', prazo:'07/10/2026', ncs:['Condi\u00E7\u00F5es sanit\u00E1rias'], noAto:'Limpeza do refeit\u00F3rio iniciada no ato.', apreensao:'', relato:'Den\u00FAncia sobre condi\u00E7\u00F5es do refeit\u00F3rio dos colaboradores.', status:'aberto', desfecho:'', multa:null}),
-  mk({id:'FIS-0012', filial:'IMB', orgao:'Inmetro / IPEM', motivo:'Retorno ou reinspe\u00E7\u00E3o', forma:'Presencial', data:'06/10/2026', fiscal:'M. Torres \u00B7 mat. 1290', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['apreensao','multa'], doc:'AI-2026-091', prazo:'16/10/2026', ncs:['Produto sem selo / certifica\u00E7\u00E3o'], noAto:'', apreensao:'8 chuveiros sem certifica\u00E7\u00E3o (c\u00F3d. 66120).', relato:'Retorno: produtos sem certifica\u00E7\u00E3o continuavam expostos.', status:'respondido', desfecho:'', multa:{valor:4200, motivo:'Produto sem certifica\u00E7\u00E3o ap\u00F3s prazo'},
-    eventos:[ev('06/10/2026','juridico','Jur\u00EDdico','Recebido. Defesa em prepara\u00E7\u00E3o.')]}),
-  mk({id:'FIS-0013', filial:'TAM', unidade:'Obra', obra:'Reforma da fachada \u00B7 Construtora Alfa (terceirizada) \u00B7 RT: Eng. F. Souza', orgao:'Crea / CAU', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'04/10/2026', fiscal:'Ag. fiscal R. Melo', recebeu:'Frente de loja', acompanhou:'ADM + Manuten\u00E7\u00E3o', resultados:['notificacao'], doc:'NCREA-3381', prazo:'13/10/2026', ncs:['Licen\u00E7a ou alvar\u00E1'], noAto:'', apreensao:'', relato:'Fiscal solicitou a ART do respons\u00E1vel t\u00E9cnico e o alvar\u00E1 de obra. ART n\u00E3o estava no canteiro.', status:'analise', desfecho:'', multa:null,
-    eventos:[ev('05/10/2026','juridico','Jur\u00EDdico','An\u00E1lise iniciada. Manuten\u00E7\u00E3o acionada para obter a ART com a empreiteira.')]})
-  ,mk({id:'FIS-0014', filial:'IMB', unidade:'Loja do Mall', lojista:'Farm\u00E1cia Bem Estar (locat\u00E1rio)', orgao:'Vigil\u00E2ncia Sanit\u00E1ria', motivo:'Iniciativa do \u00F3rg\u00E3o', forma:'Presencial', data:'06/10/2026', fiscal:'L. Freitas', recebeu:'Frente de loja', acompanhou:'ADM \u2014 supervisor', resultados:['notificacao'], doc:'NVS-0730', prazo:'16/10/2026', ncs:['Licen\u00E7a ou alvar\u00E1'], noAto:'', apreensao:'', relato:'Fiscaliza\u00E7\u00E3o na loja do lojista. Certificado de licen\u00E7a sanit\u00E1ria vencido desde agosto; lojista autuado pelo \u00F3rg\u00E3o.', status:'aberto', desfecho:'', multa:null,
-    multaLojista:{valor:3000, motivo:'Certificado vencido', status:'pendente'},
-    eventos:[ev('06/10/2026','filial','ADM \u00B7 IMB','Proposta de multa contratual ao lojista Farm\u00E1cia Bem Estar (locat\u00E1rio): R$ 3.000 \u2014 Certificado vencido. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.')]})
-];
-var seq = 15;
-
-// ----- Retornos entre setores (cada envio tem um prazo de retorno, sempre antes do prazo do \u00F3rg\u00E3o) -----
-function rt(de, para, enviado, prazo, respondido){ return {de:de, para:para, enviado:enviado, prazo:prazo, respondido:respondido||null}; }
-var RETORNOS_EXEMPLO = {
-  'FIS-0004':[rt('filial','juridico','25/09/2026','27/09/2026','26/09/2026'), rt('juridico','filial','29/09/2026','01/10/2026','30/09/2026'), rt('filial','juridico','30/09/2026','02/10/2026','01/10/2026'), rt('juridico','filial','01/10/2026','03/10/2026','03/10/2026'), rt('filial','juridico','03/10/2026','07/10/2026')],
-  'FIS-0005':[rt('filial','juridico','26/09/2026','28/09/2026','27/09/2026'), rt('juridico','filial','03/10/2026','05/10/2026')],
-  'FIS-0008':[rt('filial','juridico','01/10/2026','03/10/2026','02/10/2026'), rt('juridico','filial','02/10/2026','03/10/2026','03/10/2026'), rt('filial','juridico','03/10/2026','05/10/2026','04/10/2026'), rt('juridico','filial','04/10/2026','05/10/2026','05/10/2026'), rt('filial','juridico','05/10/2026','10/10/2026')]
-};
-chamados.forEach(function(c){
-  c.retornos = RETORNOS_EXEMPLO[c.id] || [];
-  if (!c.retornos.length) {
-    var lim = prazoRetorno(c, c.data, 2);
-    c.retornos.push(rt('filial','juridico', c.data, lim, c.status==='aberto' ? null : addDias(c.data, 1)));
-  }
-});
+var chamados = []; // carregados do banco (Supabase)
 
 // ================= Estado =================
 var perfil = 'filial';
 var tela = {filial:'inicio', juridico:'fila', compliance:'painel'};
 var sel = null, editando = false, filtros = {filial:'', unidade:'', orgao:'', status:''};
 var USERS = {
-  filial:{nome:'ADM da filial', sub:'Filial ' + FILIAL_USUARIO + ' \u00B7 abre o chamado', ini:'AD', cor:'var(--red)', papel:'Registra a fiscaliza\u00E7\u00E3o no mesmo dia, acompanha o caso e responde \u00E0s solicita\u00E7\u00F5es do Jur\u00EDdico.'},
+  filial:{nome:'ADM da filial', sub:'Abre o chamado', ini:'AD', cor:'var(--red)', papel:'Registra a fiscaliza\u00E7\u00E3o no mesmo dia, acompanha o caso e responde \u00E0s solicita\u00E7\u00F5es do Jur\u00EDdico.'},
   juridico:{nome:'Jur\u00EDdico', sub:'Atende os chamados', ini:'JU', cor:'var(--blue)', papel:'Analisa, pede documentos \u00E0 filial, responde ao \u00F3rg\u00E3o dentro do prazo e registra o desfecho.'},
   compliance:{nome:'Compliance', sub:'Cria o app e monitora', ini:'CO', cor:'var(--green)', papel:'V\u00EA todos os chamados, pode pontuar ou editar qualquer etapa, mant\u00E9m os cadastros e acompanha os indicadores.'}
 };
@@ -339,7 +310,183 @@ function prazoHtml(c){
   var txt = d < 0 ? 'vencido' : d === 0 ? 'hoje' : d === 1 ? 'amanh\u00E3' : 'em ' + d + ' dias';
   return '<span class="prazo '+cl+'">'+c.prazo.slice(0,5)+' \u00B7 '+txt+'</span>';
 }
-function addEv(c, papel, texto){ c.eventos.push(ev(hojeBR(), papel, papel==='filial' ? 'ADM \u00B7 '+c.filial : USERS[papel].nome, texto)); }
+function autorNome(papel, filial){
+  var nome = EU && EU.nome ? EU.nome : '';
+  var rot = papel==='filial' ? 'ADM \u00B7 ' + (filial||'') : papel==='juridico' ? 'Jur\u00EDdico' : 'Compliance';
+  return nome ? rot + ' \u00B7 ' + nome : rot;
+}
+function addEv(c, papel, texto){ c.eventos.push(ev(hojeBR(), papel, autorNome(papel, c.filial), texto)); }
+
+// ================= BANCO DE DADOS (Supabase) =================
+var sb = null, EU = null, PERFIS = [], _recarga = null, _ocupado = false;
+function iso(br){ if (!br) return null; var a = br.split('/'); return a[2]+'-'+a[1]+'-'+a[0]; }
+function br(isoStr){ if (!isoStr) return ''; var s = String(isoStr).slice(0,10).split('-'); return s[2]+'/'+s[1]+'/'+s[0]; }
+function erroDb(e, onde){ console.error(onde, e); toast('Erro ao salvar ('+onde+'): '+(e && e.message ? e.message : e)); }
+
+function paraLinha(c){
+  return { filial:c.filial, unidade:c.unidade, lojista:c.lojista||null, obra:c.obra||null, orgao:c.orgao, motivo:c.motivo, forma:c.forma,
+    data:iso(c.data), fiscal:c.fiscal||null, recebeu:c.recebeu||null, acompanhou:c.acompanhou||null, resultados:c.resultados, doc:c.doc||null,
+    prazo:iso(c.prazo), ncs:c.ncs, no_ato:c.noAto||null, apreensao:c.apreensao||null, relato:c.relato||null, status:c.status, desfecho:c.desfecho||null,
+    multa_valor:c.multa ? c.multa.valor : null, multa_motivo:c.multa ? c.multa.motivo : null,
+    envios_juridico:c.envios.juridico, envios_filial:c.envios.filial, limite_envios:c.limite, atualizado_em:new Date().toISOString() };
+}
+function deLinha(r){
+  return { id:r.id, filial:r.filial, unidade:r.unidade, lojista:r.lojista||'', obra:r.obra||'', orgao:r.orgao, motivo:r.motivo, forma:r.forma,
+    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'',
+    prazo:br(r.prazo), ncs:r.ncs||[], noAto:r.no_ato||'', apreensao:r.apreensao||'', relato:r.relato||'', status:r.status, desfecho:r.desfecho||'',
+    multa: r.multa_valor != null ? {valor:+r.multa_valor, motivo:r.multa_motivo||''} : null,
+    envios:{juridico:r.envios_juridico, filial:r.envios_filial}, limite:r.limite_envios, libPend:null, multaLojista:null, eventos:[], retornos:[] };
+}
+
+async function carregarTudo(){
+  var q = await Promise.all([
+    sb.from('chamados').select('*').order('criado_em'),
+    sb.from('eventos').select('*').order('criado_em'),
+    sb.from('retornos').select('*').order('id'),
+    sb.from('liberacoes').select('*').eq('status','pendente'),
+    sb.from('multas_lojista').select('*'),
+    sb.from('listas').select('*').order('ordem'),
+    sb.from('filiais').select('*').eq('ativa', true).order('codigo'),
+    sb.from('perfis').select('*').order('nome')
+  ]);
+  for (var i=0;i<q.length;i++) if (q[i].error) { erroDb(q[i].error, 'carregar'); return; }
+  var mapa = {};
+  chamados = q[0].data.map(function(r){ var c = deLinha(r); mapa[c.id] = c; return c; });
+  q[1].data.forEach(function(e){ var c = mapa[e.chamado_id]; if (c) c.eventos.push({_id:e.id, data:br(e.criado_em), papel:e.papel, autor:e.autor, texto:e.texto}); });
+  q[2].data.forEach(function(r){ var c = mapa[r.chamado_id]; if (c) c.retornos.push({_id:r.id, de:r.de, para:r.para, enviado:br(r.enviado), prazo:br(r.prazo), respondido:r.respondido ? br(r.respondido) : null, _resp0:r.respondido ? br(r.respondido) : null}); });
+  q[3].data.forEach(function(l){ var c = mapa[l.chamado_id]; if (c) c.libPend = {_id:l.id, por:l.pedido_por, data:br(l.pedido_em), motivo:l.motivo}; });
+  q[4].data.forEach(function(m){ var c = mapa[m.chamado_id]; if (c) { c.multaLojista = {_salvo:true, valor:+m.valor, motivo:m.motivo, status:m.status, valorFinal:m.valor_final != null ? +m.valor_final : null, obs:m.obs||''}; var x = c.multaLojista; x._snap = [x.valor, x.motivo, x.status, x.valorFinal, x.obs].join('|'); } });
+  ORGAOS = q[5].data.filter(function(x){ return x.tipo==='orgao'; }).map(function(x){ return x.valor; });
+  MOTIVOS = q[5].data.filter(function(x){ return x.tipo==='motivo'; }).map(function(x){ return x.valor; });
+  NCS = q[5].data.filter(function(x){ return x.tipo==='nc'; }).map(function(x){ return x.valor; });
+  SETORES = q[5].data.filter(function(x){ return x.tipo==='setor'; }).map(function(x){ return x.valor; });
+  FILIAIS_TODAS = q[6].data.map(function(f){ return f.codigo; });
+  FILIAIS = q[6].data.filter(function(f){ return f.loja !== false; }).map(function(f){ return f.codigo; });
+  PERFIS = q[7].data;
+}
+
+// grava o chamado e tudo o que mudou nele (hist\u00F3rico, retornos, libera\u00E7\u00E3o, multa ao lojista)
+async function salvar(c){
+  try {
+    var r;
+    if (!c._salvo) {
+      r = await sb.from('chamados').insert(paraLinha(c)).select('id').single();
+      if (r.error) throw r.error;
+      c.id = r.data.id; c._salvo = true;
+    } else {
+      r = await sb.from('chamados').update(paraLinha(c)).eq('id', c.id);
+      if (r.error) throw r.error;
+    }
+    var novos = c.eventos.filter(function(e){ return !e._id; });
+    if (novos.length) {
+      r = await sb.from('eventos').insert(novos.map(function(e){ return {chamado_id:c.id, papel:e.papel, autor:e.autor, texto:e.texto}; })).select('id');
+      if (r.error) throw r.error;
+      novos.forEach(function(e, i){ e._id = r.data[i].id; });
+    }
+    for (var i=0;i<c.retornos.length;i++) {
+      var t = c.retornos[i];
+      if (!t._id) {
+        r = await sb.from('retornos').insert({chamado_id:c.id, de:t.de, para:t.para, enviado:iso(t.enviado), prazo:iso(t.prazo), respondido:iso(t.respondido)}).select('id').single();
+        if (r.error) throw r.error;
+        t._id = r.data.id; t._resp0 = t.respondido;
+      } else if (t.respondido !== t._resp0) {
+        r = await sb.from('retornos').update({respondido:iso(t.respondido)}).eq('id', t._id);
+        if (r.error) throw r.error;
+        t._resp0 = t.respondido;
+      }
+    }
+    if (c.libPend && !c.libPend._id) {
+      r = await sb.from('liberacoes').insert({chamado_id:c.id, pedido_por:c.libPend.por, motivo:c.libPend.motivo}).select('id').single();
+      if (r.error) throw r.error;
+      c.libPend._id = r.data.id;
+    }
+    if (c._decisaoLib) {
+      r = await sb.from('liberacoes').update({status:c._decisaoLib.status, obs:c._decisaoLib.obs||null, decidido_por:EU.id, decidido_em:new Date().toISOString()}).eq('id', c._decisaoLib.id);
+      if (r.error) throw r.error;
+      c._decisaoLib = null;
+    }
+    if (c.multaLojista) {
+      var m = c.multaLojista, snap = [m.valor, m.motivo, m.status, m.valorFinal, m.obs].join('|');
+      if (!m._salvo || snap !== m._snap) {
+        var linha = {chamado_id:c.id, valor:m.valor, motivo:m.motivo, status:m.status, valor_final:m.valorFinal != null ? m.valorFinal : null, obs:m.obs||null, atualizado_em:new Date().toISOString()};
+        r = m._salvo ? await sb.from('multas_lojista').update(linha).eq('chamado_id', c.id) : await sb.from('multas_lojista').insert(linha);
+        if (r.error) throw r.error;
+        m._salvo = true; m._snap = snap;
+      }
+    }
+    return true;
+  } catch (e) { erroDb(e, 'chamado ' + c.id); return false; }
+}
+function persistir(id){ var c = byId(id); if (c) { _ocupado = true; salvar(c).finally(function(){ _ocupado = false; }); } }
+
+// tempo real: qualquer mudan\u00E7a no banco recarrega e atualiza a tela (sem apagar o que a pessoa est\u00E1 digitando)
+function digitando(){ var a = document.activeElement; return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest('#main') && (a.value || '').length > 0; }
+function agendarRecarga(){
+  clearTimeout(_recarga);
+  _recarga = setTimeout(async function(){
+    if (_ocupado || digitando() || editando || (perfil==='filial' && tela.filial==='novo' && !sel)) { agendarRecarga(); return; }
+    await carregarTudo(); render();
+  }, 700);
+}
+function ouvirMudancas(){
+  var canal = sb.channel('fiscalizacao');
+  ['chamados','eventos','retornos','liberacoes','multas_lojista','listas','filiais','perfis'].forEach(function(t){
+    canal.on('postgres_changes', {event:'*', schema:'public', table:t}, agendarRecarga);
+  });
+  canal.subscribe();
+}
+
+// ---------- Login por FILIAL + SETOR ----------
+// Cada conta \u00E9 de uma filial + setor. O e-mail \u00E9 interno (filial.setor@fiscalizacao.fc) \u2014 o mesmo c\u00E1lculo da fun\u00E7\u00E3o gerenciar-usuarios.
+function slug(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036F]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function contaEmail(filial, setor){ return slug(filial) + '.' + slug(setor) + '@fiscalizacao.fc'; }
+var _loginComEmail = false;
+async function telaLogin(msg){
+  document.body.classList.add('sem-login');
+  var logo = document.querySelector('.top img');
+  var f = await sb.from('filiais').select('codigo,nome').eq('ativa', true).order('codigo');
+  var s = await sb.from('listas').select('valor').eq('tipo','setor').order('ordem');
+  var fil = (f.data||[]).map(function(x){ return '<option value="'+esc(x.codigo)+'">'+esc(x.codigo + (x.nome ? ' \u2014 ' + x.nome : ''))+'</option>'; }).join('');
+  var set = (s.data||[]).map(function(x){ return '<option>'+esc(x.valor)+'</option>'; }).join('');
+  $('login').innerHTML = '<div class="login-box">' + (logo ? '<div style="display:flex;justify-content:center;margin-bottom:1rem">' + logo.outerHTML + '</div>' : '') +
+    '<h2>Gest\u00E3o de Fiscaliza\u00E7\u00E3o</h2><p>' + (_loginComEmail ? 'Entre com o e-mail cadastrado.' : 'Escolha sua filial e seu setor.') + '</p>' +
+    (msg ? '<div class="env bloq" style="margin-bottom:.8rem">'+msg+'</div>' : '') +
+    '<form onsubmit="return entrar(event)">' +
+    (_loginComEmail
+      ? '<div class="f"><label>E-mail</label><input id="l_email" type="email" autocomplete="username" required></div>'
+      : '<div class="f"><label>Filial</label><select id="l_filial" required><option value="">Selecione</option>'+fil+'</select></div>' +
+        '<div class="f" style="margin-top:.6rem"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>') +
+    '<div class="f" style="margin-top:.6rem"><label>Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>' +
+    '<button class="btn pri" style="width:100%;margin-top:1rem" type="submit">Entrar</button></form>' +
+    '<div style="display:flex;justify-content:space-between;margin-top:.7rem;font-size:.7rem;color:var(--txt3)"><span>Esqueceu a senha? Fale com o Compliance.</span>' +
+    '<a href="#" style="color:var(--txt2)" onclick="_loginComEmail=!_loginComEmail;telaLogin();return false">' + (_loginComEmail ? 'Entrar por filial e setor' : 'Entrar com e-mail') + '</a></div></div>';
+}
+async function entrar(e){
+  e.preventDefault();
+  var email = _loginComEmail ? val('l_email') : contaEmail(val('l_filial'), val('l_setor'));
+  var r = await sb.auth.signInWithPassword({email:email, password:$('l_senha').value});
+  if (r.error) { telaLogin(_loginComEmail ? 'E-mail ou senha incorretos.' : 'Filial, setor ou senha incorretos (ou a conta ainda n\u00E3o foi criada pelo Compliance).'); return false; }
+  iniciar(); return false;
+}
+async function sair(){ await sb.auth.signOut(); location.reload(); }
+
+async function iniciar(){
+  var s = await sb.auth.getSession();
+  if (!s.data.session) { telaLogin(); return; }
+  var uid = s.data.session.user.id;
+  var p = await sb.from('perfis').select('*').eq('id', uid).single();
+  if (p.error || !p.data) { await sb.auth.signOut(); telaLogin('Esta conta ainda n\u00E3o tem perfil. Fale com o Compliance.'); return; }
+  EU = p.data;
+  if (EU.ativo === false) { await sb.auth.signOut(); telaLogin('Esta conta est\u00E1 desativada. Fale com o Compliance.'); return; }
+  if (EU.papel === 'pendente') { await sb.auth.signOut(); telaLogin('Esta conta est\u00E1 aguardando o Compliance definir o perfil (Filial, Jur\u00EDdico ou Compliance).'); return; }
+  if (EU.papel === 'filial' && !EU.filial) { await sb.auth.signOut(); telaLogin('Esta conta de Filial ainda n\u00E3o tem filial definida. Fale com o Compliance.'); return; }
+  document.body.classList.remove('sem-login');
+  perfil = EU.papel; FILIAL_USUARIO = EU.filial || '';
+  $('perfis').style.display = EU.papel === 'compliance' ? '' : 'none';
+  await carregarTudo();
+  if (EU.papel === 'compliance' && FILIAIS.indexOf(FILIAL_USUARIO) < 0) FILIAL_USUARIO = FILIAIS[0] || '';
+  render(); ouvirMudancas();
+}
 function opts(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(''); }
 
 // ================= Render geral =================
@@ -350,18 +497,22 @@ function render(){
   renderSide();
   var m = $('main');
   if (sel) { m.innerHTML = detalhe(byId(sel)); bindDetalhe(); return; }
-  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, cadastros:cCadastros}})[perfil][tela[perfil]]();
+  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, usuarios:cUsuarios, cadastros:cCadastros}})[perfil][tela[perfil]]();
   if (perfil==='filial' && tela.filial==='novo') bindNovo();
 }
 function renderSide(){
   var u = USERS[perfil], items;
-  var meus = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; });
+  var meus = meusChamados();
   if (perfil==='filial') items = [['inicio','In\u00EDcio', meus.filter(function(c){return c.status==='aguard_filial';}).length], ['novo','+ Novo chamado'], ['meus','Meus chamados']];
   if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
-  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['cadastros','Cadastros do app']];
-  $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+u.ini+'</div><div><b>'+u.nome+'</b><span>'+u.sub+'</span></div></div>' +
+  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Usu\u00E1rios', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app']];
+  var nome = EU && EU.nome ? EU.nome : u.nome, ini = nome.split(/\s+/).map(function(x){ return x[0]; }).join('').slice(0,2).toUpperCase();
+  var sub = (EU && EU.papel === perfil) ? 'Filial ' + (EU.filial||'\u2014') + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + FILIAL_USUARIO : u.sub;
+  var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+opts(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
+  $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+esc(ini)+'</div><div><b>'+esc(nome)+'</b><span>'+esc(sub)+'</span></div></div>' + troca +
     '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
-    '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>';
+    '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>' +
+    '<button class="btn sm" style="margin-top:.8rem;width:100%" onclick="sair()">Sair</button>';
 }
 function tabela(lista, cols){
   if (!lista.length) return '<div class="empty">Nenhum chamado.</div>';
@@ -382,7 +533,7 @@ function recentes(a,b){ return pBR(b.data) - pBR(a.data); }
 
 // ================= FILIAL =================
 function fInicio(){
-  var meus = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; });
+  var meus = meusChamados();
   var pend = meus.filter(function(c){ return c.status==='aguard_filial'; });
   var abertos = meus.filter(function(c){ return c.status!=='encerrado'; });
   return '<div class="ph"><div><h2>Ol\u00E1! Filial '+FILIAL_USUARIO+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
@@ -428,7 +579,7 @@ function fNovo(){
   '<div class="form-sec"><h4><span class="n">6</span>Relato</h4><div class="g2">' +
     '<div class="f"><label>O que o fiscal avaliou</label><textarea name="relato"></textarea></div>' +
     '<div class="f"><label>O que foi corrigido no ato</label><textarea name="noAto"></textarea></div></div>' +
-    '<div class="f" style="margin-top:.7rem"><label>Anexos</label><div class="box" style="margin-top:0">\uD83D\uDCCE Notifica\u00E7\u00E3o digitalizada, fotos e auto de apreens\u00E3o (simulado no esbo\u00E7o)</div></div></div>' +
+    '<div class="f" style="margin-top:.7rem"><label>Anexos</label><div class="box" style="margin-top:0">\uD83D\uDCCE Envio de anexos (notifica\u00E7\u00E3o, fotos, auto de apreens\u00E3o) entra na pr\u00F3xima etapa. Por enquanto, guarde a via f\u00EDsica e digital na filial.</div></div></div>' +
   '<div class="btns" style="margin-top:1.1rem"><button class="btn pri" type="submit">Enviar ao Jur\u00EDdico</button><button class="btn" type="button" onclick="go(null,\'inicio\')">Cancelar</button></div>' +
   '</form></div>';
 }
@@ -460,19 +611,28 @@ function enviarNovo(e){
   var temPrazo = /^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo'));
   if (res.indexOf('notificacao')>=0 && !temPrazo) { toast('Informe o prazo dado pelo \u00F3rg\u00E3o (dd/mm/aaaa). Ele \u00E9 crucial para o chamado.'); f.elements.prazo.focus(); return false; }
   var mv = parseFloat(g('multaValor').replace(/[^\d,]/g,'').replace(',','.'));
-  var c = mk({id:'FIS-' + ('000'+(seq++)).slice(-4), filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:g('orgao'), motivo:g('motivo'), forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:g('acompanhou'),
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(g('data'))) { toast('Data da fiscaliza\u00E7\u00E3o deve estar no formato dd/mm/aaaa.'); return false; }
+  if (!FILIAL_USUARIO) { toast('Seu usu\u00E1rio n\u00E3o tem filial definida.'); return false; }
+  var c = mk({id:'(novo)', filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:g('orgao'), motivo:g('motivo'), forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:g('acompanhou'),
     resultados:res, doc:g('doc'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
     noAto:g('noAto'), apreensao:g('apreensao'), relato:g('relato'), status:'aberto', desfecho:'', multa: res.indexOf('multa')>=0 && mv ? {valor:mv, motivo:g('multaMotivo')||'N\u00E3o informado'} : null});
   c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
-  chamados.push(c);
   if (propoe) { c.multaLojista = {valor:mlv, motivo:g('mlMotivo'), status:'pendente'}; addEv(c, 'filial', 'Proposta de multa contratual ao lojista ' + c.lojista + ': ' + brl(mlv) + ' \u2014 ' + g('mlMotivo') + '. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.'); }
-  toast('Chamado ' + c.id + ' aberto e enviado ao Jur\u00EDdico.');
-  go(null, null, c.id);
+  var btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Enviando...';
+  _ocupado = true;
+  salvar(c).then(function(ok){
+    _ocupado = false;
+    if (!ok) { btn.disabled = false; btn.textContent = 'Enviar ao Jur\u00EDdico'; return; }
+    chamados.push(c);
+    toast('Chamado ' + c.id + ' aberto e enviado ao Jur\u00EDdico.');
+    go(null, null, c.id);
+  });
   return false;
 }
 function fMeus(){
-  var l = chamados.filter(function(c){ return c.filial===FILIAL_USUARIO; }).sort(recentes);
-  return '<div class="ph"><div><h2>Meus chamados</h2><p>Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO+'</p></div></div><div class="card">'+tabela(l, ['id','orgao','data','res','prazo','status'])+'</div>';
+  var l = meusChamados().sort(recentes);
+  var multi = l.some(function(c){ return c.filial !== FILIAL_USUARIO; });
+  return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO)+'</p></div></div><div class="card">'+tabela(l, multi ? ['id','filial','orgao','data','res','prazo','status'] : ['id','orgao','data','res','prazo','status'])+'</div>';
 }
 
 // ================= JUR\u00CDDICO =================
@@ -504,7 +664,7 @@ function cPainel(){
   var total = multas.reduce(function(s,c){ return s + c.multa.valor; }, 0);
   var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
   var card = function(n, t, sub, body){ return '<div class="card foco-card" style="margin:0"><h3><span class="n">'+n+'</span>'+t+'</h3><div class="sub">'+sub+'</div>'+body+'</div>'; };
-  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 dados fict\u00EDcios de setembro e outubro de 2026</p></div><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div>' +
+  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div>' +
     '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div>' +
     (function(){ var at = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
       return '<div class="kpi click" onclick="filtros.status=\'\';go(null,\'todos\')"><div class="v" style="color:var(--red)">'+at.length+'</div><div class="l">Retornos internos atrasados'+(at.length ? ' ('+at.map(function(c){ return c.id; }).join(', ')+')' : '')+'</div></div>'; })() +
@@ -545,10 +705,93 @@ function cLiberacoes(){
 function cCadastros(){
   var lista = function(nome, arr, key){ return '<div class="card" style="margin:0"><h3>'+nome+'</h3><div class="sub">Alimenta o formul\u00E1rio da filial</div><ul>'+arr.map(function(o,i){ return '<li>'+esc(o)+'<button title="Remover" onclick="remCad(\''+key+'\','+i+')">\u00D7</button></li>'; }).join('')+'</ul><div class="add"><input id="add_'+key+'" placeholder="Adicionar..."><button class="btn sm green" onclick="addCad(\''+key+'\')">Adicionar</button></div></div>'; };
   return '<div class="ph"><div><h2>Cadastros do app</h2><p>O Compliance cria e mant\u00E9m as listas usadas em todos os chamados</p></div></div>' +
-    '<div class="cad">'+lista('\u00D3rg\u00E3os fiscalizadores', ORGAOS, 'ORGAOS')+lista('Tipos de n\u00E3o conformidade', NCS, 'NCS')+lista('Motivos de fiscaliza\u00E7\u00E3o', MOTIVOS, 'MOTIVOS')+lista('Filiais', FILIAIS, 'FILIAIS')+'</div>';
+    '<div class="cad">'+lista('\u00D3rg\u00E3os fiscalizadores', ORGAOS, 'ORGAOS')+lista('Tipos de n\u00E3o conformidade', NCS, 'NCS')+lista('Motivos de fiscaliza\u00E7\u00E3o', MOTIVOS, 'MOTIVOS')+lista('Filiais', FILIAIS, 'FILIAIS')+lista('Setores (login)', SETORES, 'SETORES')+'</div>';
 }
-function addCad(k){ var i = $('add_'+k), v = i.value.trim(); if (!v) return; window[k].push(v); toast('Item adicionado.'); render(); }
-function remCad(k, i){ window[k].splice(i,1); toast('Item removido.'); render(); }
+var TIPO_LISTA = {ORGAOS:'orgao', NCS:'nc', MOTIVOS:'motivo', SETORES:'setor'};
+async function addCad(k){
+  var v = val('add_'+k); if (!v) return;
+  var r = k === 'FILIAIS' ? await sb.from('filiais').upsert({codigo:v.toUpperCase(), ativa:true, loja:true})
+                          : await sb.from('listas').insert({tipo:TIPO_LISTA[k], valor:v, ordem:window[k].length + 1});
+  if (r.error) return erroDb(r.error, 'cadastro');
+  await carregarTudo(); toast('Item adicionado.'); render();
+}
+async function remCad(k, i){
+  var v = window[k][i];
+  var r = k === 'FILIAIS' ? await sb.from('filiais').update({ativa:false}).eq('codigo', v)
+                          : await sb.from('listas').delete().eq('tipo', TIPO_LISTA[k]).eq('valor', v);
+  if (r.error) return erroDb(r.error, 'cadastro');
+  await carregarTudo(); toast('Item removido.'); render();
+}
+// ----- Contas por FILIAL + SETOR, com filtro do que cada conta visualiza -----
+var NOME_PAPEL = {pendente:'Pendente (sem acesso)', filial:'Filial (abre chamados)', juridico:'Jur\u00EDdico (atende)', compliance:'Compliance (administra)'};
+function visTexto(p){
+  var v = p.filiais_visiveis || [];
+  if (!v.length) return p.papel === 'filial' ? 'S\u00F3 a pr\u00F3pria filial (' + (p.filial||'\u2014') + ')' : p.papel === 'pendente' ? '\u2014' : 'Todas as filiais';
+  return (p.papel === 'filial' ? (p.filial||'') + ' + ' : '') + v.join(', ');
+}
+function visCheckboxes(prefixo, marcadas){
+  return '<div class="chk">' + FILIAIS.map(function(f){ var on = marcadas.indexOf(f) >= 0;
+    return '<label class="'+(on?'on':'')+'"><input type="checkbox" class="'+prefixo+'" value="'+esc(f)+'"'+(on?' checked':'')+' onchange="this.parentNode.classList.toggle(\'on\',this.checked)"> '+esc(f)+'</label>'; }).join('') + '</div>';
+}
+function lerVis(prefixo){ return [].map.call(document.querySelectorAll('.'+prefixo+':checked'), function(i){ return i.value; }); }
+var _editUser = null;
+function cUsuarios(){
+  var linhas = PERFIS.map(function(p){
+    var ed = _editUser === p.id;
+    return '<tr><td><b>'+esc((p.filial||'\u2014') + ' \u00B7 ' + (p.setor||'\u2014'))+'</b>'+(p.ativo===false ? ' <span class="badge b-respondido">Desativada</span>' : '')+'<br><span style="font-size:.66rem">'+esc(p.email||'')+'</span></td>' +
+      '<td>'+(ed ? '<select id="up_'+p.id+'">'+Object.keys(NOME_PAPEL).map(function(x){ return '<option value="'+x+'"'+(p.papel===x?' selected':'')+'>'+NOME_PAPEL[x]+'</option>'; }).join('')+'</select>' : esc(NOME_PAPEL[p.papel]||p.papel))+'</td>' +
+      '<td style="max-width:320px">'+(ed ? '<div style="font-size:.66rem;margin-bottom:.3rem">Marque as filiais que esta conta pode visualizar (nenhuma = padr\u00E3o do perfil)</div>' + visCheckboxes('uv_'+p.id, p.filiais_visiveis||[]) : esc(visTexto(p)))+'</td>' +
+      '<td style="white-space:nowrap">' + (ed
+        ? '<button class="btn sm green" onclick="salvarUsuario(\''+p.id+'\')">Salvar</button> <button class="btn sm" onclick="_editUser=null;render()">Cancelar</button>'
+        : '<button class="btn sm" onclick="_editUser=\''+p.id+'\';render()">Editar acesso</button> ' +
+          '<button class="btn sm" onclick="senhaUsuario(\''+p.id+'\')">Nova senha</button> ' +
+          (p.id !== (EU&&EU.id) ? '<button class="btn sm" onclick="statusUsuario(\''+p.id+'\','+(p.ativo===false)+')">'+(p.ativo===false?'Reativar':'Desativar')+'</button>' : '')) + '</td></tr>';
+  }).join('');
+  return '<div class="ph"><div><h2>Contas de acesso</h2><p>Cada conta \u00E9 de uma <b>filial + setor</b>. O login \u00E9 feito escolhendo a filial e o setor e digitando a senha.</p></div></div>' +
+    '<div class="card"><h3>Criar conta</h3><div class="sub">Defina o perfil (o que a conta pode fazer) e as filiais que ela pode visualizar</div>' +
+    '<div class="g3"><div class="f"><label>Filial <span class="req">*</span></label><select id="nu_filial"><option value="">Selecione</option>'+opts(FILIAIS_TODAS)+'</select></div>' +
+    '<div class="f"><label>Setor <span class="req">*</span></label><select id="nu_setor"><option value="">Selecione</option>'+opts(SETORES, 'Administrativo')+'</select></div>' +
+    '<div class="f"><label>Perfil <span class="req">*</span></label><select id="nu_papel"><option value="filial">'+NOME_PAPEL.filial+'</option><option value="juridico">'+NOME_PAPEL.juridico+'</option><option value="compliance">'+NOME_PAPEL.compliance+'</option></select></div></div>' +
+    '<div class="f" style="margin-top:.7rem"><label>Pode visualizar</label><div class="hint" style="margin:0 0 .35rem">Nenhuma marcada = padr\u00E3o do perfil (Filial v\u00EA s\u00F3 a pr\u00F3pria filial; Jur\u00EDdico e Compliance veem todas). Marque para ampliar ou restringir.</div>'+visCheckboxes('nu_vis', [])+'</div>' +
+    '<div class="g2" style="margin-top:.7rem"><div class="f"><label>Senha provis\u00F3ria <span class="req">*</span></label><input id="nu_senha" type="text" placeholder="M\u00EDnimo 8 caracteres"></div>' +
+    '<div class="f"><label>Nome de exibi\u00E7\u00E3o (opcional)</label><input id="nu_nome" placeholder="Ex.: IMB \u00B7 Administrativo"></div></div>' +
+    '<div class="btns" style="margin-top:.8rem"><button class="btn green" id="nu_btn" onclick="criarConta()">Criar conta</button></div></div>' +
+    '<div class="card"><h3>Contas cadastradas</h3><div class="sub">'+PERFIS.length+' conta(s)</div><div class="tbl-wrap"><table class="t"><thead><tr><th>Filial \u00B7 Setor</th><th>Perfil</th><th>Visualiza</th><th></th></tr></thead><tbody>'+(linhas || '<tr><td colspan="4" class="empty">Nenhuma conta.</td></tr>')+'</tbody></table></div></div>';
+}
+async function chamarAdmin(corpo){
+  var s = await sb.auth.getSession();
+  var r = await sb.functions.invoke('gerenciar-usuarios', {body:corpo, headers:{'x-user-token': s.data.session ? s.data.session.access_token : ''}});
+  var dados = r.data;
+  if (r.error) { try { dados = await r.error.context.json(); } catch (e) { dados = {erro: r.error.message}; } }
+  if (!dados || dados.erro) { toast(dados && dados.erro ? dados.erro : 'Erro ao falar com o servidor.'); return null; }
+  return dados;
+}
+async function criarConta(){
+  var filial = val('nu_filial'), setor = val('nu_setor'), papel = val('nu_papel'), senha = val('nu_senha');
+  if (!filial || !setor) return toast('Escolha a filial e o setor.');
+  if (senha.length < 8) return toast('A senha provis\u00F3ria precisa ter pelo menos 8 caracteres.');
+  if (papel === 'filial' && FILIAIS.indexOf(filial) < 0) return toast('Conta de Filial precisa ser de uma loja (n\u00E3o Corporativo).');
+  var btn = $('nu_btn'); btn.disabled = true; btn.textContent = 'Criando...';
+  var r = await chamarAdmin({acao:'criar', filial:filial, setor:setor, papel:papel, senha:senha, nome:val('nu_nome') || '', filiais_visiveis:lerVis('nu_vis')});
+  btn.disabled = false; btn.textContent = 'Criar conta';
+  if (!r) return;
+  toast('Conta ' + filial + ' \u00B7 ' + setor + ' criada. Login: filial ' + filial + ', setor ' + setor + ' e a senha provis\u00F3ria.');
+  await carregarTudo(); render();
+}
+async function salvarUsuario(id){
+  var papel = val('up_'+id), vis = lerVis('uv_'+id);
+  var r = await sb.from('perfis').update({papel:papel, filiais_visiveis: vis.length ? vis : null}).eq('id', id);
+  if (r.error) return erroDb(r.error, 'conta');
+  _editUser = null; await carregarTudo(); toast('Acesso atualizado.'); render();
+}
+async function senhaUsuario(id){
+  var s = prompt('Nova senha para esta conta (m\u00EDnimo 8 caracteres):');
+  if (!s) return; if (s.length < 8) return toast('A senha precisa ter pelo menos 8 caracteres.');
+  if (await chamarAdmin({acao:'redefinir_senha', user_id:id, senha:s})) toast('Senha redefinida.');
+}
+async function statusUsuario(id, ativar){
+  if (await chamarAdmin({acao:'status', user_id:id, ativo:ativar})) { toast(ativar ? 'Conta reativada.' : 'Conta desativada.'); await carregarTudo(); render(); }
+}
 
 // ================= DETALHE (compartilhado) =================
 function detalhe(c){
@@ -644,7 +887,7 @@ function acoes(c){
   if (perfil==='filial') {
     if (c.status==='aguard_filial') return '<h4>Responder ao Jur\u00EDdico</h4><div class="box" style="margin-top:0">'+esc(ultimo(c,'juridico'))+'</div>' +
       (podeEnviar(c,'filial') ?
-        contador(c,'filial') + '<div class="f" style="margin-top:.6rem"><textarea id="a_txt" placeholder="Descreva o que est\u00E1 enviando"></textarea></div><div class="box">\uD83D\uDCCE Anexar documentos (simulado)</div><div class="btns" style="margin-top:.7rem"><button class="btn pri" onclick="acao(\''+id+'\',\'filial_resp\')">Enviar ao Jur\u00EDdico</button></div>'
+        contador(c,'filial') + '<div class="f" style="margin-top:.6rem"><textarea id="a_txt" placeholder="Descreva o que est\u00E1 enviando"></textarea></div><div class="box">\uD83D\uDCCE Anexos entram na pr\u00F3xima etapa. Descreva no texto o que foi enviado e por qual meio.</div><div class="btns" style="margin-top:.7rem"><button class="btn pri" onclick="acao(\''+id+'\',\'filial_resp\')">Enviar ao Jur\u00EDdico</button></div>'
         : bloqueio(c,'filial'));
     return '<h4>Acompanhamento</h4><p style="font-size:.76rem;color:var(--txt2)">'+(enc ? 'Caso encerrado. O desfecho fica no hist\u00F3rico.' : 'O Jur\u00EDdico est\u00E1 tratando o caso. Voc\u00EA ser\u00E1 avisado se precisar enviar algo.')+'</p>' +
       (enc ? '' : '<h4>Adicionar informa\u00E7\u00E3o</h4><div class="f"><textarea id="a_txt" placeholder="Ex.: corre\u00E7\u00E3o conclu\u00EDda, fiscal retornou..."></textarea></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'filial_info\')">Adicionar ao hist\u00F3rico</button></div>');
@@ -680,8 +923,8 @@ function acao(id, tipo){
     var lado = tipo.slice(10); if (!val('a_lib')) return toast('Explique por que precisa enviar de novo.');
     c.libPend = {por:lado, data:hojeBR(), motivo:val('a_lib')}; addEv(c, lado, 'Limite de '+c.limite+' envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: '+val('a_lib')); toast('Pedido de libera\u00E7\u00E3o enviado ao Compliance.');
   }
-  if (tipo==='liberar'){ c.limite += LIMITE_ENVIOS; addEv(c,'compliance','Reenvio liberado: +'+LIMITE_ENVIOS+' envios para cada setor (novo limite: '+c.limite+')'+(val('lib_obs') ? '. '+val('lib_obs') : '.')); c.libPend = null; toast('Reenvio liberado. A regra de 2 envios continua valendo.'); }
-  if (tipo==='nao_liberar'){ if (!val('lib_obs')) return toast('Explique por que n\u00E3o vai liberar.'); addEv(c,'compliance','Reenvio n\u00E3o liberado: '+val('lib_obs')); c.libPend = null; toast('Pedido de reenvio negado.'); }
+  if (tipo==='liberar'){ c._decisaoLib = {id:c.libPend._id, status:'liberada', obs:val('lib_obs')}; c.limite += LIMITE_ENVIOS; addEv(c,'compliance','Reenvio liberado: +'+LIMITE_ENVIOS+' envios para cada setor (novo limite: '+c.limite+')'+(val('lib_obs') ? '. '+val('lib_obs') : '.')); c.libPend = null; toast('Reenvio liberado. A regra de 2 envios continua valendo.'); }
+  if (tipo==='nao_liberar'){ if (!val('lib_obs')) return toast('Explique por que n\u00E3o vai liberar.'); c._decisaoLib = {id:c.libPend._id, status:'negada', obs:val('lib_obs')}; addEv(c,'compliance','Reenvio n\u00E3o liberado: '+val('lib_obs')); c.libPend = null; toast('Pedido de reenvio negado.'); }
   if (tipo==='filial_info'){ if (!val('a_txt')) return toast('Escreva a informa\u00E7\u00E3o.'); addEv(c,'filial', val('a_txt')); toast('Informa\u00E7\u00E3o adicionada.'); }
   if (tipo==='assumir'){ addEv(c,'juridico','An\u00E1lise iniciada.'); c.status='analise'; toast('Chamado em an\u00E1lise.'); }
   if (tipo==='solicitar'){ if (!podeEnviar(c,'juridico')) return toast('Limite de envios atingido.'); if (!val('a_sol')) return toast('Descreva o que a filial deve enviar.');
@@ -709,17 +952,19 @@ function acao(id, tipo){
     addEv(c,'juridico','Multa contratual ao lojista n\u00E3o aplicada: '+val('ml_obs')); toast('Registrado: multa n\u00E3o aplicada.');
   }
   if (tipo==='reabrir'){ c.status='analise'; c.desfecho=''; addEv(c,'compliance','Chamado reaberto pelo Compliance.'); toast('Chamado reaberto.'); }
+  persistir(id);
   render();
 }
 function salvarEdicao(id){
   var c = byId(id), mud = [];
   var set = function(campo, nome, novo){ if (String(c[campo]) !== String(novo)) { mud.push(nome+': "'+(c[campo]||'\u2014')+'" \u2192 "'+(novo||'\u2014')+'"'); c[campo] = novo; } };
-  set('orgao','\u00D3rg\u00E3o', val('e_orgao')); set('motivo','Motivo', val('e_motivo')); set('prazo','Prazo', val('e_prazo')); set('relato','Relato', val('e_relato'));
+  var np = val('e_prazo'); if (np && !/^\d{2}\/\d{2}\/\d{4}$/.test(np)) return toast('Prazo do \u00F3rg\u00E3o deve estar no formato dd/mm/aaaa.');
+  set('orgao','\u00D3rg\u00E3o', val('e_orgao')); set('motivo','Motivo', val('e_motivo')); set('prazo','Prazo', np); set('relato','Relato', val('e_relato'));
   var st = val('e_status'); if (st !== c.status) { mud.push('Status: '+STATUS[c.status]+' \u2192 '+STATUS[st]); c.status = st; }
   var ncs = [].map.call(document.querySelectorAll('.e_nc:checked'), function(i){ return i.value; });
   if (ncs.join('|') !== c.ncs.join('|')) { mud.push('N\u00E3o conformidades atualizadas'); c.ncs = ncs; }
   editando = false;
-  if (mud.length) { addEv(c,'compliance','Editou o chamado \u2014 '+mud.join('; ')); toast('Altera\u00E7\u00F5es salvas e registradas no hist\u00F3rico.'); } else toast('Nada foi alterado.');
+  if (mud.length) { addEv(c,'compliance','Editou o chamado \u2014 '+mud.join('; ')); persistir(id); toast('Altera\u00E7\u00F5es salvas e registradas no hist\u00F3rico.'); } else toast('Nada foi alterado.');
   render();
 }
 function bindDetalhe(){
@@ -727,6 +972,19 @@ function bindDetalhe(){
 }
 
 [].forEach.call(document.querySelectorAll('#perfis button'), function(b){ b.onclick = function(){ go(b.getAttribute('data-p')); }; });
-render();
+
+// ---------- In\u00EDcio ----------
+(function(){
+  if (!window.supabase || !window.FISC_CONFIG) { document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif">N\u00E3o foi poss\u00EDvel carregar a conex\u00E3o com o banco (verifique a internet e o arquivo config.js).</p>'; return; }
+  sb = window.supabase.createClient(window.FISC_CONFIG.url, window.FISC_CONFIG.key);
+  sb.auth.onAuthStateChange(function(evt){ if (evt === 'PASSWORD_RECOVERY') novaSenha(); });
+  iniciar();
+})();
+async function novaSenha(){
+  var s = prompt('Digite sua nova senha (m\u00EDnimo 8 caracteres):');
+  if (!s || s.length < 8) { toast('Senha n\u00E3o alterada.'); return; }
+  var r = await sb.auth.updateUser({password:s});
+  toast(r.error ? 'Erro: ' + r.error.message : 'Senha alterada.');
+}
 </script>
 </body></html>

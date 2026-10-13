@@ -2,7 +2,17 @@
 
 App de gestão das fiscalizações recebidas pela Ferreira Costa — Compliance | Governança Corporativa.
 
-> **Status:** esboço navegável (dados fictícios, nada é salvo). Próxima etapa: conectar a um banco de dados.
+> **Status:** app conectado ao banco de dados (Supabase, projeto `Gestao de Fiscalizacao`, região São Paulo), com login por e-mail, regras de acesso por perfil e atualização em tempo real. Próximas etapas: anexos, avisos de prazo por e-mail e hospedagem.
+
+## Banco de dados
+
+- Estrutura completa em [`supabase/schema.sql`](supabase/schema.sql): tabelas `chamados`, `eventos` (histórico), `retornos`, `liberacoes`, `multas_lojista`, `perfis` (usuários), `filiais` e `listas` (órgãos, motivos, não conformidades).
+- Regras de acesso (RLS): a **Filial** vê só os chamados da própria filial; **Jurídico** e **Compliance** veem todos; só o **Compliance** altera cadastros e perfis e decide liberações.
+- `config.js` guarda o endereço do projeto e a chave **publicável** (feita para o navegador). Nunca colocar a chave secreta no repositório.
+- **Login por filial + setor** (não por pessoa): na entrada, escolhe-se a filial, o setor e digita-se a senha. Cada conta usa um e-mail interno `filial.setor@fiscalizacao.fc`.
+- **Contas criadas só pelo Compliance**, na tela **Contas de acesso** do app (função `supabase/functions/gerenciar-usuarios`). Ao criar, o Compliance define o perfil (Filial, Jurídico ou Compliance) e **quais filiais a conta pode visualizar** — regra aplicada no próprio banco (`ve_filial`).
+- A primeira conta criada no painel do Supabase (`corp.compliance@fiscalizacao.fc`) vira **CORP · Compliance** automaticamente.
+- **Manter ativo:** `.github/workflows/manter-ativo.yml` chama a função `manter_ativo` 2x por dia, para o plano gratuito do Supabase não pausar após 7 dias sem uso.
 
 ## Objetivo
 
@@ -36,8 +46,13 @@ Garantir que toda fiscalização seja acompanhada pelas pessoas certas, registra
 ## Estrutura
 
 ```
-index.html        App (esboço navegável, 3 perfis)
-docs/sintese.html Síntese executiva do processo
+index.html          App (3 perfis, conectado ao Supabase; o config.js é embutido na geração)
+config.js           Endereço do projeto + chave publicável do Supabase
+supabase/schema.sql Estrutura do banco e regras de acesso
+supabase/02_login_filial_setor.sql  Login por filial+setor e filtro de visualização
+supabase/functions/gerenciar-usuarios  Criação de contas (só Compliance)
+.github/workflows/manter-ativo.yml     Mantém o Supabase ativo
+docs/sintese.html   Síntese executiva do processo
 ```
 
 ## Cronograma
@@ -52,10 +67,11 @@ docs/sintese.html Síntese executiva do processo
 
 ## Próximos passos técnicos
 
-1. Banco de dados (tabelas: chamados, histórico, retornos, liberações, multas a lojistas, cadastros, usuários)
-2. Login por perfil e regras de acesso (filial vê só os próprios chamados — LGPD)
-3. Anexos (notificação, fotos, auto de apreensão)
+1. ~~Banco de dados~~ ✅
+2. ~~Login por perfil, regras de acesso e tempo real~~ ✅
+3. Anexos (notificação, fotos, auto de apreensão) — Supabase Storage
 4. Avisos de prazo por e-mail
+5. Hospedagem (link para as filiais) e keep-alive do projeto gratuito
 
 ---
 Uso interno · Confidencial
