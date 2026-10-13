@@ -121,6 +121,8 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 /* Detalhe */
 .det-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
 .det-head h2{font-size:1.2rem}.det-head p{font-size:.76rem;color:var(--txt2)}
+.id-chamado{display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35rem .55rem;margin-top:.7rem;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:.35rem .7rem}
+.id-chamado span{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2)}.id-chamado b{font-size:.95rem;font-family:Consolas,monospace;margin-right:.4rem}
 .det{display:grid;grid-template-columns:1.35fr 1fr;gap:1rem;align-items:start}
 .info{display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1rem}
 .info div span{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)}
@@ -353,14 +355,14 @@ function erroDb(e, onde){ console.error(onde, e); toast('Erro ao salvar ('+onde+
 
 function paraLinha(c){
   return { filial:c.filial, unidade:c.unidade, lojista:c.lojista||null, obra:c.obra||null, orgao:c.orgao, motivo:c.motivo, forma:c.forma,
-    data:iso(c.data), fiscal:c.fiscal||null, recebeu:c.recebeu||null, acompanhou:c.acompanhou||null, resultados:c.resultados, doc:c.doc||null,
+    data:iso(c.data), fiscal:c.fiscal||null, recebeu:c.recebeu||null, acompanhou:c.acompanhou||null, resultados:c.resultados, doc:c.doc||null, protocolo:c.protocolo||null,
     prazo:iso(c.prazo), ncs:c.ncs, no_ato:c.noAto||null, apreensao:c.apreensao||null, relato:c.relato||null, status:c.status, desfecho:c.desfecho||null,
     multa_valor:c.multa ? c.multa.valor : null, multa_motivo:c.multa ? c.multa.motivo : null,
     envios_juridico:c.envios.juridico, envios_filial:c.envios.filial, limite_envios:c.limite, atualizado_em:new Date().toISOString() };
 }
 function deLinha(r){
   return { id:r.id, filial:r.filial, unidade:r.unidade, lojista:r.lojista||'', obra:r.obra||'', orgao:r.orgao, motivo:r.motivo, forma:r.forma,
-    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'',
+    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'', protocolo:r.protocolo||'',
     prazo:br(r.prazo), ncs:r.ncs||[], noAto:r.no_ato||'', apreensao:r.apreensao||'', relato:r.relato||'', status:r.status, desfecho:r.desfecho||'',
     multa: r.multa_valor != null ? {valor:+r.multa_valor, motivo:r.multa_motivo||''} : null,
     envios:{juridico:r.envios_juridico, filial:r.envios_filial}, limite:r.limite_envios, libPend:null, multaLojista:null, eventos:[], retornos:[] };
@@ -521,6 +523,41 @@ async function entrar(e){
 }
 async function sair(){ await sb.auth.signOut(); location.reload(); }
 
+// ---------- Troca de senha (obrigat\u00F3ria no 1\u00BA acesso e ap\u00F3s reset; ou a pedido da pessoa) ----------
+function telaTrocaSenha(obrigatoria, msg){
+  document.body.classList.add('sem-login');
+  var logo = document.querySelector('.top img');
+  $('login').innerHTML = DECO_LOGIN + '<div class="lg-wrap">' +
+    (logo ? '<div class="lg-logo">' + logo.outerHTML + '</div>' : '') +
+    '<div class="login-box"><h2>' + (obrigatoria ? 'Crie sua nova senha' : 'Trocar minha senha') + '</h2>' +
+    '<p>' + (obrigatoria ? 'Voc\u00EA entrou com uma senha provis\u00F3ria definida pelo Compliance. Para continuar, crie uma senha pessoal.' : 'Digite a nova senha duas vezes.') + '</p>' +
+    '<div class="lg-selo">F+</div>' +
+    (msg ? '<div class="env bloq" style="margin-bottom:.4rem">'+msg+'</div>' : '') +
+    '<form onsubmit="return salvarNovaSenha(event,' + (obrigatoria ? 'true' : 'false') + ')">' +
+    '<div class="f"><label>Nova senha</label><input id="ns_1" type="password" autocomplete="new-password" required></div>' +
+    '<div class="f"><label>Confirme a nova senha</label><input id="ns_2" type="password" autocomplete="new-password" required></div>' +
+    '<div class="hint">M\u00EDnimo de 8 caracteres, com letras e n\u00FAmeros. N\u00E3o use a senha provis\u00F3ria.</div>' +
+    '<button class="btn pri" style="width:100%;margin-top:1.2rem" type="submit" id="ns_btn">Salvar nova senha</button>' +
+    '<button class="btn" style="width:100%;margin-top:.5rem" type="button" onclick="' + (obrigatoria ? 'sair()' : 'document.body.classList.remove(\'sem-login\');render()') + '">' + (obrigatoria ? 'Sair' : 'Cancelar') + '</button></form>' +
+    '<div class="lg-rodape"><span>D\u00FAvidas? Fale com o Compliance: <a href="mailto:compliance@ferreiracosta.com.br">compliance@ferreiracosta.com.br</a> \u00B7 ramal 8619</span></div></div></div>';
+  setTimeout(function(){ var i = $('ns_1'); if (i) i.focus(); }, 50);
+}
+async function salvarNovaSenha(e, obrigatoria){
+  e.preventDefault();
+  var s1 = $('ns_1').value, s2 = $('ns_2').value;
+  if (s1.length < 8 || !/[a-zA-Z]/.test(s1) || !/\d/.test(s1)) { telaTrocaSenha(obrigatoria, 'A senha precisa ter pelo menos 8 caracteres, com letras e n\u00FAmeros.'); return false; }
+  if (s1 !== s2) { telaTrocaSenha(obrigatoria, 'As duas senhas n\u00E3o s\u00E3o iguais.'); return false; }
+  $('ns_btn').disabled = true; $('ns_btn').textContent = 'Salvando...';
+  var r = await sb.auth.updateUser({password:s1, data:{deve_trocar_senha:false}});
+  if (r.error) {
+    var m = /different|same/i.test(r.error.message) ? 'A nova senha precisa ser diferente da senha provis\u00F3ria.' : /weak|short|least/i.test(r.error.message) ? 'Senha fraca: use pelo menos 8 caracteres, com letras e n\u00FAmeros.' : 'N\u00E3o foi poss\u00EDvel salvar: ' + r.error.message;
+    telaTrocaSenha(obrigatoria, m); return false;
+  }
+  toast('Senha alterada com sucesso.');
+  if (obrigatoria) iniciar(); else { document.body.classList.remove('sem-login'); render(); }
+  return false;
+}
+
 async function iniciar(){
   var s = await sb.auth.getSession();
   if (!s.data.session) { telaLogin(); return; }
@@ -537,6 +574,9 @@ async function iniciar(){
     telaLogin('Este e-mail n\u00E3o est\u00E1 cadastrado na filial e no setor escolhidos. Confira a filial e o setor ou fale com o Compliance.'); return;
   }
   _escolhaLogin = null;
+  // senha provis\u00F3ria (conta nova ou senha resetada pelo Compliance): obriga a criar uma senha nova antes de usar o app
+  var us = await sb.auth.getUser();
+  if (us.data && us.data.user && (us.data.user.user_metadata || {}).deve_trocar_senha) { telaTrocaSenha(true); return; }
   document.body.classList.remove('sem-login');
   perfil = EU.papel; FILIAL_USUARIO = EU.filial || '';
   $('perfis').style.display = EU.papel === 'compliance' ? '' : 'none';
@@ -570,7 +610,8 @@ function renderSide(){
   $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+esc(ini)+'</div><div><b>'+esc(nome)+'</b><span>'+esc(sub)+'</span></div></div>' + troca +
     '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="filtroFilial=\'\';go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
     '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>' +
-    '<button class="btn sm" style="margin-top:.8rem;width:100%" onclick="sair()">Sair</button>';
+    '<button class="btn sm" style="margin-top:.8rem;width:100%" onclick="telaTrocaSenha(false)">Trocar minha senha</button>' +
+    '<button class="btn sm" style="margin-top:.4rem;width:100%" onclick="sair()">Sair</button>';
 }
 function tabela(lista, cols){
   if (!lista.length) return '<div class="empty">Nenhum chamado.</div>';
@@ -624,7 +665,7 @@ var LEMBRETES_POP = '<div class="pop-lembrete"><b>\uD83D\uDCCB Lembretes do POP 
   '<li>Registre o chamado no mesmo dia, com ou sem documento entregue pelo fiscal.</li></ul></div>';
 function fNovo(){
   var chk = function(name, list, type){ return '<div class="chk">'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, l = arr ? o[1] : o; return '<label><input type="'+(type||'checkbox')+'" name="'+name+'" value="'+esc(v)+'"> '+esc(l)+'</label>'; }).join('')+'</div>'; };
-  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado \u00E9 gerado ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' + LEMBRETES_POP +
+  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado (ID sequencial, ex.: FIS-0001) \u00E9 gerado pelo sistema ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' + LEMBRETES_POP +
   '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
   '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
     '<div class="f"><label>Filial</label><input value="'+FILIAL_USUARIO+'" disabled></div>' +
@@ -645,7 +686,8 @@ function fNovo(){
   '<div class="form-sec"><h4><span class="n">2</span>\u00D3rg\u00E3o e motivo</h4><div class="g3">' +
     '<div class="f"><label>\u00D3rg\u00E3o fiscalizador <span class="req">*</span></label><select name="orgao" required><option value="">Selecione</option>'+opts(ORGAOS)+'</select></div>' +
     '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'</select></div>' +
-    '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"><div class="hint">Obs.: informe a matr\u00EDcula se constar no crach\u00E1 ou no documento.</div></div></div></div>' +
+    '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"><div class="hint">Obs.: informe a matr\u00EDcula se constar no crach\u00E1 ou no documento.</div></div></div>' +
+    '<div class="g3" style="margin-top:.7rem"><div class="f"><label>Protocolo do \u00F3rg\u00E3o</label><input name="protocolo" placeholder="N\u00BA do protocolo / processo"><div class="hint">Se o \u00F3rg\u00E3o informou um n\u00FAmero de protocolo ou processo. Pode ser preenchido depois pelo Jur\u00EDdico.</div></div></div></div>' +
   '<div class="form-sec"><h4><span class="n">3</span>Quem recebeu e acompanhou</h4><div class="g2">' +
     '<div class="f"><label>Quem recebeu o fiscal <span class="req">*</span></label><select name="recebeu"><option>Frente de loja</option><option>Preven\u00E7\u00E3o</option><option>Recep\u00E7\u00E3o (correspond\u00EAncia)</option><option>GR de plant\u00E3o</option><option>ADM</option></select></div>' +
     '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><input name="acompanhou" value="ADM \u2014 supervisor" required><div class="hint">Inclua a \u00E1rea t\u00E9cnica, se foi acionada (TST, Manuten\u00E7\u00E3o).</div></div></div></div>' +
@@ -692,7 +734,7 @@ function enviarNovo(e){
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(g('data'))) { toast('Data da fiscaliza\u00E7\u00E3o deve estar no formato dd/mm/aaaa.'); return false; }
   if (!FILIAL_USUARIO) { toast('Seu usu\u00E1rio n\u00E3o tem filial definida.'); return false; }
   var c = mk({id:'(novo)', filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:g('orgao'), motivo:g('motivo'), forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:g('acompanhou'),
-    resultados:res, doc:g('doc'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
+    resultados:res, doc:g('doc'), protocolo:g('protocolo'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
     noAto:g('noAto'), apreensao:g('apreensao'), relato:g('relato'), status:'aberto', desfecho:'', multa: res.indexOf('multa')>=0 && mv ? {valor:mv, motivo:g('multaMotivo')||'N\u00E3o informado'} : null});
   c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
   if (propoe) { c.multaLojista = {valor:mlv, motivo:g('mlMotivo'), status:'pendente'}; addEv(c, 'filial', 'Proposta de multa contratual ao lojista ' + c.lojista + ': ' + brl(mlv) + ' \u2014 ' + g('mlMotivo') + '. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.'); }
@@ -860,7 +902,7 @@ async function exportarPainel(){
     add('Multas a lojistas', chamados.filter(function(c){ return c.multaLojista; }).map(function(c){ var m = c.multaLojista; return {'Chamado':c.id, 'Filial':c.filial, 'Lojista':c.lojista, 'Motivo':m.motivo, 'Proposto (R$)':m.valor, 'Confirmado (R$)':m.valorFinal != null ? m.valorFinal : '', 'Situa\u00E7\u00E3o':ML_ST[m.status]}; }));
     add('Chamados', chamados.slice().sort(recentes).map(function(c){ var p = pendente(c); return {
       'Chamado':c.id, 'Filial':c.filial, 'Local':c.unidade, 'Lojista / Obra':c.lojista || c.obra || '', '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
-      'Data':c.data, 'Fiscal':c.fiscal, 'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc,
+      'Data':c.data, 'Fiscal':c.fiscal, 'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc, 'Protocolo do \u00F3rg\u00E3o':c.protocolo,
       'Prazo do \u00F3rg\u00E3o':c.prazo, 'N\u00E3o conformidades':c.ncs.join(', '), 'Status':STATUS[c.status], 'Desfecho':c.desfecho,
       'Multa (R$)':c.multa ? c.multa.valor : '', 'Retorno pendente':(p && c.status!=='encerrado') ? NOME_SETOR[p.para] + ' at\u00E9 ' + p.prazo : '' }; }));
     XLSX.writeFile(wb, 'Painel_Fiscalizacao_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.xlsx');
@@ -906,7 +948,7 @@ function cUsuarios(){
       '<td style="white-space:nowrap">' + (ed
         ? '<button class="btn sm green" onclick="salvarUsuario(\''+p.id+'\')">Salvar</button> <button class="btn sm" onclick="_editUser=null;render()">Cancelar</button>'
         : '<button class="btn sm" onclick="_editUser=\''+p.id+'\';render()">Editar acesso</button> ' +
-          '<button class="btn sm" onclick="senhaUsuario(\''+p.id+'\')">Nova senha</button> ' +
+          '<button class="btn sm" onclick="senhaUsuario(\''+p.id+'\')">Resetar senha</button> ' +
           (p.id !== (EU&&EU.id) ? '<button class="btn sm" onclick="statusUsuario(\''+p.id+'\','+(p.ativo===false)+')">'+(p.ativo===false?'Reativar':'Desativar')+'</button>' : '')) + '</td></tr>';
   }).join('');
   return '<div class="ph"><div><h2>Contas de acesso</h2><p>Cada conta \u00E9 de uma pessoa (e-mail) vinculada a uma <b>filial + setor</b>. Para entrar, a pessoa informa filial, setor, e-mail e senha.</p></div></div>' +
@@ -917,7 +959,7 @@ function cUsuarios(){
     '<div class="f" style="margin-top:.7rem"><label>Pode visualizar</label><div class="hint" style="margin:0 0 .35rem">Nenhuma marcada = padr\u00E3o do perfil (Filial v\u00EA s\u00F3 a pr\u00F3pria filial; Jur\u00EDdico e Compliance veem todas). Marque para ampliar ou restringir.</div>'+visCheckboxes('nu_vis', [])+'</div>' +
     '<div class="g3" style="margin-top:.7rem"><div class="f"><label>E-mail da pessoa <span class="req">*</span></label><input id="nu_email" type="email" placeholder="nome@ferreiracosta.com.br"></div>' +
     '<div class="f"><label>Nome da pessoa <span class="req">*</span></label><input id="nu_nome" placeholder="Nome e sobrenome"></div>' +
-    '<div class="f"><label>Senha provis\u00F3ria <span class="req">*</span></label><input id="nu_senha" type="text" placeholder="M\u00EDnimo 8 caracteres"></div></div>' +
+    '<div class="f"><label>Senha provis\u00F3ria <span class="req">*</span></label><div style="display:flex;gap:.4rem"><input id="nu_senha" type="text" placeholder="M\u00EDnimo 8 caracteres" style="flex:1"><button class="btn sm" type="button" onclick="$(\'nu_senha\').value=gerarSenha()">Gerar</button></div><div class="hint">No 1\u00BA acesso a pessoa ser\u00E1 obrigada a trocar por uma senha pessoal.</div></div></div>' +
     '<div class="btns" style="margin-top:.8rem"><button class="btn green" id="nu_btn" onclick="criarConta()">Criar conta</button></div></div>' +
     '<div class="card"><h3>Contas cadastradas</h3><div class="sub">'+PERFIS.length+' conta(s)</div><div class="tbl-wrap"><table class="t"><thead><tr><th>Pessoa \u00B7 Filial \u00B7 Setor</th><th>Perfil</th><th>Visualiza</th><th></th></tr></thead><tbody>'+(linhas || '<tr><td colspan="4" class="empty">Nenhuma conta.</td></tr>')+'</tbody></table></div></div>';
 }
@@ -934,13 +976,13 @@ async function criarConta(){
   if (!filial || !setor) return toast('Escolha a filial e o setor.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Informe um e-mail v\u00E1lido.');
   if (!nome) return toast('Informe o nome da pessoa.');
-  if (senha.length < 8) return toast('A senha provis\u00F3ria precisa ter pelo menos 8 caracteres.');
+  if (senha.length < 8 || !/[a-zA-Z]/.test(senha) || !/\d/.test(senha)) return toast('A senha provis\u00F3ria precisa ter 8+ caracteres, com letras e n\u00FAmeros.');
   if (papel === 'filial' && FILIAIS.indexOf(filial) < 0) return toast('Conta de Filial precisa ser de uma loja (n\u00E3o Corporativo).');
   var btn = $('nu_btn'); btn.disabled = true; btn.textContent = 'Criando...';
   var r = await chamarAdmin({acao:'criar', email:email, filial:filial, setor:setor, papel:papel, senha:senha, nome:nome, filiais_visiveis:lerVis('nu_vis')});
   btn.disabled = false; btn.textContent = 'Criar conta';
   if (!r) return;
-  toast('Conta criada para ' + nome + '. Para entrar: filial ' + filial + ', setor ' + setor + ', o e-mail e a senha provis\u00F3ria.');
+  alert('Conta criada para ' + nome + '.\n\nPara entrar:\nFilial: ' + filial + '\nSetor: ' + setor + '\nE-mail: ' + email + '\nSenha provis\u00F3ria: ' + senha + '\n\nNo 1\u00BA acesso o app vai pedir para criar uma senha nova.');
   await carregarTudo(); render();
 }
 async function salvarUsuario(id){
@@ -949,10 +991,20 @@ async function salvarUsuario(id){
   if (r.error) return erroDb(r.error, 'conta');
   _editUser = null; await carregarTudo(); toast('Acesso atualizado.'); render();
 }
+// senha provis\u00F3ria sugerida: letras + n\u00FAmeros, sem caracteres que confundem (0/O, 1/l)
+function gerarSenha(){
+  var L = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz', N = '23456789', a = new Uint32Array(10), s = '';
+  crypto.getRandomValues(a);
+  for (var i=0;i<10;i++) s += (i===3 || i===7 ? N : L)[a[i] % (i===3 || i===7 ? N : L).length];
+  return s;
+}
 async function senhaUsuario(id){
-  var s = prompt('Nova senha para esta conta (m\u00EDnimo 8 caracteres):');
-  if (!s) return; if (s.length < 8) return toast('A senha precisa ter pelo menos 8 caracteres.');
-  if (await chamarAdmin({acao:'redefinir_senha', user_id:id, senha:s})) toast('Senha redefinida.');
+  var p = PERFIS.filter(function(x){ return x.id===id; })[0] || {};
+  var s = prompt('Resetar a senha de ' + (p.nome || p.email || 'esta conta') + '.\n\nSenha provis\u00F3ria (pode alterar; m\u00EDnimo 8 caracteres, letras e n\u00FAmeros).\nNo pr\u00F3ximo acesso a pessoa ser\u00E1 obrigada a criar uma senha nova.', gerarSenha());
+  if (s == null) return; s = s.trim();
+  if (s.length < 8 || !/[a-zA-Z]/.test(s) || !/\d/.test(s)) return toast('A senha provis\u00F3ria precisa ter 8+ caracteres, com letras e n\u00FAmeros.');
+  if (await chamarAdmin({acao:'redefinir_senha', user_id:id, senha:s}))
+    alert('Senha resetada.\n\nPasse para ' + (p.nome || 'a pessoa') + ' (' + (p.email || '') + '):\nSenha provis\u00F3ria: ' + s + '\n\nNo pr\u00F3ximo acesso o app vai pedir para criar uma senha nova.');
 }
 async function statusUsuario(id, ativar){
   if (await chamarAdmin({acao:'status', user_id:id, ativo:ativar})) { toast(ativar ? 'Conta reativada.' : 'Conta desativada.'); await carregarTudo(); render(); }
@@ -968,6 +1020,7 @@ function detalhe(c){
       '<div class="f"><label>\u00D3rg\u00E3o</label><select id="e_orgao">'+opts(ORGAOS, c.orgao)+'</select></div>' +
       '<div class="f"><label>Motivo</label><select id="e_motivo">'+opts(MOTIVOS, c.motivo)+'</select></div>' +
       '<div class="f"><label>Prazo do \u00F3rg\u00E3o</label><input id="e_prazo" value="'+esc(c.prazo)+'"></div>' +
+      '<div class="f"><label>Protocolo do \u00F3rg\u00E3o</label><input id="e_protocolo" value="'+esc(c.protocolo)+'"></div>' +
       '<div class="f"><label>Status</label><select id="e_status">'+Object.keys(STATUS).map(function(k){ return '<option value="'+k+'"'+(k===c.status?' selected':'')+'>'+STATUS[k]+'</option>'; }).join('')+'</select></div>' +
       '<div class="f full"><label>N\u00E3o conformidades</label><div class="chk">'+NCS.map(function(n){ var on = c.ncs.indexOf(n)>=0; return '<label class="'+(on?'on':'')+'"><input type="checkbox" class="e_nc" value="'+esc(n)+'"'+(on?' checked':'')+'> '+esc(n)+'</label>'; }).join('')+'</div></div>' +
       '<div class="f full"><label>Relato</label><textarea id="e_relato">'+esc(c.relato)+'</textarea></div>' +
@@ -975,7 +1028,7 @@ function detalhe(c){
     '</div>' :
     '<div class="info">' + I('Filial', c.filial) + I('Local da fiscaliza\u00E7\u00E3o', c.unidade) +
       (c.lojista ? I('Lojista do Mall', c.lojista) : '') + (c.obra ? I('Obra / respons\u00E1vel t\u00E9cnico', c.obra) : '') + I('Data', c.data) + I('\u00D3rg\u00E3o', c.orgao) + I('Motivo', c.motivo) + I('Forma', c.forma) + I('Fiscal', c.fiscal) +
-      I('Quem recebeu o fiscal', c.recebeu) + I('Quem acompanhou', c.acompanhou) + I('N\u00BA do documento', c.doc) + '<div><span>Prazo do \u00F3rg\u00E3o</span>'+prazoHtml(c)+'</div>' +
+      I('Quem recebeu o fiscal', c.recebeu) + I('Quem acompanhou', c.acompanhou) + I('N\u00BA do documento', c.doc) + I('Protocolo do \u00F3rg\u00E3o', c.protocolo) + '<div><span>Prazo do \u00F3rg\u00E3o</span>'+prazoHtml(c)+'</div>' +
       '<div class="full"><span>Resultado</span>'+tags(c)+'</div>' +
       '<div class="full"><span>N\u00E3o conformidades</span>'+(c.ncs.length ? c.ncs.map(function(n){ return '<span class="tag">'+esc(n)+'</span>'; }).join('') : '<p>\u2014</p>')+'</div>' +
       I('O que o fiscal avaliou', c.relato, 1) + I('Corrigido no ato', c.noAto, 1) + '</div>' +
@@ -983,7 +1036,8 @@ function detalhe(c){
       (c.multa ? '<div class="box multa"><b>Multa:</b> '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>' : '') +
       (c.desfecho ? '<div class="box"><b>Desfecho:</b> '+esc(c.desfecho)+'</div>' : '') + mlBox(c);
   return '<div class="det-head"><div><button class="btn sm" onclick="go(null,\''+voltar+'\')">\u2190 Voltar</button>' +
-    '<h2 style="margin-top:.6rem">'+c.id+' \u00B7 '+esc(c.orgao)+'</h2><p>Filial '+c.filial+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
+    '<div class="id-chamado"><span>Chamado n\u00BA</span><b>'+c.id+'</b>'+(c.protocolo ? '<span>Protocolo do \u00F3rg\u00E3o</span><b>'+esc(c.protocolo)+'</b>' : '')+'</div>' +
+    '<h2 style="margin-top:.35rem">'+esc(c.orgao)+'</h2><p>Filial '+c.filial+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
     prazoBanner(c) +
     '<div class="det"><div>' + fluxoRetorno(c) + '<div class="card"><h3>Dados da fiscaliza\u00E7\u00E3o</h3><div class="sub">'+(edit ? 'Modo de edi\u00E7\u00E3o do Compliance' : 'Registro enviado pela filial')+'</div>'+info+'</div>' +
     '<div class="card"><h3>Hist\u00F3rico do chamado</h3><div class="sub">Tudo o que foi feito, por quem e quando</div><div class="tl">' +
@@ -1065,6 +1119,7 @@ function acoes(c){
       contador(c,'juridico') + '<div class="f" style="margin-top:.5rem"><textarea id="a_sol" placeholder="Documentos ou informa\u00E7\u00F5es necess\u00E1rias"></textarea></div>' +
       '<div class="f"><label>Filial deve retornar at\u00E9 <span class="req">*</span></label><input id="a_ret" value="'+prazoRetorno(c, hojeBR(), 2)+'"><div class="hint">'+(c.prazo ? 'Precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+'), para dar tempo de protocolar.' : 'Sem prazo do \u00F3rg\u00E3o registrado: confirme o prazo com a filial.')+'</div></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'solicitar\')">Enviar solicita\u00E7\u00E3o</button></div>'
       : bloqueio(c,'juridico'));
+    h += '<h4>Protocolo do \u00F3rg\u00E3o</h4><div class="f"><input id="a_prot" value="'+esc(c.protocolo)+'" placeholder="N\u00BA do protocolo / processo no \u00F3rg\u00E3o"></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'protocolo\')">Salvar protocolo</button></div>';
     h += '<h4>Resposta ao \u00F3rg\u00E3o</h4><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'responder\')">Registrar resposta protocolada</button></div>';
     h += '<h4>Registrar desfecho</h4><div class="f"><select id="a_desf" onchange="document.getElementById(\'a_mul\').style.display=this.value===\'Multa aplicada\'?\'block\':\'none\'">'+opts(DESFECHOS)+'</select></div>' +
       '<div id="a_mul" style="display:none"><div class="g2"><div class="f"><label>Valor</label><input id="a_mv" placeholder="R$"></div><div class="f"><label>Motivo</label><input id="a_mm"></div></div></div>' +
@@ -1098,6 +1153,8 @@ function acao(id, tipo){
     if (c.prazo && pBR(ret) >= pBR(c.prazo)) return toast('O retorno da filial precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+').');
     c.envios.juridico++; fecharPendente(c,'juridico'); c.retornos.push(rt('juridico','filial', hojeBR(), ret));
     addEv(c,'juridico','Envio '+c.envios.juridico+'/'+c.limite+' \u00B7 Solicitado \u00E0 filial (retornar at\u00E9 '+ret.slice(0,5)+'): '+val('a_sol')); c.status='aguard_filial'; toast('Solicita\u00E7\u00E3o enviada \u00E0 filial.'); }
+  if (tipo==='protocolo'){ var np = val('a_prot'); if (np === (c.protocolo||'')) return toast('Protocolo n\u00E3o foi alterado.');
+    addEv(c,'juridico', np ? 'Protocolo do \u00F3rg\u00E3o registrado: ' + np + (c.protocolo ? ' (antes: ' + c.protocolo + ')' : '') + '.' : 'Protocolo do \u00F3rg\u00E3o removido (era ' + c.protocolo + ').'); c.protocolo = np; toast('Protocolo salvo.'); }
   if (tipo==='responder'){ fecharPendente(c,'juridico'); addEv(c,'juridico','Resposta protocolada no \u00F3rg\u00E3o dentro do prazo.'); c.status='respondido'; toast('Resposta registrada.'); }
   if (tipo==='encerrar'){
     var d = val('a_desf');
@@ -1124,7 +1181,7 @@ function salvarEdicao(id){
   var c = byId(id), mud = [];
   var set = function(campo, nome, novo){ if (String(c[campo]) !== String(novo)) { mud.push(nome+': "'+(c[campo]||'\u2014')+'" \u2192 "'+(novo||'\u2014')+'"'); c[campo] = novo; } };
   var np = val('e_prazo'); if (np && !/^\d{2}\/\d{2}\/\d{4}$/.test(np)) return toast('Prazo do \u00F3rg\u00E3o deve estar no formato dd/mm/aaaa.');
-  set('orgao','\u00D3rg\u00E3o', val('e_orgao')); set('motivo','Motivo', val('e_motivo')); set('prazo','Prazo', np); set('relato','Relato', val('e_relato'));
+  set('orgao','\u00D3rg\u00E3o', val('e_orgao')); set('motivo','Motivo', val('e_motivo')); set('prazo','Prazo', np); set('protocolo','Protocolo do \u00F3rg\u00E3o', val('e_protocolo')); set('relato','Relato', val('e_relato'));
   var st = val('e_status'); if (st !== c.status) { mud.push('Status: '+STATUS[c.status]+' \u2192 '+STATUS[st]); c.status = st; }
   var ncs = [].map.call(document.querySelectorAll('.e_nc:checked'), function(i){ return i.value; });
   if (ncs.join('|') !== c.ncs.join('|')) { mud.push('N\u00E3o conformidades atualizadas'); c.ncs = ncs; }
@@ -1142,14 +1199,8 @@ function bindDetalhe(){
 (function(){
   if (!window.supabase || !window.FISC_CONFIG) { document.body.innerHTML = '<p style="padding:2rem;font-family:sans-serif">N\u00E3o foi poss\u00EDvel carregar a conex\u00E3o com o banco (verifique a internet e o arquivo config.js).</p>'; return; }
   sb = window.supabase.createClient(window.FISC_CONFIG.url, window.FISC_CONFIG.key);
-  sb.auth.onAuthStateChange(function(evt){ if (evt === 'PASSWORD_RECOVERY') novaSenha(); });
+  sb.auth.onAuthStateChange(function(evt){ if (evt === 'PASSWORD_RECOVERY') setTimeout(function(){ telaTrocaSenha(true); }, 0); });
   iniciar();
 })();
-async function novaSenha(){
-  var s = prompt('Digite sua nova senha (m\u00EDnimo 8 caracteres):');
-  if (!s || s.length < 8) { toast('Senha n\u00E3o alterada.'); return; }
-  var r = await sb.auth.updateUser({password:s});
-  toast(r.error ? 'Erro: ' + r.error.message : 'Senha alterada.');
-}
 </script>
 </body></html>
