@@ -661,11 +661,11 @@ function cartaoPendente(c){
 }
 var LEMBRETES_POP = '<div class="pop-lembrete"><b>\uD83D\uDCCB Lembretes do POP \u2014 na hora da fiscaliza\u00E7\u00E3o</b><ul>' +
   '<li>Confira o crach\u00E1 do fiscal: nome, matr\u00EDcula e \u00F3rg\u00E3o.</li><li>Acompanhe a vistoria do in\u00EDcio ao fim.</li>' +
-  '<li>Assinar confirma o recebimento; n\u00E3o significa concordar com a infra\u00E7\u00E3o.</li><li>Nunca retire um item apreendido sem alinhar com o Jur\u00EDdico.</li>' +
+  '<li>Nunca retire um item apreendido sem alinhar com o Jur\u00EDdico e o Comercial.</li>' +
   '<li>Registre o chamado no mesmo dia, com ou sem documento entregue pelo fiscal.</li></ul></div>';
 function fNovo(){
   var chk = function(name, list, type){ return '<div class="chk">'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, l = arr ? o[1] : o; return '<label><input type="'+(type||'checkbox')+'" name="'+name+'" value="'+esc(v)+'"> '+esc(l)+'</label>'; }).join('')+'</div>'; };
-  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2><p>O n\u00FAmero do chamado (ID sequencial, ex.: FIS-0001) \u00E9 gerado pelo sistema ao enviar. O Jur\u00EDdico \u00E9 avisado na hora.</p></div></div>' + LEMBRETES_POP +
+  return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2></div></div>' + LEMBRETES_POP +
   '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
   '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
     '<div class="f"><label>Filial</label><input value="'+FILIAL_USUARIO+'" disabled></div>' +
@@ -673,7 +673,7 @@ function fNovo(){
     '<div class="f"><label>Data da fiscaliza\u00E7\u00E3o <span class="req">*</span></label><input name="data" value="'+hojeBR()+'" required></div>' +
     '<div class="f"><label>Forma <span class="req">*</span></label><select name="forma">'+opts(FORMAS)+'</select></div></div>' +
     '<div class="cond" id="cMall"><div class="f"><label>Nome do lojista (locat\u00E1rio) <span class="req">*</span></label><input name="lojista" placeholder="Ex.: \u00D3tica do Mall"></div>' +
-    '<div class="hint" style="margin-top:.4rem">Na loja do Mall, o lojista responde pela pr\u00F3pria fiscaliza\u00E7\u00E3o. A filial registra o caso para ci\u00EAncia e pede a c\u00F3pia da notifica\u00E7\u00E3o. Se envolver \u00E1rea comum (AVCB, rotas de fuga, estacionamento), trate como fiscaliza\u00E7\u00E3o da filial.</div>' +
+    '<div class="hint" style="margin-top:.4rem">Na loja do Mall, o lojista responde pela pr\u00F3pria fiscaliza\u00E7\u00E3o. A filial registra o caso para ci\u00EAncia e pede a c\u00F3pia da notifica\u00E7\u00E3o. Se envolver \u00E1rea comum (AVCB, rotas de fuga, estacionamento), trate como fiscaliza\u00E7\u00E3o da filial, pois precisa ser avaliado se \u00E9 necess\u00E1rio um representante t\u00E9cnico da filial.</div>' +
     '<div class="ml-box"><div class="f"><label>Propor multa contratual ao lojista por certificado ou licen\u00E7a vencida?</label><div class="chk">' +
       '<label><input type="radio" name="mlProp" value="nao" checked> N\u00E3o</label><label><input type="radio" name="mlProp" value="sim"> Sim, propor multa</label></div></div>' +
       '<div class="cond" id="cMultaLoj" style="background:var(--card);border:1px solid var(--bdr)"><div class="g2">' +
@@ -684,13 +684,19 @@ function fNovo(){
     '<div class="f"><label>Respons\u00E1vel t\u00E9cnico (ART / RRT)</label><input name="respTec" placeholder="Nome e n\u00BA da ART ou RRT"></div></div>' +
     '<div class="hint" style="margin-top:.4rem">Vale tamb\u00E9m para obras executadas por terceiros. Tenha \u00E0 m\u00E3o o alvar\u00E1 de obra e a ART/RRT do respons\u00E1vel t\u00E9cnico.</div></div></div>' +
   '<div class="form-sec"><h4><span class="n">2</span>\u00D3rg\u00E3o e motivo</h4><div class="g3">' +
-    '<div class="f"><label>\u00D3rg\u00E3o fiscalizador <span class="req">*</span></label><select name="orgao" required><option value="">Selecione</option>'+opts(ORGAOS)+'</select></div>' +
-    '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'</select></div>' +
+    '<div class="f"><label>\u00D3rg\u00E3o fiscalizador <span class="req">*</span></label><select name="orgao" required><option value="">Selecione</option>'+opts(ORGAOS)+'<option value="__outro">Outro</option></select>' +
+      '<input name="orgaoOutro" class="outro-campo" placeholder="Escreva o nome do \u00F3rg\u00E3o" style="display:none;margin-top:.4rem"></div>' +
+    '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'<option value="__outro">Outro</option></select>' +
+      '<input name="motivoOutro" class="outro-campo" placeholder="Escreva o motivo" style="display:none;margin-top:.4rem"></div>' +
     '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"><div class="hint">Obs.: informe a matr\u00EDcula se constar no crach\u00E1 ou no documento.</div></div></div>' +
     '<div class="g3" style="margin-top:.7rem"><div class="f"><label>Protocolo do \u00F3rg\u00E3o</label><input name="protocolo" placeholder="N\u00BA do protocolo / processo"><div class="hint">Se o \u00F3rg\u00E3o informou um n\u00FAmero de protocolo ou processo. Pode ser preenchido depois pelo Jur\u00EDdico.</div></div></div></div>' +
   '<div class="form-sec"><h4><span class="n">3</span>Quem recebeu e acompanhou</h4><div class="g2">' +
     '<div class="f"><label>Quem recebeu o fiscal <span class="req">*</span></label><select name="recebeu"><option>Frente de loja</option><option>Preven\u00E7\u00E3o</option><option>Recep\u00E7\u00E3o (correspond\u00EAncia)</option><option>GR de plant\u00E3o</option><option>ADM</option></select></div>' +
-    '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><input name="acompanhou" value="ADM \u2014 supervisor" required><div class="hint">Inclua a \u00E1rea t\u00E9cnica, se foi acionada (TST, Manuten\u00E7\u00E3o).</div></div></div></div>' +
+    '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><select name="acompanhou" required><option value="">Selecione</option><option>Supervisor ADM</option><option>Aux. ADM</option><option value="__outro">Outro</option></select>' +
+      '<input name="acompanhouOutro" placeholder="Quem acompanhou? (nome e fun\u00E7\u00E3o)" style="display:none;margin-top:.4rem"></div></div>' +
+    '<div class="f" style="margin-top:.7rem"><label>Precisou incluir uma \u00E1rea t\u00E9cnica? <span class="req">*</span></label><div class="chk">' +
+      '<label class="on"><input type="radio" name="areaTec" value="nao" checked> N\u00E3o</label><label><input type="radio" name="areaTec" value="sim"> Sim</label></div>' +
+      '<input name="areaTecQual" placeholder="Qual \u00E1rea t\u00E9cnica? Ex.: TST, Manuten\u00E7\u00E3o" style="display:none;margin-top:.4rem;max-width:420px"></div></div>' +
   '<div class="form-sec"><h4><span class="n">4</span>Resultado da fiscaliza\u00E7\u00E3o</h4>' + chk('res', [['notificacao','Notifica\u00E7\u00E3o'],['apreensao','Apreens\u00E3o'],['multa','Multa (auto de infra\u00E7\u00E3o)'],['sem_doc','Visita sem notifica\u00E7\u00E3o']]) +
     '<div class="cond" id="cDoc"><div class="g2"><div class="f"><label>N\u00BA do documento</label><input name="doc"></div><div class="f"><label>Prazo dado pelo \u00F3rg\u00E3o <span class="req">* crucial</span></label><input name="prazo" placeholder="dd/mm/aaaa"><div class="hint">Os retornos entre filial e Jur\u00EDdico s\u00E3o calculados a partir deste prazo.</div></div></div></div>' +
     '<div class="cond" id="cApr"><div class="f"><label>Itens apreendidos (c\u00F3digo, descri\u00E7\u00E3o e quantidade)</label><textarea name="apreensao"></textarea><div class="hint">Confira com o auto de apreens\u00E3o e guarde a via da loja.</div></div></div>' +
@@ -716,6 +722,14 @@ function bindNovo(){
     $('cMul').classList.toggle('show', r.indexOf('multa')>=0);
     $('cMall').classList.toggle('show', f.elements.unidade.value==='Loja do Mall');
     $('cObra').classList.toggle('show', f.elements.unidade.value==='Obra');
+    // op\u00E7\u00E3o "Outro" libera o campo de texto
+    [['orgao','orgaoOutro'], ['motivo','motivoOutro'], ['acompanhou','acompanhouOutro']].forEach(function(p){
+      var on = f.elements[p[0]].value === '__outro', inp = f.elements[p[1]];
+      if (on && inp.style.display === 'none' && e.target === f.elements[p[0]]) setTimeout(function(){ inp.focus(); }, 0);
+      inp.style.display = on ? '' : 'none';
+    });
+    var at = f.querySelector('input[name=areaTec]:checked');
+    f.elements.areaTecQual.style.display = at && at.value === 'sim' ? '' : 'none';
   });
 }
 function enviarNovo(e){
@@ -733,7 +747,19 @@ function enviarNovo(e){
   var mv = parseFloat(g('multaValor').replace(/[^\d,]/g,'').replace(',','.'));
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(g('data'))) { toast('Data da fiscaliza\u00E7\u00E3o deve estar no formato dd/mm/aaaa.'); return false; }
   if (!FILIAL_USUARIO) { toast('Seu usu\u00E1rio n\u00E3o tem filial definida.'); return false; }
-  var c = mk({id:'(novo)', filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:g('orgao'), motivo:g('motivo'), forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:g('acompanhou'),
+  // "Outro": usa o texto digitado
+  var orgao = g('orgao') === '__outro' ? g('orgaoOutro') : g('orgao');
+  if (!orgao) { toast('Escreva o nome do \u00F3rg\u00E3o fiscalizador.'); f.elements.orgaoOutro.focus(); return false; }
+  var motivo = g('motivo') === '__outro' ? g('motivoOutro') : g('motivo');
+  if (!motivo) { toast('Escreva o motivo da fiscaliza\u00E7\u00E3o.'); f.elements.motivoOutro.focus(); return false; }
+  var acomp = g('acompanhou') === '__outro' ? g('acompanhouOutro') : g('acompanhou');
+  if (!acomp) { toast('Informe quem acompanhou a vistoria.'); f.elements.acompanhouOutro.focus(); return false; }
+  var atSel = f.querySelector('input[name=areaTec]:checked');
+  if (atSel && atSel.value === 'sim') {
+    if (!g('areaTecQual')) { toast('Informe qual \u00E1rea t\u00E9cnica foi inclu\u00EDda.'); f.elements.areaTecQual.focus(); return false; }
+    acomp += ' \u00B7 \u00C1rea t\u00E9cnica: ' + g('areaTecQual');
+  } else acomp += ' \u00B7 Sem \u00E1rea t\u00E9cnica';
+  var c = mk({id:'(novo)', filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:orgao, motivo:motivo, forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:acomp,
     resultados:res, doc:g('doc'), protocolo:g('protocolo'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
     noAto:g('noAto'), apreensao:g('apreensao'), relato:g('relato'), status:'aberto', desfecho:'', multa: res.indexOf('multa')>=0 && mv ? {valor:mv, motivo:g('multaMotivo')||'N\u00E3o informado'} : null});
   c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
