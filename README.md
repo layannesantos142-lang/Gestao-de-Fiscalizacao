@@ -13,6 +13,7 @@ App de gestão das fiscalizações recebidas pela Ferreira Costa — Compliance 
 - **Contas criadas só pelo Compliance**, na tela **Contas de acesso** do app (função `supabase/functions/gerenciar-usuarios`). Ao criar, o Compliance define o perfil (Filial, Jurídico ou Compliance) e **quais filiais a conta pode visualizar** — regra aplicada no próprio banco (`ve_filial`).
 - A primeira conta criada no painel do Supabase (`corp.compliance@fiscalizacao.fc`) vira **CORP · Compliance** automaticamente.
 - **Manter ativo:** `.github/workflows/manter-ativo.yml` chama a função `manter_ativo` 2x por dia, para o plano gratuito do Supabase não pausar após 7 dias sem uso.
+- **Backup automático:** `supabase/03_backup_automatico.sql` — todo dia às 03h o Supabase copia todas as tabelas para o esquema `backup` (30 dias diários + 1 por mês por 12 meses). Na tela **Backup e sistema** o Compliance vê o último backup e o último sinal do "manter ativo" e baixa um backup completo em Excel.
 
 ## Objetivo
 

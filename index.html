@@ -196,12 +196,29 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 .toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);background:#242428;color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.78rem;font-weight:600;opacity:0;transition:.25s;z-index:200;box-shadow:var(--shm);max-width:calc(100vw - 2rem)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #login{display:none}
-body.sem-login #login{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1rem}
+/* ===== Tela de entrada (mesmo visual do acesso corporativo Ferreira Costa) ===== */
+body.sem-login{background:#f7f7f7}
+body.sem-login #login{display:block;min-height:100vh;position:relative;overflow:hidden;padding:2rem 1rem 3rem}
 body.sem-login .top .perfis,body.sem-login .top .btn-dark,body.sem-login .app{display:none}
 body.sem-login .top{display:none}
-.login-box{background:var(--card);border:1px solid var(--bdr);border-top:3px solid var(--red);border-radius:0 0 14px 14px;box-shadow:var(--shm);padding:1.8rem 1.6rem;width:100%;max-width:380px}
-.login-box h2{font-size:1.2rem;text-align:center}.login-box>p{font-size:.78rem;color:var(--txt2);text-align:center;margin-bottom:1.1rem}
-.login-box input{width:100%}
+.lg-wrap{position:relative;z-index:1;max-width:480px;margin:0 auto}
+.lg-logo{display:flex;justify-content:center;margin:.5rem 0 1.6rem}
+.lg-logo img{height:84px !important;width:auto}
+.login-box{background:#fff;color:#191919;border:1px solid #ececec;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:2.4rem 2.5rem 2rem;width:100%}
+.login-box h2{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;color:#191919}
+.login-box>p{font-size:.95rem;color:#585858;margin:.35rem 0 1.4rem}
+.lg-selo{width:64px;height:64px;border-radius:50%;background:#c8102e;color:#fff;font-weight:800;font-size:1.05rem;display:flex;align-items:center;justify-content:center;margin:.2rem auto 1.4rem;letter-spacing:.02em}
+.login-box .f label{font-size:.92rem;font-weight:600;color:#191919;margin-bottom:.45rem}
+.login-box .f{margin-top:1rem}
+.login-box input,.login-box select{width:100%;border:1px solid #dcdcdc;border-radius:10px;padding:.8rem .95rem;font-size:.95rem;background:#fff;color:#191919}
+.login-box input:focus,.login-box select:focus{outline:none;border-color:#c8102e;box-shadow:0 0 0 3px rgba(200,16,46,.12)}
+.login-box .btn.pri{padding:.85rem;font-size:.95rem;border-radius:10px;background:#c8102e;border-color:#c8102e}
+.lg-rodape{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:1rem;font-size:.76rem;color:#8e8e8e}
+.lg-rodape a{color:#585858}
+.lg-deco-tr{position:fixed;top:0;right:0;width:300px;pointer-events:none;z-index:0}
+.lg-deco-bl{position:fixed;left:0;bottom:0;display:flex;z-index:0;pointer-events:none}
+.lg-deco-bl div{width:64px;height:64px;display:flex;align-items:center;justify-content:center}
+@media(max-width:700px){.lg-deco-tr{width:170px;opacity:.6}.lg-deco-bl div{width:46px;height:46px}.login-box{padding:1.8rem 1.4rem}.login-box h2{font-size:1.4rem}}
 
 @media(max-width:1000px){.app{grid-template-columns:1fr}.side{position:static}.nav{display:flex;gap:.3rem;overflow-x:auto}.nav button{width:auto;white-space:nowrap}.side .papel{display:none}.det{grid-template-columns:1fr}.foco-grid{grid-template-columns:1fr 1fr}.kpis,.kpis.k5{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.top-in,.app,.aviso{padding-left:1rem;padding-right:1rem}.perfis{margin-left:0;width:100%}.perfis button{flex:1;justify-content:center;padding:.5rem .4rem}.g2,.g3,.info,.cad,.foco-grid{grid-template-columns:1fr}.top .ttl{display:none}}
@@ -441,6 +458,25 @@ function ouvirMudancas(){
 function slug(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036F]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 function contaEmail(filial, setor){ return slug(filial) + '.' + slug(setor) + '@fiscalizacao.fc'; }
 var _loginComEmail = false;
+// detalhes gr\u00E1ficos da tela de entrada (\u00EDcones em tra\u00E7o verde no canto superior e quadrados coloridos no inferior)
+var DECO_LOGIN = (function(){
+  var v = '#5aab2e', vv = '#8cc63f';
+  var tr = '<svg class="lg-deco-tr" viewBox="0 0 300 330" fill="none" stroke="'+v+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<rect x="2" y="2" width="78" height="94"/><rect x="80" y="2" width="78" height="94"/><rect x="158" y="2" width="140" height="94"/>' +
+    '<rect x="158" y="96" width="74" height="78"/><rect x="232" y="174" width="66" height="66"/><rect x="158" y="240" width="74" height="74"/>' +
+    '<path d="M14 80 L30 46 L42 64 L58 28 L68 38"/><path d="M58 28 L68 28 L68 38"/>' +
+    '<circle cx="104" cy="44" r="5"/><circle cx="119" cy="44" r="5"/><circle cx="134" cy="44" r="5"/><path d="M98 58v16M110 58v16M113 58v16M125 58v16M128 58v16M140 58v16M98 58h12M113 58h12M128 58h12"/>' +
+    '<path d="M196 20 l22 22 l30 -30 M210 62 l22 -22 M226 74 l22 -22 M240 84 l18 -18 M188 30 l20 28 l30 30"/>' +
+    '<path d="M170 122 q10 -8 20 0 t20 0 t20 0 M170 140 q10 -8 20 0 t20 0 t20 0 M170 158 q10 -8 20 0 t20 0 t20 0"/>' +
+    '<circle cx="265" cy="200" r="16"/><text x="265" y="206" font-size="14" font-family="Segoe UI,Arial" text-anchor="middle" fill="'+v+'" stroke="none" font-weight="700">Fc</text><path d="M255 214 l-4 16 l8 -5 l6 7 l6 -7 l8 5 l-4 -16"/>' +
+    '<path d="M174 268 h42 l-5 30 h-32 z M186 268 l9 -14 l9 14 M186 278v12 M195 278v12 M204 278v12"/>' +
+    '<path d="M120 276 q8 -6 16 0 t16 0 M120 288 q8 -6 16 0 t16 0"/></svg>';
+  var ic = function(path){ return '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".85">'+path+'</svg>'; };
+  var bl = '<div class="lg-deco-bl"><div style="background:'+vv+'">'+ic('<path d="M12 20s-6-4-6-8a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4-6 8-6 8z"/><path d="M4 14v6h4M20 14v6h-4"/>')+'</div>' +
+    '<div style="background:#e30d2c">'+ic('<path d="M4 5h11v8H8l-4 3z"/><path d="M15 9h5v8l-3-2h-6v-2"/>')+'</div>' +
+    '<div style="background:'+vv+'">'+ic('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M12 17s-3-2-3-4a1.5 1.5 0 0 1 3-.5 1.5 1.5 0 0 1 3 .5c0 2-3 4-3 4z"/>')+'</div></div>';
+  return tr + bl;
+})();
 async function telaLogin(msg){
   document.body.classList.add('sem-login');
   var logo = document.querySelector('.top img');
@@ -448,18 +484,20 @@ async function telaLogin(msg){
   var s = await sb.from('listas').select('valor').eq('tipo','setor').order('ordem');
   var fil = (f.data||[]).map(function(x){ return '<option value="'+esc(x.codigo)+'">'+esc(x.codigo + (x.nome ? ' \u2014 ' + x.nome : ''))+'</option>'; }).join('');
   var set = (s.data||[]).map(function(x){ return '<option>'+esc(x.valor)+'</option>'; }).join('');
-  $('login').innerHTML = '<div class="login-box">' + (logo ? '<div style="display:flex;justify-content:center;margin-bottom:1rem">' + logo.outerHTML + '</div>' : '') +
-    '<h2>Gest\u00E3o de Fiscaliza\u00E7\u00E3o</h2><p>' + (_loginComEmail ? 'Entre com o e-mail cadastrado.' : 'Escolha sua filial e seu setor.') + '</p>' +
-    (msg ? '<div class="env bloq" style="margin-bottom:.8rem">'+msg+'</div>' : '') +
+  $('login').innerHTML = DECO_LOGIN + '<div class="lg-wrap">' +
+    (logo ? '<div class="lg-logo">' + logo.outerHTML + '</div>' : '') +
+    '<div class="login-box"><h2>Gest\u00E3o de Fiscaliza\u00E7\u00E3o</h2><p>' + (_loginComEmail ? 'Entre com o e-mail cadastrado:' : 'Entre com a conta da sua filial e setor:') + '</p>' +
+    '<div class="lg-selo">F+</div>' +
+    (msg ? '<div class="env bloq" style="margin-bottom:.4rem">'+msg+'</div>' : '') +
     '<form onsubmit="return entrar(event)">' +
     (_loginComEmail
       ? '<div class="f"><label>E-mail</label><input id="l_email" type="email" autocomplete="username" required></div>'
       : '<div class="f"><label>Filial</label><select id="l_filial" required><option value="">Selecione</option>'+fil+'</select></div>' +
-        '<div class="f" style="margin-top:.6rem"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>') +
-    '<div class="f" style="margin-top:.6rem"><label>Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>' +
-    '<button class="btn pri" style="width:100%;margin-top:1rem" type="submit">Entrar</button></form>' +
-    '<div style="display:flex;justify-content:space-between;margin-top:.7rem;font-size:.7rem;color:var(--txt3)"><span>Esqueceu a senha? Fale com o Compliance.</span>' +
-    '<a href="#" style="color:var(--txt2)" onclick="_loginComEmail=!_loginComEmail;telaLogin();return false">' + (_loginComEmail ? 'Entrar por filial e setor' : 'Entrar com e-mail') + '</a></div></div>';
+        '<div class="f"><label>Setor</label><select id="l_setor" required><option value="">Selecione</option>'+set+'</select></div>') +
+    '<div class="f"><label>Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>' +
+    '<button class="btn pri" style="width:100%;margin-top:1.4rem" type="submit">Entrar</button></form>' +
+    '<div class="lg-rodape"><span>Esqueceu a senha? Fale com o Compliance.</span>' +
+    '<a href="#" onclick="_loginComEmail=!_loginComEmail;telaLogin();return false">' + (_loginComEmail ? 'Entrar por filial e setor' : 'Entrar com e-mail') + '</a></div></div></div>';
 }
 async function entrar(e){
   e.preventDefault();
@@ -497,7 +535,8 @@ function render(){
   renderSide();
   var m = $('main');
   if (sel) { m.innerHTML = detalhe(byId(sel)); bindDetalhe(); return; }
-  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, usuarios:cUsuarios, cadastros:cCadastros}})[perfil][tela[perfil]]();
+  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, usuarios:cUsuarios, cadastros:cCadastros, sistema:cSistema}})[perfil][tela[perfil]]();
+  if (perfil==='compliance' && tela.compliance==='sistema' && !sel) carregarSistema();
   if (perfil==='filial' && tela.filial==='novo') bindNovo();
 }
 function renderSide(){
@@ -505,7 +544,7 @@ function renderSide(){
   var meus = meusChamados();
   if (perfil==='filial') items = [['inicio','In\u00EDcio', meus.filter(function(c){return c.status==='aguard_filial';}).length], ['novo','+ Novo chamado'], ['meus','Meus chamados']];
   if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
-  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Usu\u00E1rios', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app']];
+  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Contas de acesso', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app'], ['sistema','Backup e sistema']];
   var nome = EU && EU.nome ? EU.nome : u.nome, ini = nome.split(/\s+/).map(function(x){ return x[0]; }).join('').slice(0,2).toUpperCase();
   var sub = (EU && EU.papel === perfil) ? 'Filial ' + (EU.filial||'\u2014') + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + FILIAL_USUARIO : u.sub;
   var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+opts(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
@@ -567,7 +606,7 @@ function fNovo(){
   '<div class="form-sec"><h4><span class="n">2</span>\u00D3rg\u00E3o e motivo</h4><div class="g3">' +
     '<div class="f"><label>\u00D3rg\u00E3o fiscalizador <span class="req">*</span></label><select name="orgao" required><option value="">Selecione</option>'+opts(ORGAOS)+'</select></div>' +
     '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'</select></div>' +
-    '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"></div></div></div>' +
+    '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"><div class="hint">Obs.: informe a matr\u00EDcula se constar no crach\u00E1 ou no documento.</div></div></div></div>' +
   '<div class="form-sec"><h4><span class="n">3</span>Quem recebeu e acompanhou</h4><div class="g2">' +
     '<div class="f"><label>Quem recebeu o fiscal <span class="req">*</span></label><select name="recebeu"><option>Frente de loja</option><option>Preven\u00E7\u00E3o</option><option>Recep\u00E7\u00E3o (correspond\u00EAncia)</option><option>GR de plant\u00E3o</option><option>ADM</option></select></div>' +
     '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><input name="acompanhou" value="ADM \u2014 supervisor" required><div class="hint">Inclua a \u00E1rea t\u00E9cnica, se foi acionada (TST, Manuten\u00E7\u00E3o).</div></div></div></div>' +
@@ -722,6 +761,44 @@ async function remCad(k, i){
   if (r.error) return erroDb(r.error, 'cadastro');
   await carregarTudo(); toast('Item removido.'); render();
 }
+// ----- Backup e sistema (backup autom\u00E1tico di\u00E1rio no Supabase + "manter ativo" pelo GitHub + download em Excel) -----
+function fmtDH(t){ if (!t) return '\u2014'; var d = new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2); }
+function cSistema(){
+  return '<div class="ph"><div><h2>Backup e sistema</h2><p>Prote\u00E7\u00E3o dos dados e funcionamento cont\u00EDnuo do app</p></div></div>' +
+    '<div class="card"><h3>Situa\u00E7\u00E3o</h3><div class="sub">Atualizada ao abrir esta tela</div><div id="sis_status"><div class="empty">Carregando\u2026</div></div></div>' +
+    '<div class="card"><h3>Baixar backup completo</h3><div class="sub">Gera um arquivo Excel com todas as tabelas, uma aba por tabela</div>' +
+    '<div class="btns"><button class="btn green" id="btn_bkp" onclick="baixarBackup()">Baixar backup em Excel</button></div>' +
+    '<div class="box"><b>Como funciona:</b> todo dia \u00E0s 03h o pr\u00F3prio Supabase faz uma c\u00F3pia de todas as tabelas (guarda 30 dias de c\u00F3pias di\u00E1rias e 1 por m\u00EAs durante 12 meses). ' +
+    'Duas vezes por dia o GitHub manda um sinal de atividade, para o plano gratuito nunca pausar o banco por 7 dias sem uso. Se o sinal falhar, o GitHub avisa por e-mail.</div></div>';
+}
+async function carregarSistema(){
+  var r = await sb.rpc('status_sistema');
+  var el = $('sis_status'); if (!el) return;
+  if (r.error) { el.innerHTML = '<div class="env bloq">N\u00E3o foi poss\u00EDvel ler a situa\u00E7\u00E3o: '+esc(r.error.message)+'</div>'; return; }
+  var s = r.data || {}, b = (s.backups||[])[0], hb = b ? (Date.now() - new Date(b.lote)) / 36e5 : 999, hs = s.ultimo_sinal ? (Date.now() - new Date(s.ultimo_sinal)) / 36e5 : 999;
+  var linha = function(ok, txt){ return '<div class="env '+(ok?'':'bloq')+'" style="margin-bottom:.5rem;'+(ok?'background:var(--green-l)':'')+'">'+(ok?'\u2705 ':'\u26A0\uFE0F ')+txt+'</div>'; };
+  el.innerHTML = linha(hb < 30, b ? '\u00DAltimo backup autom\u00E1tico: <b>'+fmtDH(b.lote)+'</b> ('+b.tabelas+' tabelas, '+b.linhas+' linhas) \u00B7 '+(s.backups.length)+' c\u00F3pia(s) guardada(s)' : 'Nenhum backup autom\u00E1tico encontrado') +
+    linha(hs < 30, s.ultimo_sinal ? '\u00DAltimo sinal do "manter ativo": <b>'+fmtDH(s.ultimo_sinal)+'</b> \u00B7 '+s.sinais_7d+' sinal(is) nos \u00FAltimos 7 dias' : 'Nenhum sinal do "manter ativo" ainda');
+}
+function carregarSheetJS(){
+  return window.XLSX ? Promise.resolve() : new Promise(function(ok, falha){ var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = falha; document.head.appendChild(s); });
+}
+async function baixarBackup(){
+  var btn = $('btn_bkp'); btn.disabled = true; btn.textContent = 'Gerando backup\u2026';
+  try {
+    var res = await Promise.all([sb.rpc('exportar_backup'), carregarSheetJS()]);
+    if (res[0].error) throw res[0].error;
+    var dados = res[0].data, wb = XLSX.utils.book_new();
+    Object.keys(dados).forEach(function(t){
+      var linhas = (dados[t]||[]).map(function(r){ var o = {}; Object.keys(r).forEach(function(k){ var v = r[k]; o[k] = (v && typeof v === 'object') ? JSON.stringify(v) : v; }); return o; });
+      XLSX.utils.book_append_sheet(wb, linhas.length ? XLSX.utils.json_to_sheet(linhas) : XLSX.utils.aoa_to_sheet([['(sem registros)']]), t.slice(0,31));
+    });
+    XLSX.writeFile(wb, 'Backup_Fiscalizacao_' + new Date().toISOString().slice(0,16).replace(/[-:T]/g,'') + '.xlsx');
+    toast('Backup baixado (' + Object.keys(dados).length + ' tabelas).');
+  } catch (e) { toast('N\u00E3o foi poss\u00EDvel gerar o backup: ' + (e && e.message ? e.message : e)); }
+  btn.disabled = false; btn.textContent = 'Baixar backup em Excel';
+}
+
 // ----- Contas por FILIAL + SETOR, com filtro do que cada conta visualiza -----
 var NOME_PAPEL = {pendente:'Pendente (sem acesso)', filial:'Filial (abre chamados)', juridico:'Jur\u00EDdico (atende)', compliance:'Compliance (administra)'};
 function visTexto(p){
