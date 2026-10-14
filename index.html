@@ -152,6 +152,10 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 .env.ult{background:var(--amber-l);color:var(--amber)}.env.ult b{color:var(--amber)}
 .env.bloq{background:var(--red-l);color:var(--txt2);border-left:3px solid var(--red);line-height:1.5}.env.bloq b{color:var(--red)}
 .pend-lista{display:flex;flex-direction:column;gap:.7rem}
+.anx{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .7rem;padding:.45rem 0;border-bottom:1px solid var(--bdr)}
+.anx span{font-size:.68rem;color:var(--txt2)}
+.lnk{background:none;border:0;padding:0;color:var(--blue);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;text-align:left}.lnk:hover{text-decoration:underline}
+input[type=file]{font-size:.78rem;padding:.45rem;border:1px dashed var(--bdr);border-radius:10px;width:100%;background:var(--card)}
 .pend-card{border:1px solid rgba(168,129,31,.35);border-left:5px solid var(--amber);background:var(--amber-l);border-radius:12px;padding:.85rem 1rem;cursor:pointer;transition:transform .12s, box-shadow .12s}
 .pend-card:hover{transform:translateY(-1px);box-shadow:var(--shm)}
 .pend-card.venc{border-color:rgba(189,35,53,.35);border-left-color:var(--red);background:var(--red-l)}
@@ -272,7 +276,10 @@ window.FISC_CONFIG = {
 // ================= Configura\u00E7\u00E3o e cadastros (v\u00EAm do banco) =================
 var HOJE = (function(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
 var FILIAL_USUARIO = '';
-var FILIAIS = [], FILIAIS_TODAS = [], SETORES = [], ORGAOS = [], MOTIVOS = [], NCS = [];
+var FILIAIS = [], FILIAIS_TODAS = [], SETORES = [], ORGAOS = [], MOTIVOS = [], NCS = [], FILIAL_NOME = {};
+// filial pelo n\u00FAmero + nome (ex.: "2 \u00B7 Imbiribeira")
+function nf(cod){ return cod ? cod + (FILIAL_NOME[cod] ? ' \u00B7 ' + FILIAL_NOME[cod] : '') : '\u2014'; }
+function optsF(list, v){ return list.map(function(o){ return '<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+esc(nf(o))+'</option>'; }).join(''); }
 // chamados que a conta de filial enxerga (o banco j\u00E1 filtra pelo que o Compliance liberou); Compliance "vendo como" filtra pela filial escolhida
 function meusChamados(){ return chamados.filter(function(c){ return (EU && EU.papel === 'filial') ? true : c.filial === FILIAL_USUARIO; }); }
 var FORMAS = ['Presencial','Documental','Digital'];
@@ -287,7 +294,7 @@ function rt(de, para, enviado, prazo, respondido){ return {de:de, para:para, env
 function mk(o){
   o.unidade = o.unidade || 'Loja'; o.lojista = o.lojista || ''; o.obra = o.obra || '';
   o.envios = o.envios || {juridico:0, filial:0}; o.limite = o.limite || LIMITE_ENVIOS; o.libPend = o.libPend || null;
-  o.eventos = o.eventos || []; o.retornos = o.retornos || [];
+  o.eventos = o.eventos || []; o.retornos = o.retornos || []; o.anexos = o.anexos || [];
   o.eventos.unshift(ev(o.data, 'filial', autorNome('filial', o.filial), 'Chamado aberto pela filial.'));
   return o;
 }
@@ -355,14 +362,14 @@ function erroDb(e, onde){ console.error(onde, e); toast('Erro ao salvar ('+onde+
 
 function paraLinha(c){
   return { filial:c.filial, unidade:c.unidade, lojista:c.lojista||null, obra:c.obra||null, orgao:c.orgao, motivo:c.motivo, forma:c.forma,
-    data:iso(c.data), fiscal:c.fiscal||null, recebeu:c.recebeu||null, acompanhou:c.acompanhou||null, resultados:c.resultados, doc:c.doc||null, protocolo:c.protocolo||null,
+    data:iso(c.data), fiscal:c.fiscal||null, recebeu:c.recebeu||null, acompanhou:c.acompanhou||null, resultados:c.resultados, doc:c.doc||null, protocolo:c.protocolo||null, responsavel_juridico:c.respJur||null,
     prazo:iso(c.prazo), ncs:c.ncs, no_ato:c.noAto||null, apreensao:c.apreensao||null, relato:c.relato||null, status:c.status, desfecho:c.desfecho||null,
     multa_valor:c.multa ? c.multa.valor : null, multa_motivo:c.multa ? c.multa.motivo : null,
     envios_juridico:c.envios.juridico, envios_filial:c.envios.filial, limite_envios:c.limite, atualizado_em:new Date().toISOString() };
 }
 function deLinha(r){
   return { id:r.id, filial:r.filial, unidade:r.unidade, lojista:r.lojista||'', obra:r.obra||'', orgao:r.orgao, motivo:r.motivo, forma:r.forma,
-    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'', protocolo:r.protocolo||'',
+    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'', protocolo:r.protocolo||'', respJur:r.responsavel_juridico||'', anexos:[],
     prazo:br(r.prazo), ncs:r.ncs||[], noAto:r.no_ato||'', apreensao:r.apreensao||'', relato:r.relato||'', status:r.status, desfecho:r.desfecho||'',
     multa: r.multa_valor != null ? {valor:+r.multa_valor, motivo:r.multa_motivo||''} : null,
     envios:{juridico:r.envios_juridico, filial:r.envios_filial}, limite:r.limite_envios, libPend:null, multaLojista:null, eventos:[], retornos:[] };
@@ -377,7 +384,8 @@ async function carregarTudo(){
     sb.from('multas_lojista').select('*'),
     sb.from('listas').select('*').order('ordem'),
     sb.from('filiais').select('*').eq('ativa', true).order('codigo'),
-    sb.from('perfis').select('*').order('nome')
+    sb.from('perfis').select('*').order('nome'),
+    sb.from('anexos').select('*').order('id')
   ]);
   for (var i=0;i<q.length;i++) if (q[i].error) { erroDb(q[i].error, 'carregar'); return; }
   var mapa = {};
@@ -392,7 +400,55 @@ async function carregarTudo(){
   SETORES = q[5].data.filter(function(x){ return x.tipo==='setor'; }).map(function(x){ return x.valor; });
   FILIAIS_TODAS = q[6].data.map(function(f){ return f.codigo; });
   FILIAIS = q[6].data.filter(function(f){ return f.loja !== false; }).map(function(f){ return f.codigo; });
+  FILIAL_NOME = {}; q[6].data.forEach(function(f){ FILIAL_NOME[f.codigo] = f.nome || ''; });
   PERFIS = q[7].data;
+  q[8].data.forEach(function(a){ var c = mapa[a.chamado_id]; if (c) c.anexos.push(a); });
+}
+
+// ---------- Anexos (Supabase Storage, bucket privado "anexos"; nada \u00E9 apagado) ----------
+var CAT_ANEXO = {geral:'Anexo', abertura:'Abertura do chamado', resposta_filial:'Resposta da filial', mall:'Loja do Mall', juridico:'Jur\u00EDdico'};
+async function enviarAnexos(c, files, categoria){
+  var ok = 0;
+  for (var i=0;i<files.length;i++){
+    var fl = files[i];
+    if (fl.size > 20*1024*1024) { toast('"' + fl.name + '" passa de 20 MB e n\u00E3o foi enviado.'); continue; }
+    var limpo = fl.name.normalize('NFD').replace(/[\u0300-\u036F]/g,'').replace(/[^\w.\-]+/g,'_');
+    var caminho = c.id + '/' + Date.now() + '_' + limpo;
+    var up = await sb.storage.from('anexos').upload(caminho, fl, {contentType: fl.type || 'application/octet-stream', upsert:false});
+    if (up.error) { erroDb(up.error, 'anexo ' + fl.name); continue; }
+    var r = await sb.from('anexos').insert({chamado_id:c.id, categoria:categoria, nome:fl.name, caminho:caminho, tamanho:fl.size, tipo:fl.type||null, papel:perfil, autor:autorNome(perfil, c.filial)}).select('*').single();
+    if (r.error) { erroDb(r.error, 'anexo ' + fl.name); continue; }
+    c.anexos.push(r.data); ok++;
+  }
+  return ok;
+}
+function arquivosDe(id){ var e = $(id); return e && e.files ? [].slice.call(e.files) : []; }
+function nomesArq(fs){ return fs.map(function(f){ return f.name; }).join(', '); }
+async function abrirAnexo(cid, aid){
+  var c = byId(cid), a = c && c.anexos.filter(function(x){ return x.id === aid; })[0]; if (!a) return;
+  var r = await sb.storage.from('anexos').createSignedUrl(a.caminho, 300);
+  if (r.error) return erroDb(r.error, 'abrir anexo');
+  window.open(r.data.signedUrl, '_blank');
+}
+function tamanhoTxt(n){ return !n ? '' : n < 1048576 ? Math.max(1, Math.round(n/1024)) + ' KB' : (n/1048576).toFixed(1).replace('.', ',') + ' MB'; }
+function cardAnexos(c){
+  var lista = c.anexos.map(function(a){
+    return '<div class="anx"><button class="lnk" onclick="abrirAnexo(\'' + c.id + '\',' + a.id + ')">\uD83D\uDCCE ' + esc(a.nome) + '</button>' +
+      '<span>' + esc(CAT_ANEXO[a.categoria] || a.categoria) + ' \u00B7 ' + esc(a.autor || '') + ' \u00B7 ' + br(a.criado_em) + (a.tamanho ? ' \u00B7 ' + tamanhoTxt(a.tamanho) : '') + '</span></div>';
+  }).join('');
+  return '<div class="card"><h3>Anexos</h3><div class="sub">Notifica\u00E7\u00E3o, auto de apreens\u00E3o, fotos e documentos \u00B7 at\u00E9 20 MB por arquivo \u00B7 anexos n\u00E3o podem ser apagados</div>' +
+    (lista || '<div class="empty" style="padding:.8rem">Nenhum anexo ainda.</div>') +
+    '<div class="f" style="margin-top:.7rem"><label>Adicionar anexos</label><input type="file" id="anx_' + c.id + '" multiple></div>' +
+    '<div class="btns"><button class="btn" id="anxbtn_' + c.id + '" onclick="anexarNoChamado(\'' + c.id + '\')">Enviar anexo(s)</button></div></div>';
+}
+async function anexarNoChamado(cid){
+  var c = byId(cid), fs = arquivosDe('anx_' + cid);
+  if (!fs.length) return toast('Escolha pelo menos um arquivo.');
+  var btn = $('anxbtn_' + cid); btn.disabled = true; btn.textContent = 'Enviando...';
+  _ocupado = true;
+  var n = await enviarAnexos(c, fs, perfil === 'juridico' ? 'juridico' : 'geral');
+  if (n) { addEv(c, perfil, 'Anexou ' + n + ' arquivo(s): ' + nomesArq(fs)); await salvar(c); toast(n + ' anexo(s) enviado(s).'); }
+  _ocupado = false; render();
 }
 
 // grava o chamado e tudo o que mudou nele (hist\u00F3rico, retornos, libera\u00E7\u00E3o, multa ao lojista)
@@ -447,7 +503,8 @@ async function salvar(c){
     return true;
   } catch (e) { erroDb(e, 'chamado ' + c.id); return false; }
 }
-function persistir(id){ var c = byId(id); if (c) { _ocupado = true; salvar(c).finally(function(){ _ocupado = false; }); } }
+// grava; se o banco recusar, recarrega do banco para a tela n\u00E3o mostrar algo que n\u00E3o foi salvo
+function persistir(id){ var c = byId(id); if (c) { _ocupado = true; salvar(c).then(async function(ok){ _ocupado = false; if (!ok) { await carregarTudo(); render(); } }); } }
 
 // tempo real: qualquer mudan\u00E7a no banco recarrega e atualiza a tela (sem apagar o que a pessoa est\u00E1 digitando)
 function digitando(){ var a = document.activeElement; return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest('#main') && (a.value || '').length > 0; }
@@ -460,7 +517,7 @@ function agendarRecarga(){
 }
 function ouvirMudancas(){
   var canal = sb.channel('fiscalizacao');
-  ['chamados','eventos','retornos','liberacoes','multas_lojista','listas','filiais','perfis'].forEach(function(t){
+  ['chamados','eventos','retornos','liberacoes','multas_lojista','listas','filiais','perfis','anexos'].forEach(function(t){
     canal.on('postgres_changes', {event:'*', schema:'public', table:t}, agendarRecarga);
   });
   canal.subscribe();
@@ -605,8 +662,8 @@ function renderSide(){
   if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
   if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Contas de acesso', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app'], ['sistema','Backup e sistema']];
   var nome = EU && EU.nome ? EU.nome : u.nome, ini = nome.split(/\s+/).map(function(x){ return x[0]; }).join('').slice(0,2).toUpperCase();
-  var sub = (EU && EU.papel === perfil) ? 'Filial ' + (EU.filial||'\u2014') + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + FILIAL_USUARIO : u.sub;
-  var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+opts(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
+  var sub = (EU && EU.papel === perfil) ? 'Filial ' + nf(EU.filial) + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + nf(FILIAL_USUARIO) : u.sub;
+  var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+optsF(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
   $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+esc(ini)+'</div><div><b>'+esc(nome)+'</b><span>'+esc(sub)+'</span></div></div>' + troca +
     '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="filtroFilial=\'\';go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
     '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>' +
@@ -619,6 +676,7 @@ function tabela(lista, cols){
   return '<div class="tbl-wrap"><table class="t"><thead><tr>'+cols.map(function(k){return '<th>'+H[k]+'</th>';}).join('')+'</tr></thead><tbody>' +
     lista.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')">'+cols.map(function(k){
       if (k==='id') return '<td><b>'+c.id+'</b></td>';
+      if (k==='filial') return '<td>'+esc(nf(c.filial))+'</td>';
       if (k==='res') return '<td>'+tags(c)+'</td>';
       if (k==='prazo') return '<td>'+prazoHtml(c)+'</td>';
       if (k==='retorno') return '<td>'+retornoHtml(c)+'</td>';
@@ -643,7 +701,7 @@ function fInicio(){
   var meus = meusChamados();
   var pend = meus.filter(GRUPO_FILIAL.filial.teste);
   var kpi = function(k, cor){ return '<div class="kpi click" onclick="filtroFilial=\''+k+'\';go(null,\'meus\')"><div class="v" style="color:'+cor+'">'+meus.filter(GRUPO_FILIAL[k].teste).length+'</div><div class="l">'+GRUPO_FILIAL[k].nome+'</div></div>'; };
-  return '<div class="ph"><div><h2>Ol\u00E1! Filial '+FILIAL_USUARIO+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
+  return '<div class="ph"><div><h2>Ol\u00E1! Filial '+esc(nf(FILIAL_USUARIO))+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
     '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' +
     '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA' + (pend.length ? ' <span class="badge b-aguard_filial" style="vertical-align:middle">' + pend.length + ' pendente' + (pend.length>1?'s':'') + '</span>' : '') + '</h3>' +
     '<div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es \u00B7 clique para abrir o chamado e responder</div>' +
@@ -668,12 +726,13 @@ function fNovo(){
   return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2></div></div>' + LEMBRETES_POP +
   '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
   '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
-    '<div class="f"><label>Filial</label><input value="'+FILIAL_USUARIO+'" disabled></div>' +
+    '<div class="f"><label>Filial</label><input value="'+esc(nf(FILIAL_USUARIO))+'" disabled></div>' +
     '<div class="f"><label>Onde foi a fiscaliza\u00E7\u00E3o <span class="req">*</span></label><select name="unidade" required><option value="">Selecione</option>'+opts(UNIDADES)+'</select></div>' +
     '<div class="f"><label>Data da fiscaliza\u00E7\u00E3o <span class="req">*</span></label><input name="data" value="'+hojeBR()+'" required></div>' +
     '<div class="f"><label>Forma <span class="req">*</span></label><select name="forma">'+opts(FORMAS)+'</select></div></div>' +
     '<div class="cond" id="cMall"><div class="f"><label>Nome do lojista (locat\u00E1rio) <span class="req">*</span></label><input name="lojista" placeholder="Ex.: \u00D3tica do Mall"></div>' +
     '<div class="hint" style="margin-top:.4rem">Na loja do Mall, o lojista responde pela pr\u00F3pria fiscaliza\u00E7\u00E3o. A filial registra o caso para ci\u00EAncia e pede a c\u00F3pia da notifica\u00E7\u00E3o. Se envolver \u00E1rea comum (AVCB, rotas de fuga, estacionamento), trate como fiscaliza\u00E7\u00E3o da filial, pois precisa ser avaliado se \u00E9 necess\u00E1rio um representante t\u00E9cnico da filial.</div>' +
+    '<div class="f" style="margin-top:.6rem"><label>C\u00F3pia da notifica\u00E7\u00E3o do lojista e documentos</label><input type="file" name="arqMall" multiple><div class="hint">PDF, foto ou documento \u00B7 at\u00E9 20 MB por arquivo.</div></div>' +
     '<div class="ml-box"><div class="f"><label>Propor multa contratual ao lojista por certificado ou licen\u00E7a vencida?</label><div class="chk">' +
       '<label><input type="radio" name="mlProp" value="nao" checked> N\u00E3o</label><label><input type="radio" name="mlProp" value="sim"> Sim, propor multa</label></div></div>' +
       '<div class="cond" id="cMultaLoj" style="background:var(--card);border:1px solid var(--bdr)"><div class="g2">' +
@@ -689,7 +748,7 @@ function fNovo(){
     '<div class="f"><label>Motivo <span class="req">*</span></label><select name="motivo" required><option value="">Selecione</option>'+opts(MOTIVOS)+'<option value="__outro">Outro</option></select>' +
       '<input name="motivoOutro" class="outro-campo" placeholder="Escreva o motivo" style="display:none;margin-top:.4rem"></div>' +
     '<div class="f"><label>Fiscal (nome e matr\u00EDcula)</label><input name="fiscal" placeholder="Conforme o crach\u00E1"><div class="hint">Obs.: informe a matr\u00EDcula se constar no crach\u00E1 ou no documento.</div></div></div>' +
-    '<div class="g3" style="margin-top:.7rem"><div class="f"><label>Protocolo do \u00F3rg\u00E3o</label><input name="protocolo" placeholder="N\u00BA do protocolo / processo"><div class="hint">Se o \u00F3rg\u00E3o informou um n\u00FAmero de protocolo ou processo. Pode ser preenchido depois pelo Jur\u00EDdico.</div></div></div></div>' +
+    '<div class="g3" style="margin-top:.7rem"><div class="f"><label>Protocolo do \u00F3rg\u00E3o</label><input name="protocolo" placeholder="N\u00BA do protocolo / processo"><div class="hint">N\u00FAmero de protocolo ou processo fornecido pelo \u00F3rg\u00E3o.</div></div></div></div>' +
   '<div class="form-sec"><h4><span class="n">3</span>Quem recebeu e acompanhou</h4><div class="g2">' +
     '<div class="f"><label>Quem recebeu o fiscal <span class="req">*</span></label><select name="recebeu"><option>Frente de loja</option><option>Preven\u00E7\u00E3o</option><option>Recep\u00E7\u00E3o (correspond\u00EAncia)</option><option>GR de plant\u00E3o</option><option>ADM</option></select></div>' +
     '<div class="f"><label>Quem acompanhou a vistoria <span class="req">*</span></label><select name="acompanhou" required><option value="">Selecione</option><option>Supervisor ADM</option><option>Aux. ADM</option><option value="__outro">Outro</option></select>' +
@@ -705,7 +764,7 @@ function fNovo(){
   '<div class="form-sec"><h4><span class="n">6</span>Relato</h4><div class="g2">' +
     '<div class="f"><label>O que o fiscal avaliou</label><textarea name="relato"></textarea></div>' +
     '<div class="f"><label>O que foi corrigido no ato</label><textarea name="noAto"></textarea></div></div>' +
-    '<div class="f" style="margin-top:.7rem"><label>Anexos</label><div class="box" style="margin-top:0">\uD83D\uDCCE Envio de anexos (notifica\u00E7\u00E3o, fotos, auto de apreens\u00E3o) entra na pr\u00F3xima etapa. Por enquanto, guarde a via f\u00EDsica e digital na filial.</div></div></div>' +
+    '<div class="f" style="margin-top:.7rem"><label>Anexos (notifica\u00E7\u00E3o, auto de apreens\u00E3o, fotos)</label><input type="file" name="arquivos" multiple><div class="hint">Pode escolher v\u00E1rios arquivos \u00B7 at\u00E9 20 MB cada. Tamb\u00E9m \u00E9 poss\u00EDvel anexar depois, dentro do chamado.</div></div></div>' +
   '<div class="btns" style="margin-top:1.1rem"><button class="btn pri" type="submit">Enviar ao Jur\u00EDdico</button><button class="btn" type="button" onclick="go(null,\'inicio\')">Cancelar</button></div>' +
   '</form></div>';
 }
@@ -765,11 +824,17 @@ function enviarNovo(e){
   c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
   if (propoe) { c.multaLojista = {valor:mlv, motivo:g('mlMotivo'), status:'pendente'}; addEv(c, 'filial', 'Proposta de multa contratual ao lojista ' + c.lojista + ': ' + brl(mlv) + ' \u2014 ' + g('mlMotivo') + '. Aguardando confirma\u00E7\u00E3o do Jur\u00EDdico.'); }
   var btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Enviando...';
+  var arqs = [].slice.call(f.elements.arquivos.files || []), arqMall = g('unidade')==='Loja do Mall' ? [].slice.call(f.elements.arqMall.files || []) : [];
   _ocupado = true;
-  salvar(c).then(function(ok){
-    _ocupado = false;
-    if (!ok) { btn.disabled = false; btn.textContent = 'Enviar ao Jur\u00EDdico'; return; }
+  salvar(c).then(async function(ok){
+    if (!ok) { _ocupado = false; btn.disabled = false; btn.textContent = 'Enviar ao Jur\u00EDdico'; return; }
     chamados.push(c);
+    if (arqs.length || arqMall.length) {
+      btn.textContent = 'Enviando anexos...';
+      var n = await enviarAnexos(c, arqs, 'abertura') + await enviarAnexos(c, arqMall, 'mall');
+      if (n) { addEv(c, 'filial', 'Anexou ' + n + ' arquivo(s) na abertura: ' + nomesArq(arqs.concat(arqMall))); await salvar(c); }
+    }
+    _ocupado = false;
     toast('Chamado ' + c.id + ' aberto e enviado ao Jur\u00EDdico.');
     go(null, null, c.id);
   });
@@ -781,7 +846,7 @@ function fMeus(){
   var multi = todos.some(function(c){ return c.filial !== FILIAL_USUARIO; });
   var chip = function(k, nome){ var n = k ? todos.filter(GRUPO_FILIAL[k].teste).length : todos.length;
     return '<button class="btn sm'+(filtroFilial===k?' pri':'')+'" onclick="filtroFilial=\''+k+'\';render()">'+nome+' ('+n+')</button>'; };
-  return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+FILIAL_USUARIO)+'</p></div></div>' +
+  return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+esc(nf(FILIAL_USUARIO)))+'</p></div></div>' +
     '<div class="card"><div class="btns" style="margin-bottom:.8rem">' + chip('', 'Todos') + chip('aberto', GRUPO_FILIAL.aberto.nome) + chip('juridico', GRUPO_FILIAL.juridico.nome) + chip('filial', GRUPO_FILIAL.filial.nome) + chip('encerrado', GRUPO_FILIAL.encerrado.nome) + '</div>' +
     tabela(l, multi ? ['id','filial','orgao','data','res','prazo','retorno','status'] : ['id','orgao','data','res','prazo','retorno','status'])+'</div>';
 }
@@ -829,28 +894,28 @@ function cPainel(){
     card(4, 'Frequ\u00EAncia de visitas por \u00F3rg\u00E3o', chamados.length+' visitas no per\u00EDodo', barras(contar(chamados, function(c){ return c.orgao; }), 'var(--blue)')) +
     card(5, 'N\u00E3o conformidades mais apontadas', 'Por n\u00FAmero de ocorr\u00EAncias', barras(contar(chamados, function(c){ return c.ncs; }), 'var(--amber)')) +
     card(6, '\u00D3rg\u00E3os que aplicaram multa', multas.length+' multas \u00B7 '+brl(total), barras(contar(multas, function(c){ return c.orgao; }), '#7B0B18') +
-      '<div class="multa-list">'+multas.map(function(c){ return '<div><b>'+c.id+'</b> \u00B7 '+c.filial+' \u00B7 '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>'; }).join('')+'</div>') +
+      '<div class="multa-list">'+multas.map(function(c){ return '<div><b>'+c.id+'</b> \u00B7 '+esc(nf(c.filial))+' \u00B7 '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>'; }).join('')+'</div>') +
     '</div>' +
     '<div class="foco-grid" style="grid-template-columns:2fr 1fr;margin-top:1rem">' +
-    '<div class="card" style="margin:0"><h3>Visitas por filial</h3><div class="sub">Onde os \u00F3rg\u00E3os mais est\u00E3o presentes</div>'+barras(contar(chamados, function(c){ return c.filial; }), 'var(--green)')+'</div>' +
+    '<div class="card" style="margin:0"><h3>Visitas por filial</h3><div class="sub">Onde os \u00F3rg\u00E3os mais est\u00E3o presentes</div>'+barras(contar(chamados, function(c){ return nf(c.filial); }), 'var(--green)')+'</div>' +
     '<div class="card" style="margin:0"><h3>Visitas por local</h3><div class="sub">Loja, Loja do Mall, CD e Obra</div>'+barras(contar(chamados, function(c){ return c.unidade; }), 'var(--slate)')+'</div></div>' +
     (function(){ var ml = chamados.filter(function(c){ return c.multaLojista; });
       return '<div class="card" style="margin-top:1rem"><h3>Multas contratuais a lojistas do Mall</h3><div class="sub">Propostas pela filial e confirmadas pelo Jur\u00EDdico</div>' +
         (ml.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>Lojista</th><th>Motivo</th><th>Proposto</th><th>Confirmado</th><th>Situa\u00E7\u00E3o</th></tr></thead><tbody>' +
-          ml.map(function(c){ var m = c.multaLojista; return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+c.filial+'</td><td>'+esc(c.lojista)+'</td><td>'+esc(m.motivo)+'</td><td>'+brl(m.valor)+'</td><td>'+(m.valorFinal ? brl(m.valorFinal) : '\u2014')+'</td><td><span class="badge '+({pendente:'b-aguard_filial', confirmada:'b-aberto', nao_aplicada:'b-respondido'})[m.status]+'">'+ML_ST[m.status]+'</span></td></tr>'; }).join('') +
+          ml.map(function(c){ var m = c.multaLojista; return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+esc(nf(c.filial))+'</td><td>'+esc(c.lojista)+'</td><td>'+esc(m.motivo)+'</td><td>'+brl(m.valor)+'</td><td>'+(m.valorFinal ? brl(m.valorFinal) : '\u2014')+'</td><td><span class="badge '+({pendente:'b-aguard_filial', confirmada:'b-aberto', nao_aplicada:'b-respondido'})[m.status]+'">'+ML_ST[m.status]+'</span></td></tr>'; }).join('') +
           '</tbody></table></div>' : '<div class="empty">Nenhuma multa proposta.</div>') + '</div>'; })();
 }
 function cTodos(){
   var l = chamados.filter(function(c){ return (!filtros.filial || c.filial===filtros.filial) && (!filtros.unidade || c.unidade===filtros.unidade) && (!filtros.orgao || c.orgao===filtros.orgao) && (!filtros.status || c.status===filtros.status); }).sort(recentes);
   var sel_ = function(k, list, ph){ return '<select onchange="filtros.'+k+'=this.value;render()"><option value="">'+ph+'</option>'+list.map(function(o){ var arr = Array.isArray(o), v = arr ? o[0] : o, t = arr ? o[1] : o; return '<option value="'+esc(v)+'"'+(filtros[k]===v?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
   return '<div class="ph"><div><h2>Todos os chamados</h2><p>'+l.length+' de '+chamados.length+' chamados \u00B7 clique para abrir, pontuar ou editar</p></div></div>' +
-    '<div class="card"><div class="filters">'+sel_('filial', FILIAIS, 'Todas as filiais')+sel_('unidade', UNIDADES, 'Todos os locais')+sel_('orgao', ORGAOS, 'Todos os \u00F3rg\u00E3os')+sel_('status', Object.keys(STATUS).map(function(k){ return [k, STATUS[k]]; }), 'Todos os status')+'</div>'+tabela(l, ['id','filial','unidade','orgao','res','prazo','retorno','status'])+'</div>';
+    '<div class="card"><div class="filters">'+sel_('filial', FILIAIS.map(function(f){ return [f, nf(f)]; }), 'Todas as filiais')+sel_('unidade', UNIDADES, 'Todos os locais')+sel_('orgao', ORGAOS, 'Todos os \u00F3rg\u00E3os')+sel_('status', Object.keys(STATUS).map(function(k){ return [k, STATUS[k]]; }), 'Todos os status')+'</div>'+tabela(l, ['id','filial','unidade','orgao','res','prazo','retorno','status'])+'</div>';
 }
 function cLiberacoes(){
   var l = chamados.filter(function(c){ return c.libPend; });
   return '<div class="ph"><div><h2>Libera\u00E7\u00F5es de reenvio</h2><p>Filial e Jur\u00EDdico podem trocar at\u00E9 '+LIMITE_ENVIOS+' envios cada. Depois disso, s\u00F3 o Compliance libera novos envios, sempre de '+LIMITE_ENVIOS+' em '+LIMITE_ENVIOS+'.</p></div></div>' +
     '<div class="card">' + (l.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>\u00D3rg\u00E3o</th><th>Pedido por</th><th>Motivo</th><th>Envios (J \u2192 F / F \u2192 J)</th></tr></thead><tbody>' +
-      l.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+c.filial+'</td><td>'+esc(c.orgao)+'</td><td>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'Filial')+' \u00B7 '+c.libPend.data+'</td><td>'+esc(c.libPend.motivo)+'</td><td>'+c.envios.juridico+'/'+c.limite+' \u00B7 '+c.envios.filial+'/'+c.limite+'</td></tr>'; }).join('') +
+      l.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+esc(nf(c.filial))+'</td><td>'+esc(c.orgao)+'</td><td>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'Filial')+' \u00B7 '+c.libPend.data+'</td><td>'+esc(c.libPend.motivo)+'</td><td>'+c.envios.juridico+'/'+c.limite+' \u00B7 '+c.envios.filial+'/'+c.limite+'</td></tr>'; }).join('') +
       '</tbody></table></div>' : '<div class="empty">Nenhum pedido de libera\u00E7\u00E3o pendente.</div>') + '</div>';
 }
 function cCadastros(){
@@ -922,12 +987,12 @@ async function exportarPainel(){
     add('3 Visita sem notifica\u00E7\u00E3o', tab(contar(com('sem_doc'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
     add('4 Frequ\u00EAncia por \u00F3rg\u00E3o', tab(contar(chamados, function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
     add('5 N\u00E3o conformidades', tab(contar(chamados, function(c){ return c.ncs; }), 'N\u00E3o conformidade'));
-    add('6 Multas', multas.map(function(c){ return {'Chamado':c.id, 'Filial':c.filial, '\u00D3rg\u00E3o':c.orgao, 'Valor (R$)':c.multa.valor, 'Motivo':c.multa.motivo, 'Data':c.data}; }));
-    add('Visitas por filial', tab(contar(chamados, function(c){ return c.filial; }), 'Filial'));
+    add('6 Multas', multas.map(function(c){ return {'Chamado':c.id, 'Filial':nf(c.filial), '\u00D3rg\u00E3o':c.orgao, 'Valor (R$)':c.multa.valor, 'Motivo':c.multa.motivo, 'Data':c.data}; }));
+    add('Visitas por filial', tab(contar(chamados, function(c){ return nf(c.filial); }), 'Filial'));
     add('Visitas por local', tab(contar(chamados, function(c){ return c.unidade; }), 'Local'));
-    add('Multas a lojistas', chamados.filter(function(c){ return c.multaLojista; }).map(function(c){ var m = c.multaLojista; return {'Chamado':c.id, 'Filial':c.filial, 'Lojista':c.lojista, 'Motivo':m.motivo, 'Proposto (R$)':m.valor, 'Confirmado (R$)':m.valorFinal != null ? m.valorFinal : '', 'Situa\u00E7\u00E3o':ML_ST[m.status]}; }));
+    add('Multas a lojistas', chamados.filter(function(c){ return c.multaLojista; }).map(function(c){ var m = c.multaLojista; return {'Chamado':c.id, 'Filial':nf(c.filial), 'Lojista':c.lojista, 'Motivo':m.motivo, 'Proposto (R$)':m.valor, 'Confirmado (R$)':m.valorFinal != null ? m.valorFinal : '', 'Situa\u00E7\u00E3o':ML_ST[m.status]}; }));
     add('Chamados', chamados.slice().sort(recentes).map(function(c){ var p = pendente(c); return {
-      'Chamado':c.id, 'Filial':c.filial, 'Local':c.unidade, 'Lojista / Obra':c.lojista || c.obra || '', '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
+      'Chamado':c.id, 'Filial':nf(c.filial), 'Local':c.unidade, 'Lojista / Obra':c.lojista || c.obra || '', '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
       'Data':c.data, 'Fiscal':c.fiscal, 'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc, 'Protocolo do \u00F3rg\u00E3o':c.protocolo,
       'Prazo do \u00F3rg\u00E3o':c.prazo, 'N\u00E3o conformidades':c.ncs.join(', '), 'Status':STATUS[c.status], 'Desfecho':c.desfecho,
       'Multa (R$)':c.multa ? c.multa.valor : '', 'Retorno pendente':(p && c.status!=='encerrado') ? NOME_SETOR[p.para] + ' at\u00E9 ' + p.prazo : '' }; }));
@@ -961,14 +1026,14 @@ function visTexto(p){
 }
 function visCheckboxes(prefixo, marcadas){
   return '<div class="chk">' + FILIAIS.map(function(f){ var on = marcadas.indexOf(f) >= 0;
-    return '<label class="'+(on?'on':'')+'"><input type="checkbox" class="'+prefixo+'" value="'+esc(f)+'"'+(on?' checked':'')+' onchange="this.parentNode.classList.toggle(\'on\',this.checked)"> '+esc(f)+'</label>'; }).join('') + '</div>';
+    return '<label class="'+(on?'on':'')+'"><input type="checkbox" class="'+prefixo+'" value="'+esc(f)+'"'+(on?' checked':'')+' onchange="this.parentNode.classList.toggle(\'on\',this.checked)"> '+esc(nf(f))+'</label>'; }).join('') + '</div>';
 }
 function lerVis(prefixo){ return [].map.call(document.querySelectorAll('.'+prefixo+':checked'), function(i){ return i.value; }); }
 var _editUser = null;
 function cUsuarios(){
   var linhas = PERFIS.map(function(p){
     var ed = _editUser === p.id;
-    return '<tr><td><b>'+esc(p.nome||'\u2014')+'</b>'+(p.ativo===false ? ' <span class="badge b-respondido">Desativada</span>' : '')+'<br><span style="font-size:.68rem">'+esc((p.filial||'\u2014') + ' \u00B7 ' + (p.setor||'\u2014'))+'</span><br><span style="font-size:.66rem">'+esc(p.email||'')+'</span></td>' +
+    return '<tr><td><b>'+esc(p.nome||'\u2014')+'</b>'+(p.ativo===false ? ' <span class="badge b-respondido">Desativada</span>' : '')+'<br><span style="font-size:.68rem">'+esc(nf(p.filial) + ' \u00B7 ' + (p.setor||'\u2014'))+'</span><br><span style="font-size:.66rem">'+esc(p.email||'')+'</span></td>' +
       '<td>'+(ed ? '<select id="up_'+p.id+'">'+Object.keys(NOME_PAPEL).map(function(x){ return '<option value="'+x+'"'+(p.papel===x?' selected':'')+'>'+NOME_PAPEL[x]+'</option>'; }).join('')+'</select>' : esc(NOME_PAPEL[p.papel]||p.papel))+'</td>' +
       '<td style="max-width:320px">'+(ed ? '<div style="font-size:.66rem;margin-bottom:.3rem">Marque as filiais que esta conta pode visualizar (nenhuma = padr\u00E3o do perfil)</div>' + visCheckboxes('uv_'+p.id, p.filiais_visiveis||[]) : esc(visTexto(p)))+'</td>' +
       '<td style="white-space:nowrap">' + (ed
@@ -979,7 +1044,7 @@ function cUsuarios(){
   }).join('');
   return '<div class="ph"><div><h2>Contas de acesso</h2><p>Cada conta \u00E9 de uma pessoa (e-mail) vinculada a uma <b>filial + setor</b>. Para entrar, a pessoa informa filial, setor, e-mail e senha.</p></div></div>' +
     '<div class="card"><h3>Criar conta</h3><div class="sub">Defina o perfil (o que a conta pode fazer) e as filiais que ela pode visualizar</div>' +
-    '<div class="g3"><div class="f"><label>Filial <span class="req">*</span></label><select id="nu_filial"><option value="">Selecione</option>'+opts(FILIAIS_TODAS)+'</select></div>' +
+    '<div class="g3"><div class="f"><label>Filial <span class="req">*</span></label><select id="nu_filial"><option value="">Selecione</option>'+optsF(FILIAIS_TODAS)+'</select></div>' +
     '<div class="f"><label>Setor <span class="req">*</span></label><select id="nu_setor"><option value="">Selecione</option>'+opts(SETORES, 'Administrativo')+'</select></div>' +
     '<div class="f"><label>Perfil <span class="req">*</span></label><select id="nu_papel"><option value="filial">'+NOME_PAPEL.filial+'</option><option value="juridico">'+NOME_PAPEL.juridico+'</option><option value="compliance">'+NOME_PAPEL.compliance+'</option></select></div></div>' +
     '<div class="f" style="margin-top:.7rem"><label>Pode visualizar</label><div class="hint" style="margin:0 0 .35rem">Nenhuma marcada = padr\u00E3o do perfil (Filial v\u00EA s\u00F3 a pr\u00F3pria filial; Jur\u00EDdico e Compliance veem todas). Marque para ampliar ou restringir.</div>'+visCheckboxes('nu_vis', [])+'</div>' +
@@ -1052,9 +1117,9 @@ function detalhe(c){
       '<div class="f full"><label>Relato</label><textarea id="e_relato">'+esc(c.relato)+'</textarea></div>' +
       '<div class="full btns"><button class="btn green" onclick="salvarEdicao(\''+c.id+'\')">Salvar altera\u00E7\u00F5es</button><button class="btn" onclick="editando=false;render()">Cancelar</button></div>' +
     '</div>' :
-    '<div class="info">' + I('Filial', c.filial) + I('Local da fiscaliza\u00E7\u00E3o', c.unidade) +
+    '<div class="info">' + I('Filial', nf(c.filial)) + I('Local da fiscaliza\u00E7\u00E3o', c.unidade) +
       (c.lojista ? I('Lojista do Mall', c.lojista) : '') + (c.obra ? I('Obra / respons\u00E1vel t\u00E9cnico', c.obra) : '') + I('Data', c.data) + I('\u00D3rg\u00E3o', c.orgao) + I('Motivo', c.motivo) + I('Forma', c.forma) + I('Fiscal', c.fiscal) +
-      I('Quem recebeu o fiscal', c.recebeu) + I('Quem acompanhou', c.acompanhou) + I('N\u00BA do documento', c.doc) + I('Protocolo do \u00F3rg\u00E3o', c.protocolo) + '<div><span>Prazo do \u00F3rg\u00E3o</span>'+prazoHtml(c)+'</div>' +
+      I('Quem recebeu o fiscal', c.recebeu) + I('Quem acompanhou', c.acompanhou) + I('N\u00BA do documento', c.doc) + I('Protocolo do \u00F3rg\u00E3o', c.protocolo) + I('Respons\u00E1vel no Jur\u00EDdico', c.respJur) + '<div><span>Prazo do \u00F3rg\u00E3o</span>'+prazoHtml(c)+'</div>' +
       '<div class="full"><span>Resultado</span>'+tags(c)+'</div>' +
       '<div class="full"><span>N\u00E3o conformidades</span>'+(c.ncs.length ? c.ncs.map(function(n){ return '<span class="tag">'+esc(n)+'</span>'; }).join('') : '<p>\u2014</p>')+'</div>' +
       I('O que o fiscal avaliou', c.relato, 1) + I('Corrigido no ato', c.noAto, 1) + '</div>' +
@@ -1063,9 +1128,9 @@ function detalhe(c){
       (c.desfecho ? '<div class="box"><b>Desfecho:</b> '+esc(c.desfecho)+'</div>' : '') + mlBox(c);
   return '<div class="det-head"><div><button class="btn sm" onclick="go(null,\''+voltar+'\')">\u2190 Voltar</button>' +
     '<div class="id-chamado"><span>Chamado n\u00BA</span><b>'+c.id+'</b>'+(c.protocolo ? '<span>Protocolo do \u00F3rg\u00E3o</span><b>'+esc(c.protocolo)+'</b>' : '')+'</div>' +
-    '<h2 style="margin-top:.35rem">'+esc(c.orgao)+'</h2><p>Filial '+c.filial+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
+    '<h2 style="margin-top:.35rem">'+esc(c.orgao)+'</h2><p>Filial '+esc(nf(c.filial))+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
     prazoBanner(c) +
-    '<div class="det"><div>' + fluxoRetorno(c) + '<div class="card"><h3>Dados da fiscaliza\u00E7\u00E3o</h3><div class="sub">'+(edit ? 'Modo de edi\u00E7\u00E3o do Compliance' : 'Registro enviado pela filial')+'</div>'+info+'</div>' +
+    '<div class="det"><div>' + fluxoRetorno(c) + '<div class="card"><h3>Dados da fiscaliza\u00E7\u00E3o</h3><div class="sub">'+(edit ? 'Modo de edi\u00E7\u00E3o do Compliance' : 'Registro enviado pela filial')+'</div>'+info+'</div>' + cardAnexos(c) +
     '<div class="card"><h3>Hist\u00F3rico do chamado</h3><div class="sub">Tudo o que foi feito, por quem e quando</div><div class="tl">' +
       c.eventos.map(function(e){ return '<div class="ev '+e.papel+'"><div class="eh"><b>'+esc(e.autor)+'</b> \u00B7 '+e.data+'</div><div class="et">'+esc(e.texto)+'</div></div>'; }).join('') + '</div></div></div>' +
     '<div class="card acoes">'+acoes(c)+'</div></div>';
@@ -1132,7 +1197,7 @@ function acoes(c){
   if (perfil==='filial') {
     if (c.status==='aguard_filial') return '<h4>Responder ao Jur\u00EDdico</h4><div class="box" style="margin-top:0">'+esc(ultimo(c,'juridico'))+'</div>' +
       (podeEnviar(c,'filial') ?
-        contador(c,'filial') + '<div class="f" style="margin-top:.6rem"><textarea id="a_txt" placeholder="Descreva o que est\u00E1 enviando"></textarea></div><div class="box">\uD83D\uDCCE Anexos entram na pr\u00F3xima etapa. Descreva no texto o que foi enviado e por qual meio.</div><div class="btns" style="margin-top:.7rem"><button class="btn pri" onclick="acao(\''+id+'\',\'filial_resp\')">Enviar ao Jur\u00EDdico</button></div>'
+        contador(c,'filial') + '<div class="f" style="margin-top:.6rem"><textarea id="a_txt" placeholder="Descreva o que est\u00E1 enviando"></textarea></div><div class="f"><label>Anexos da resposta</label><input type="file" id="a_files" multiple><div class="hint">Documentos pedidos pelo Jur\u00EDdico \u00B7 at\u00E9 20 MB por arquivo.</div></div><div class="btns" style="margin-top:.7rem"><button class="btn pri" onclick="acao(\''+id+'\',\'filial_resp\')">Enviar ao Jur\u00EDdico</button></div>'
         : bloqueio(c,'filial'));
     return '<h4>Acompanhamento</h4><p style="font-size:.76rem;color:var(--txt2)">'+(enc ? 'Caso encerrado. O desfecho fica no hist\u00F3rico.' : 'O Jur\u00EDdico est\u00E1 tratando o caso. Voc\u00EA ser\u00E1 avisado se precisar enviar algo.')+'</p>' +
       (enc ? '' : '<h4>Adicionar informa\u00E7\u00E3o</h4><div class="f"><textarea id="a_txt" placeholder="Ex.: corre\u00E7\u00E3o conclu\u00EDda, fiscal retornou..."></textarea></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'filial_info\')">Adicionar ao hist\u00F3rico</button></div>');
@@ -1140,7 +1205,13 @@ function acoes(c){
   if (perfil==='juridico') {
     if (enc) return mlAcaoJuridico(c) + '<h4>Caso encerrado</h4><p style="font-size:.76rem;color:var(--txt2)">Desfecho: '+esc(c.desfecho)+'.</p>';
     var h = mlAcaoJuridico(c);
-    if (c.status==='aberto') h += '<h4>Novo chamado</h4><div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'assumir\')">Iniciar an\u00E1lise</button></div>';
+    if (c.status==='aberto') {
+      var jur = PERFIS.filter(function(p){ return p.papel==='juridico' && p.ativo!==false; }).map(function(p){ return p.nome || p.email; });
+      if (EU && EU.papel==='juridico' && jur.indexOf(EU.nome) < 0) jur.unshift(EU.nome);
+      h += '<h4>Novo chamado</h4><div class="f"><label>Quem do Jur\u00EDdico vai fazer a an\u00E1lise? <span class="req">*</span></label>' +
+        (jur.length ? '<select id="a_resp"><option value="">Selecione</option>'+opts(jur, EU && EU.papel==='juridico' ? EU.nome : '')+'</select>' : '<input id="a_resp" placeholder="Nome de quem vai analisar">') + '</div>' +
+        '<div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'assumir\')">Iniciar an\u00E1lise</button></div>';
+    } else if (c.respJur) h += '<div class="box" style="margin-top:0"><b>Respons\u00E1vel no Jur\u00EDdico:</b> '+esc(c.respJur)+'</div>';
     h += '<h4>Solicitar \u00E0 filial</h4>' + (podeEnviar(c,'juridico') ?
       contador(c,'juridico') + '<div class="f" style="margin-top:.5rem"><textarea id="a_sol" placeholder="Documentos ou informa\u00E7\u00F5es necess\u00E1rias"></textarea></div>' +
       '<div class="f"><label>Filial deve retornar at\u00E9 <span class="req">*</span></label><input id="a_ret" value="'+prazoRetorno(c, hojeBR(), 2)+'"><div class="hint">'+(c.prazo ? 'Precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+'), para dar tempo de protocolar.' : 'Sem prazo do \u00F3rg\u00E3o registrado: confirme o prazo com a filial.')+'</div></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'solicitar\')">Enviar solicita\u00E7\u00E3o</button></div>'
@@ -1164,7 +1235,9 @@ function val(id){ var e = $(id); return e ? e.value.trim() : ''; }
 function acao(id, tipo){
   var c = byId(id);
   if (tipo==='filial_resp'){ if (c.status!=='aguard_filial') return toast('O Jur\u00EDdico n\u00E3o est\u00E1 aguardando resposta neste chamado.'); if (!podeEnviar(c,'filial')) return toast('Limite de envios atingido.'); if (!val('a_txt')) return toast('Escreva a resposta.'); c.envios.filial++; fecharPendente(c,'filial'); var rj = prazoRetorno(c, hojeBR(), 2); c.retornos.push(rt('filial','juridico', hojeBR(), rj));
-    addEv(c,'filial', 'Envio '+c.envios.filial+'/'+c.limite+' \u00B7 Resposta ao Jur\u00EDdico (Jur\u00EDdico retorna at\u00E9 '+rj.slice(0,5)+'): '+val('a_txt')); c.status='analise'; toast('Resposta enviada ao Jur\u00EDdico.'); }
+    var fsResp = arquivosDe('a_files');
+    addEv(c,'filial', 'Envio '+c.envios.filial+'/'+c.limite+' \u00B7 Resposta ao Jur\u00EDdico (Jur\u00EDdico retorna at\u00E9 '+rj.slice(0,5)+'): '+val('a_txt') + (fsResp.length ? ' \u00B7 Anexos: ' + nomesArq(fsResp) : '')); c.status='analise'; toast('Resposta enviada ao Jur\u00EDdico.');
+    if (fsResp.length) enviarAnexos(c, fsResp, 'resposta_filial').then(function(n){ toast(n + ' anexo(s) enviado(s) com a resposta.'); render(); }); }
   if (tipo==='pedir_lib_filial' || tipo==='pedir_lib_juridico'){
     var lado = tipo.slice(10); if (!val('a_lib')) return toast('Explique por que precisa enviar de novo.');
     c.libPend = {por:lado, data:hojeBR(), motivo:val('a_lib')}; addEv(c, lado, 'Limite de '+c.limite+' envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: '+val('a_lib')); toast('Pedido de libera\u00E7\u00E3o enviado ao Compliance.');
@@ -1172,7 +1245,8 @@ function acao(id, tipo){
   if (tipo==='liberar'){ c._decisaoLib = {id:c.libPend._id, status:'liberada', obs:val('lib_obs')}; c.limite += LIMITE_ENVIOS; addEv(c,'compliance','Reenvio liberado: +'+LIMITE_ENVIOS+' envios para cada setor (novo limite: '+c.limite+')'+(val('lib_obs') ? '. '+val('lib_obs') : '.')); c.libPend = null; toast('Reenvio liberado. A regra de 2 envios continua valendo.'); }
   if (tipo==='nao_liberar'){ if (!val('lib_obs')) return toast('Explique por que n\u00E3o vai liberar.'); c._decisaoLib = {id:c.libPend._id, status:'negada', obs:val('lib_obs')}; addEv(c,'compliance','Reenvio n\u00E3o liberado: '+val('lib_obs')); c.libPend = null; toast('Pedido de reenvio negado.'); }
   if (tipo==='filial_info'){ if (!val('a_txt')) return toast('Escreva a informa\u00E7\u00E3o.'); addEv(c,'filial', val('a_txt')); toast('Informa\u00E7\u00E3o adicionada.'); }
-  if (tipo==='assumir'){ addEv(c,'juridico','An\u00E1lise iniciada.'); c.status='analise'; toast('Chamado em an\u00E1lise.'); }
+  if (tipo==='assumir'){ var resp = val('a_resp'); if (!resp) return toast('Informe quem do Jur\u00EDdico vai fazer a an\u00E1lise.');
+    c.respJur = resp; fecharPendente(c,'juridico'); addEv(c,'juridico','An\u00E1lise iniciada. Respons\u00E1vel no Jur\u00EDdico: ' + resp + '.'); c.status='analise'; toast('Chamado em an\u00E1lise com ' + resp + '.'); }
   if (tipo==='solicitar'){ if (!podeEnviar(c,'juridico')) return toast('Limite de envios atingido.'); if (!val('a_sol')) return toast('Descreva o que a filial deve enviar.');
     var ret = val('a_ret'); if (!/^\d{2}\/\d{2}\/\d{4}$/.test(ret)) return toast('Informe at\u00E9 quando a filial deve retornar (dd/mm/aaaa).');
     if (pBR(ret) < HOJE) return toast('O prazo de retorno n\u00E3o pode estar no passado.');
