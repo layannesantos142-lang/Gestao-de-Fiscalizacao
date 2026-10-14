@@ -154,7 +154,17 @@ table.t{width:100%;border-collapse:collapse;font-size:.76rem;min-width:640px}
 .pend-lista{display:flex;flex-direction:column;gap:.7rem}
 .anx{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .7rem;padding:.45rem 0;border-bottom:1px solid var(--bdr)}
 .anx span{font-size:.68rem;color:var(--txt2)}
-.lnk{background:none;border:0;padding:0;color:var(--blue);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;text-align:left}.lnk:hover{text-decoration:underline}
+.cm{border:1px solid var(--bdr);border-left:4px solid var(--slate);border-radius:10px;padding:.5rem .75rem;margin-bottom:.5rem;background:var(--card)}
+.cm.filial{border-left-color:var(--red)}.cm.juridico{border-left-color:var(--blue)}.cm.compliance{border-left-color:var(--green)}
+.cm.novo{background:var(--amber-l);border-color:rgba(168,129,31,.45)}
+.cm-h{font-size:.68rem;color:var(--txt2);margin-bottom:.2rem}.cm-t{font-size:.8rem;white-space:pre-wrap}
+.cm-badge{display:inline-block;background:var(--amber);color:#fff;font-size:.62rem;font-weight:700;border-radius:999px;padding:.05rem .45rem;vertical-align:middle}
+.alerta-cm{border:1px solid rgba(168,129,31,.45);border-left:5px solid var(--amber);background:var(--amber-l)}
+.cm-alerta{padding:.5rem .2rem;border-top:1px solid rgba(168,129,31,.25);font-size:.78rem;cursor:pointer}.cm-alerta:hover{background:rgba(255,255,255,.45)}
+.cm-alerta span{color:var(--txt2)}.cm-alerta em{font-style:normal;font-weight:700;color:var(--amber);margin-left:.3rem}
+.lbl.faixa{margin:1rem 0 .4rem;padding-left:.5rem;border-left:4px solid var(--slate)}
+.lbl.faixa.venc{border-left-color:var(--red);color:var(--red)}.lbl.faixa.urg{border-left-color:var(--amber);color:var(--amber)}
+.fdt{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--txt2)}.fdt input{width:auto}.lnk{background:none;border:0;padding:0;color:var(--blue);font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;text-align:left}.lnk:hover{text-decoration:underline}
 input[type=file]{font-size:.78rem;padding:.45rem;border:1px dashed var(--bdr);border-radius:10px;width:100%;background:var(--card)}
 .pend-card{border:1px solid rgba(168,129,31,.35);border-left:5px solid var(--amber);background:var(--amber-l);border-radius:12px;padding:.85rem 1rem;cursor:pointer;transition:transform .12s, box-shadow .12s}
 .pend-card:hover{transform:translateY(-1px);box-shadow:var(--shm)}
@@ -289,14 +299,14 @@ var UNIDADES = ['Loja','Loja do Mall','CD','Obra'];
 var LIMITE_ENVIOS = 2; // envios Filial <-> Jur\u00EDdico por lado; depois disso, s\u00F3 com libera\u00E7\u00E3o do Compliance
 var RESULTADOS = {notificacao:'Notifica\u00E7\u00E3o', apreensao:'Apreens\u00E3o', multa:'Multa (auto de infra\u00E7\u00E3o)', sem_doc:'Visita sem notifica\u00E7\u00E3o'};
 var STATUS = {aberto:'Aberto \u00B7 aguardando Jur\u00EDdico', analise:'Em an\u00E1lise no Jur\u00EDdico', aguard_filial:'Aguardando filial', respondido:'Respondido ao \u00F3rg\u00E3o', encerrado:'Encerrado'};
-var DESFECHOS = ['Encerrado sem san\u00E7\u00E3o','Multa aplicada','Nova irregularidade (novo chamado)','Audi\u00EAncia / a\u00E7\u00E3o judicial'];
+var DESFECHOS = ['Encerrado sem san\u00E7\u00E3o','Multa aplicada','Nova irregularidade (novo chamado)','Audi\u00EAncia / a\u00E7\u00E3o judicial','Visita sem notifica\u00E7\u00E3o \u2014 ci\u00EAncia registrada','Notifica\u00E7\u00E3o sem desdobramento (apenas informativa)'];
 
 function ev(data, papel, autor, texto){ return {data:data, papel:papel, autor:autor, texto:texto}; }
 function rt(de, para, enviado, prazo, respondido){ return {de:de, para:para, enviado:enviado, prazo:prazo, respondido:respondido||null}; }
 function mk(o){
   o.unidade = o.unidade || 'Loja'; o.lojista = o.lojista || ''; o.obra = o.obra || '';
   o.envios = o.envios || {juridico:0, filial:0}; o.limite = o.limite || LIMITE_ENVIOS; o.libPend = o.libPend || null;
-  o.eventos = o.eventos || []; o.retornos = o.retornos || []; o.anexos = o.anexos || [];
+  o.eventos = o.eventos || []; o.retornos = o.retornos || []; o.anexos = o.anexos || []; o.comentarios = o.comentarios || [];
   o.eventos.unshift(ev(o.data, 'filial', autorNome('filial', o.filial), 'Chamado aberto pela filial.'));
   return o;
 }
@@ -320,11 +330,15 @@ function hojeBR(){ var d = HOJE; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.
 function dias(s){ return Math.round((pBR(s) - HOJE) / 864e5); }
 function fmtBR(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
 function addDias(s, n){ var d = pBR(s); d.setDate(d.getDate()+n); return fmtBR(d); }
-// prazo de retorno interno: "desde + n dias", mas nunca depois da v\u00E9spera do prazo do \u00F3rg\u00E3o
+// Prazo de retorno interno ESTRAT\u00C9GICO: cada setor usa s\u00F3 uma parte (at\u00E9 40%) do tempo que falta at\u00E9 a v\u00E9spera
+// do prazo do \u00F3rg\u00E3o, para sobrar tempo ao outro setor e ao protocolo. Nunca passa da v\u00E9spera do prazo do \u00F3rg\u00E3o.
 function prazoRetorno(c, desde, n){
-  var p = addDias(desde, n);
-  if (c.prazo) { var vesp = addDias(c.prazo, -1); if (pBR(p) > pBR(vesp)) p = pBR(vesp) < pBR(desde) ? desde : vesp; }
-  return p;
+  if (c.prazo) {
+    var vesp = addDias(c.prazo, -1), folga = Math.round((pBR(vesp) - pBR(desde)) / 864e5);
+    if (folga <= 1) return desde;                       // prazo apertado: retorno no mesmo dia
+    return addDias(desde, Math.max(1, Math.min(n, Math.floor(folga * 0.4))));
+  }
+  return addDias(desde, n);
 }
 function pendente(c){ for (var i=c.retornos.length-1;i>=0;i--) if (!c.retornos[i].respondido) return c.retornos[i]; return null; }
 function fecharPendente(c, para){ c.retornos.forEach(function(r){ if (r.para===para && !r.respondido) r.respondido = hojeBR(); }); }
@@ -371,7 +385,8 @@ function paraLinha(c){
 }
 function deLinha(r){
   return { id:r.id, filial:r.filial, unidade:r.unidade, lojista:r.lojista||'', obra:r.obra||'', orgao:r.orgao, motivo:r.motivo, forma:r.forma,
-    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'', protocolo:r.protocolo||'', respJur:r.responsavel_juridico||'', anexos:[],
+    data:br(r.data), fiscal:r.fiscal||'', recebeu:r.recebeu||'', acompanhou:r.acompanhou||'', resultados:r.resultados||[], doc:r.doc||'', protocolo:r.protocolo||'', respJur:r.responsavel_juridico||'', anexos:[], comentarios:[],
+    criado:r.criado_em||null, inicioAnalise:r.inicio_analise_em||null, respOrgaoEm:r.respondido_orgao_em||null, encerradoEm:r.encerrado_em||null,
     prazo:br(r.prazo), ncs:r.ncs||[], noAto:r.no_ato||'', apreensao:r.apreensao||'', relato:r.relato||'', status:r.status, desfecho:r.desfecho||'',
     multa: r.multa_valor != null ? {valor:+r.multa_valor, motivo:r.multa_motivo||''} : null,
     envios:{juridico:r.envios_juridico, filial:r.envios_filial}, limite:r.limite_envios, libPend:null, multaLojista:null, eventos:[], retornos:[] };
@@ -387,14 +402,15 @@ async function carregarTudo(){
     sb.from('listas').select('*').order('ordem'),
     sb.from('filiais').select('*').eq('ativa', true).order('codigo'),
     sb.from('perfis').select('*').order('nome'),
-    sb.from('anexos').select('*').order('id')
+    sb.from('anexos').select('*').order('id'),
+    sb.from('comentarios').select('*').order('id')
   ]);
   for (var i=0;i<q.length;i++) if (q[i].error) { erroDb(q[i].error, 'carregar'); return; }
   var mapa = {};
   chamados = q[0].data.map(function(r){ var c = deLinha(r); mapa[c.id] = c; return c; });
   q[1].data.forEach(function(e){ var c = mapa[e.chamado_id]; if (c) c.eventos.push({_id:e.id, data:br(e.criado_em), papel:e.papel, autor:e.autor, texto:e.texto}); });
   q[2].data.forEach(function(r){ var c = mapa[r.chamado_id]; if (c) c.retornos.push({_id:r.id, de:r.de, para:r.para, enviado:br(r.enviado), prazo:br(r.prazo), respondido:r.respondido ? br(r.respondido) : null, _resp0:r.respondido ? br(r.respondido) : null}); });
-  q[3].data.forEach(function(l){ var c = mapa[l.chamado_id]; if (c) c.libPend = {_id:l.id, por:l.pedido_por, data:br(l.pedido_em), motivo:l.motivo}; });
+  q[3].data.forEach(function(l){ var c = mapa[l.chamado_id]; if (c) c.libPend = {_id:l.id, por:l.pedido_por, data:br(l.pedido_em), em:l.pedido_em, motivo:l.motivo}; });
   q[4].data.forEach(function(m){ var c = mapa[m.chamado_id]; if (c) { c.multaLojista = {_salvo:true, valor:+m.valor, motivo:m.motivo, status:m.status, valorFinal:m.valor_final != null ? +m.valor_final : null, obs:m.obs||''}; var x = c.multaLojista; x._snap = [x.valor, x.motivo, x.status, x.valorFinal, x.obs].join('|'); } });
   ORGAOS = q[5].data.filter(function(x){ return x.tipo==='orgao'; }).map(function(x){ return x.valor; });
   MOTIVOS = q[5].data.filter(function(x){ return x.tipo==='motivo'; }).map(function(x){ return x.valor; });
@@ -405,6 +421,7 @@ async function carregarTudo(){
   FILIAL_NOME = {}; q[6].data.forEach(function(f){ FILIAL_NOME[f.codigo] = f.nome || ''; });
   PERFIS = q[7].data;
   q[8].data.forEach(function(a){ var c = mapa[a.chamado_id]; if (c) c.anexos.push(a); });
+  q[9].data.forEach(function(m){ var c = mapa[m.chamado_id]; if (c) c.comentarios.push(m); });
 }
 
 // ---------- Anexos (Supabase Storage, bucket privado "anexos"; nada \u00E9 apagado) ----------
@@ -451,6 +468,55 @@ async function anexarNoChamado(cid){
   var n = await enviarAnexos(c, fs, perfil === 'juridico' ? 'juridico' : 'geral');
   if (n) { addEv(c, perfil, 'Anexou ' + n + ' arquivo(s): ' + nomesArq(fs)); await salvar(c); toast(n + ' anexo(s) enviado(s).'); }
   _ocupado = false; render();
+}
+
+// ---------- Coment\u00E1rios (separados do hist\u00F3rico; quem recebe v\u00EA alerta dentro e fora do chamado) ----------
+// Jur\u00EDdico \u00E9 avisado dos coment\u00E1rios da filial; a filial \u00E9 avisada dos coment\u00E1rios do Jur\u00EDdico/Compliance.
+function naoLidos(c, quem){
+  quem = quem || perfil;
+  return (c.comentarios || []).filter(function(m){
+    return quem === 'filial' ? (m.papel !== 'filial' && !m.lido_filial_em) : (m.papel === 'filial' && !m.lido_juridico_em);
+  });
+}
+function marcarLidos(cid){
+  var c = byId(cid); if (!c || !EU) return;
+  // s\u00F3 quem \u00E9 o destinat\u00E1rio marca como lido (o Compliance olhando n\u00E3o "apaga" o alerta do Jur\u00EDdico)
+  if (!((EU.papel === 'juridico' && perfil === 'juridico') || (EU.papel === 'filial' && perfil === 'filial'))) return;
+  var nl = naoLidos(c); if (!nl.length) return;
+  sb.rpc('marcar_comentarios_lidos', {cid:cid}).then(function(r){
+    if (r.error) return;
+    var agora = new Date().toISOString();
+    nl.forEach(function(m){ if (perfil === 'filial') m.lido_filial_em = agora; else m.lido_juridico_em = agora; });
+    renderSide();
+  });
+}
+var NOME_PAPEL_CURTO = {filial:'Filial', juridico:'Jur\u00EDdico', compliance:'Compliance'};
+function cardComentarios(c){
+  var lista = (c.comentarios || []).map(function(m){
+    var novo = naoLidos(c).indexOf(m) >= 0;
+    return '<div class="cm '+m.papel+(novo ? ' novo' : '')+'"><div class="cm-h"><b>'+esc(m.autor)+'</b> \u00B7 '+fmtDH(m.criado_em)+(novo ? ' <span class="cm-badge">novo</span>' : '')+'</div><div class="cm-t">'+esc(m.texto)+'</div></div>';
+  }).join('');
+  return '<div class="card"><h3>Coment\u00E1rios</h3><div class="sub">Conversa entre filial e Jur\u00EDdico \u00B7 separado do hist\u00F3rico \u00B7 coment\u00E1rios n\u00E3o podem ser apagados</div>' +
+    (lista || '<div class="empty" style="padding:.8rem">Nenhum coment\u00E1rio ainda.</div>') +
+    '<div class="f" style="margin-top:.7rem"><textarea id="cm_txt" placeholder="Escreva um coment\u00E1rio'+(perfil==='filial' ? ' para o Jur\u00EDdico' : perfil==='juridico' ? ' para a filial' : '')+'"></textarea></div>' +
+    '<div class="btns"><button class="btn" id="cm_btn" onclick="enviarComentario(\''+c.id+'\')">Enviar coment\u00E1rio</button></div></div>';
+}
+async function enviarComentario(cid){
+  var c = byId(cid), t = val('cm_txt'); if (!t) return toast('Escreva o coment\u00E1rio.');
+  var btn = $('cm_btn'); btn.disabled = true; btn.textContent = 'Enviando...';
+  _ocupado = true;
+  var r = await sb.from('comentarios').insert({chamado_id:cid, papel:perfil, autor:autorNome(perfil, c.filial), texto:t}).select('*').single();
+  _ocupado = false;
+  if (r.error) { btn.disabled = false; btn.textContent = 'Enviar coment\u00E1rio'; return erroDb(r.error, 'coment\u00E1rio'); }
+  c.comentarios.push(r.data); toast(perfil==='filial' ? 'Coment\u00E1rio enviado. O Jur\u00EDdico ser\u00E1 avisado.' : 'Coment\u00E1rio enviado. A filial ser\u00E1 avisada.'); render();
+}
+// alerta fora do chamado: lista dos chamados com coment\u00E1rios novos para quem est\u00E1 vendo
+function alertaComentarios(lista){
+  var com = lista.filter(function(c){ return naoLidos(c).length; });
+  if (!com.length) return '';
+  return '<div class="card alerta-cm"><h3>\uD83D\uDCAC Coment\u00E1rios novos '+(perfil==='filial' ? 'do Jur\u00EDdico' : 'da filial')+' <span class="badge b-aguard_filial" style="vertical-align:middle">'+com.length+'</span></h3><div class="sub">Clique para abrir o chamado e ler</div>' +
+    com.map(function(c){ var u = naoLidos(c), m = u[u.length-1];
+      return '<div class="cm-alerta" onclick="go(null,null,\''+c.id+'\')"><b>'+c.id+'</b> \u00B7 '+esc(nf(c.filial))+' \u00B7 '+esc(c.orgao)+' \u2014 <span>\u201C'+esc(m.texto.length > 120 ? m.texto.slice(0,120)+'\u2026' : m.texto)+'\u201D</span> <em>'+u.length+' novo'+(u.length>1?'s':'')+'</em></div>'; }).join('') + '</div>';
 }
 
 // grava o chamado e tudo o que mudou nele (hist\u00F3rico, retornos, libera\u00E7\u00E3o, multa ao lojista)
@@ -519,7 +585,7 @@ function agendarRecarga(){
 }
 function ouvirMudancas(){
   var canal = sb.channel('fiscalizacao');
-  ['chamados','eventos','retornos','liberacoes','multas_lojista','listas','filiais','perfis','anexos'].forEach(function(t){
+  ['chamados','eventos','retornos','liberacoes','multas_lojista','listas','filiais','perfis','anexos','comentarios'].forEach(function(t){
     canal.on('postgres_changes', {event:'*', schema:'public', table:t}, agendarRecarga);
   });
   canal.subscribe();
@@ -571,7 +637,7 @@ async function telaLogin(msg){
   // lembra a \u00FAltima filial e setor usados neste computador
   try { var u = JSON.parse(localStorage.getItem('fisc_ultimo') || '{}'); if (u.f) $('l_filial').value = u.f; if (u.s) $('l_setor').value = u.s; if (u.e) $('l_email').value = u.e; } catch (e) {}
 }
-var _escolhaLogin = null;
+var _escolhaLogin = null, _veioDoLogin = false;
 async function entrar(e){
   e.preventDefault();
   _escolhaLogin = {filial: val('l_filial'), setor: val('l_setor')};
@@ -580,7 +646,26 @@ async function entrar(e){
   try { localStorage.setItem('fisc_ultimo', JSON.stringify({f:_escolhaLogin.filial, s:_escolhaLogin.setor, e:val('l_email').toLowerCase()})); } catch (x) {}
   iniciar(); return false;
 }
-async function sair(){ await sb.auth.signOut(); location.reload(); }
+async function sair(){ _saiu = true; await reg('saiu'); await sb.auth.signOut(); location.reload(); }
+
+// ---------- Registro de acessos (auditoria): entrou, saiu, visualizou, exportou... ----------
+var _vistos = {}, _saiu = false;
+function reg(acao, cid, det){
+  try { return sb.rpc('registrar_acesso', {p_acao:acao, p_chamado:cid || null, p_detalhes:det || null}).then(function(){}, function(){}); }
+  catch (e) { return Promise.resolve(); }
+}
+function regVisualizou(cid){ var t = Date.now(); if (_vistos[cid] && t - _vistos[cid] < 10*60*1000) return; _vistos[cid] = t; reg('visualizou', cid); }
+// ao fechar a aba/navegador: registra a sa\u00EDda mesmo sem clicar em "Sair"
+window.addEventListener('pagehide', function(){
+  if (_saiu || !EU || !sb || !window.FISC_CONFIG) return;
+  try {
+    var k = Object.keys(localStorage).filter(function(x){ return /auth-token$/.test(x); })[0], tok = k ? JSON.parse(localStorage.getItem(k)).access_token : '';
+    if (!tok) return;
+    fetch(window.FISC_CONFIG.url + '/rest/v1/rpc/registrar_acesso', {method:'POST', keepalive:true,
+      headers:{'apikey':window.FISC_CONFIG.key, 'Authorization':'Bearer ' + tok, 'Content-Type':'application/json'},
+      body:JSON.stringify({p_acao:'fechou o app', p_chamado:null, p_detalhes:null})});
+  } catch (e) {}
+});
 
 // ---------- Troca de senha (obrigat\u00F3ria no 1\u00BA acesso e ap\u00F3s reset; ou a pedido da pessoa) ----------
 function telaTrocaSenha(obrigatoria, msg){
@@ -632,6 +717,7 @@ async function iniciar(){
     _escolhaLogin = null; await sb.auth.signOut();
     telaLogin('Este e-mail n\u00E3o est\u00E1 cadastrado na filial e no setor escolhidos. Confira a filial e o setor ou fale com o Compliance.'); return;
   }
+  _veioDoLogin = !!_escolhaLogin;
   _escolhaLogin = null;
   // senha provis\u00F3ria (conta nova ou senha resetada pelo Compliance): obriga a criar uma senha nova antes de usar o app
   var us = await sb.auth.getUser();
@@ -642,18 +728,20 @@ async function iniciar(){
   await carregarTudo();
   if (EU.papel === 'compliance' && FILIAIS.indexOf(FILIAL_USUARIO) < 0) FILIAL_USUARIO = TODAS;
   render(); ouvirMudancas();
+  reg(_veioDoLogin ? 'entrou' : 'abriu o app (sess\u00E3o salva)', null, {navegador: navigator.userAgent.slice(0, 120)});
 }
 function opts(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(''); }
 
 // ================= Render geral =================
-function go(p, t, id){ if (p) perfil = p; if (t) tela[perfil] = t; sel = id || null; editando = false; render(); window.scrollTo(0,0); }
+function go(p, t, id){ if (p) perfil = p; if (t) tela[perfil] = t; sel = id || null; editando = false; render(); window.scrollTo(0,0); if (id) { regVisualizou(id); marcarLidos(id); } }
 function render(){
   document.body.className = document.body.className.replace(/\bp-\w+/g,'').trim() + ' p-' + perfil;
   [].forEach.call(document.querySelectorAll('#perfis button'), function(b){ b.classList.toggle('on', b.getAttribute('data-p')===perfil); });
   renderSide();
   var m = $('main');
   if (sel) { m.innerHTML = detalhe(byId(sel)); bindDetalhe(); return; }
-  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, usuarios:cUsuarios, cadastros:cCadastros, sistema:cSistema}})[perfil][tela[perfil]]();
+  m.innerHTML = ({filial:{inicio:fInicio, novo:fNovo, meus:fMeus}, juridico:{fila:jFila, encerrados:jEncerrados}, compliance:{painel:cPainel, todos:cTodos, liberacoes:cLiberacoes, usuarios:cUsuarios, cadastros:cCadastros, auditoria:cAuditoria, sistema:cSistema}})[perfil][tela[perfil]]();
+  if (perfil==='compliance' && tela.compliance==='auditoria' && !sel && !_audit && !_auditBuscando) buscarAuditoria();
   if (perfil==='compliance' && tela.compliance==='sistema' && !sel) carregarSistema();
   if (perfil==='filial' && tela.filial==='novo') bindNovo();
 }
@@ -662,7 +750,8 @@ function renderSide(){
   var meus = meusChamados();
   if (perfil==='filial') items = [['inicio','In\u00EDcio', meus.filter(function(c){return c.status==='aguard_filial';}).length], ['novo','+ Novo chamado'], ['meus','Meus chamados']];
   if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
-  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Contas de acesso', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app'], ['sistema','Backup e sistema']];
+  if (perfil==='juridico' && chamados.some(function(c){ return naoLidos(c).length; })) items[0][1] += ' \uD83D\uDCAC';
+  if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Contas de acesso', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app'], ['auditoria','Registro de auditoria'], ['sistema','Backup e sistema']];
   var nome = EU && EU.nome ? EU.nome : u.nome, ini = nome.split(/\s+/).map(function(x){ return x[0]; }).join('').slice(0,2).toUpperCase();
   var sub = (EU && EU.papel === perfil) ? 'Filial ' + nf(EU.filial) + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? (FILIAL_USUARIO === TODAS ? 'Vendo todas as filiais' : 'Vendo como filial ' + nf(FILIAL_USUARIO)) : u.sub;
   var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()"><option value="'+TODAS+'"'+(FILIAL_USUARIO===TODAS?' selected':'')+'>Todas as filiais</option>'+optsF(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
@@ -674,10 +763,12 @@ function renderSide(){
 }
 function tabela(lista, cols){
   if (!lista.length) return '<div class="empty">Nenhum chamado.</div>';
-  var H = {id:'Chamado', filial:'Filial', unidade:'Local', orgao:'\u00D3rg\u00E3o', data:'Data', res:'Resultado', prazo:'Prazo do \u00F3rg\u00E3o', retorno:'Retorno interno pendente', status:'Status'};
+  var H = {acao:'Quem precisa agir', resp:'Respons\u00E1vel Jur\u00EDdico', id:'Chamado', filial:'Filial', unidade:'Local', orgao:'\u00D3rg\u00E3o', data:'Data', res:'Resultado', prazo:'Prazo do \u00F3rg\u00E3o', retorno:'Retorno interno pendente', status:'Status'};
   return '<div class="tbl-wrap"><table class="t"><thead><tr>'+cols.map(function(k){return '<th>'+H[k]+'</th>';}).join('')+'</tr></thead><tbody>' +
     lista.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')">'+cols.map(function(k){
-      if (k==='id') return '<td><b>'+c.id+'</b></td>';
+      if (k==='id') { var nl = naoLidos(c).length; return '<td><b>'+c.id+'</b>'+(nl ? ' <span class="cm-badge" title="Coment\u00E1rios novos">\uD83D\uDCAC '+nl+'</span>' : '')+'</td>'; }
+      if (k==='acao') return '<td>'+proximaAcao(c)+'</td>';
+      if (k==='resp') return '<td>'+esc(c.respJur || '\u2014')+'</td>';
       if (k==='filial') return '<td>'+esc(nf(c.filial))+'</td>';
       if (k==='res') return '<td>'+tags(c)+'</td>';
       if (k==='prazo') return '<td>'+prazoHtml(c)+'</td>';
@@ -692,6 +783,12 @@ function recentes(a,b){ return pBR(b.data) - pBR(a.data); }
 
 // ================= FILIAL =================
 // grupos de situa\u00E7\u00E3o vistos pela filial
+var GRUPO_RESULTADO = {
+  multa:     {nome:'Com multa',                   teste:function(c){ return !!c.multa || c.resultados.indexOf('multa') >= 0; }},
+  semmulta:  {nome:'Sem multa',                   teste:function(c){ return !c.multa && c.resultados.indexOf('multa') < 0; }},
+  visita:    {nome:'Apenas visita sem notifica\u00E7\u00E3o', teste:function(c){ return c.resultados.length === 1 && c.resultados[0] === 'sem_doc'; }}
+};
+var filtroResultado = '';
 var GRUPO_FILIAL = {
   aberto:   {nome:'Chamados em aberto',             teste:function(c){ return c.status!=='encerrado'; }},
   juridico: {nome:'Aguardando retorno do Jur\u00EDdico', teste:function(c){ return c.status==='aberto' || c.status==='analise'; }},
@@ -704,7 +801,7 @@ function fInicio(){
   var pend = meus.filter(GRUPO_FILIAL.filial.teste);
   var kpi = function(k, cor){ return '<div class="kpi click" onclick="filtroFilial=\''+k+'\';go(null,\'meus\')"><div class="v" style="color:'+cor+'">'+meus.filter(GRUPO_FILIAL[k].teste).length+'</div><div class="l">'+GRUPO_FILIAL[k].nome+'</div></div>'; };
   return '<div class="ph"><div><h2>'+(FILIAL_USUARIO===TODAS ? 'Todas as filiais' : 'Ol\u00E1! Filial '+esc(nf(FILIAL_USUARIO)))+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
-    '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' +
+    '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' + alertaComentarios(meus) +
     '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA' + (pend.length ? ' <span class="badge b-aguard_filial" style="vertical-align:middle">' + pend.length + ' pendente' + (pend.length>1?'s':'') + '</span>' : '') + '</h3>' +
     '<div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es \u00B7 clique para abrir o chamado e responder</div>' +
     (pend.length ? '<div class="pend-lista">' + pend.slice().sort(function(a,b){ var pa = pendente(a), pb = pendente(b); return (pa ? pBR(pa.prazo) : 0) - (pb ? pBR(pb.prazo) : 0); }).map(cartaoPendente).join('') + '</div>'
@@ -846,25 +943,65 @@ function enviarNovo(e){
 }
 function fMeus(){
   var todos = meusChamados().sort(recentes);
-  var l = filtroFilial ? todos.filter(GRUPO_FILIAL[filtroFilial].teste) : todos;
+  var porRes = filtroResultado ? todos.filter(GRUPO_RESULTADO[filtroResultado].teste) : todos;
+  var l = filtroFilial ? porRes.filter(GRUPO_FILIAL[filtroFilial].teste) : porRes;
   var multi = todos.some(function(c){ return c.filial !== FILIAL_USUARIO; });
-  var chip = function(k, nome){ var n = k ? todos.filter(GRUPO_FILIAL[k].teste).length : todos.length;
+  var chip = function(k, nome){ var n = k ? porRes.filter(GRUPO_FILIAL[k].teste).length : porRes.length;
     return '<button class="btn sm'+(filtroFilial===k?' pri':'')+'" onclick="filtroFilial=\''+k+'\';render()">'+nome+' ('+n+')</button>'; };
+  var chipR = function(k, nome){ var n = k ? todos.filter(GRUPO_RESULTADO[k].teste).length : todos.length;
+    return '<button class="btn sm'+(filtroResultado===k?' pri':'')+'" onclick="filtroResultado=\''+k+'\';render()">'+nome+' ('+n+')</button>'; };
   return '<div class="ph"><div><h2>Chamados</h2><p>'+(multi ? 'Chamados das filiais que esta conta pode visualizar' : 'Fiscaliza\u00E7\u00F5es registradas pela filial '+esc(nf(FILIAL_USUARIO)))+'</p></div></div>' +
     '<div class="card"><div class="btns" style="margin-bottom:.8rem">' + chip('', 'Todos') + chip('aberto', GRUPO_FILIAL.aberto.nome) + chip('juridico', GRUPO_FILIAL.juridico.nome) + chip('filial', GRUPO_FILIAL.filial.nome) + chip('encerrado', GRUPO_FILIAL.encerrado.nome) + '</div>' +
+    '<div class="btns" style="margin:-.3rem 0 .8rem"><span class="lbl" style="margin:0 .3rem 0 0;align-self:center">Resultado:</span>' + chipR('', 'Todos') + chipR('multa', GRUPO_RESULTADO.multa.nome) + chipR('semmulta', GRUPO_RESULTADO.semmulta.nome) + chipR('visita', GRUPO_RESULTADO.visita.nome) + '</div>' +
     tabela(l, multi ? ['id','filial','orgao','data','res','prazo','retorno','status'] : ['id','orgao','data','res','prazo','retorno','status'])+'</div>';
 }
 
 // ================= JUR\u00CDDICO =================
+// quem precisa agir agora em cada chamado
+function quemAge(c){ return c.status==='aberto' || c.status==='analise' ? 'juridico' : c.status==='aguard_filial' ? 'filial' : c.status==='respondido' ? 'orgao' : ''; }
+function proximaAcao(c){
+  var q = quemAge(c);
+  if (q==='juridico') return '<span class="seta juridico">Jur\u00EDdico</span>' + (c.status==='aberto' ? ' \u00B7 iniciar an\u00E1lise' : '');
+  if (q==='filial') { var p = pendente(c); return '<span class="seta filial">Filial</span>' + (p ? ' \u00B7 at\u00E9 ' + p.prazo.slice(0,5) : ''); }
+  if (q==='orgao') return 'Aguardando o \u00F3rg\u00E3o';
+  return '\u2014';
+}
+// ordem estrat\u00E9gica: prazo do \u00F3rg\u00E3o primeiro (o que vale); empate -> quem ainda n\u00E3o foi analisado, depois o mais antigo
+function porUrgencia(a, b){
+  var x = a.prazo ? pBR(a.prazo) : new Date(2100,0,1), y = b.prazo ? pBR(b.prazo) : new Date(2100,0,1);
+  if (x - y) return x - y;
+  var sa = a.status==='aberto' ? 0 : 1, sbb = b.status==='aberto' ? 0 : 1; if (sa !== sbb) return sa - sbb;
+  return pBR(a.data) - pBR(b.data);
+}
+var FAIXAS = [
+  {nome:'Prazo vencido ou vence hoje', cls:'venc', t:function(d){ return d !== null && d <= 0; }},
+  {nome:'Vence em 1 a 3 dias', cls:'urg', t:function(d){ return d !== null && d >= 1 && d <= 3; }},
+  {nome:'Vence em 4 a 7 dias', cls:'ok', t:function(d){ return d !== null && d >= 4 && d <= 7; }},
+  {nome:'Vence em mais de 7 dias', cls:'ok', t:function(d){ return d !== null && d > 7; }},
+  {nome:'Sem prazo do \u00F3rg\u00E3o informado', cls:'sem', t:function(d){ return d === null; }}
+];
 function jFila(){
-  var l = chamados.filter(function(c){ return c.status!=='encerrado'; }).sort(porPrazo);
+  var l = chamados.filter(function(c){ return c.status!=='encerrado'; }).sort(porUrgencia);
   var venc = l.filter(function(c){ return c.prazo && dias(c.prazo) <= 3; }).length;
+  // "Atenda primeiro": o que depende do Jur\u00EDdico, pelo prazo do \u00F3rg\u00E3o
+  var meus = l.filter(function(c){ return quemAge(c)==='juridico'; }).slice(0, 5);
+  var porque = function(c){ if (!c.prazo) return c.status==='aberto' ? 'Novo, sem an\u00E1lise \u00B7 prazo do \u00F3rg\u00E3o n\u00E3o informado' : 'Prazo do \u00F3rg\u00E3o n\u00E3o informado'; var d = dias(c.prazo);
+    return (d < 0 ? 'Prazo do \u00F3rg\u00E3o vencido h\u00E1 ' + (-d) + ' dia(s)' : d === 0 ? 'Prazo do \u00F3rg\u00E3o vence hoje' : 'Prazo do \u00F3rg\u00E3o em ' + d + ' dia(s)') + (c.status==='aberto' ? ' \u00B7 ainda sem an\u00E1lise' : ''); };
+  var atenda = meus.length ? '<div class="card"><h3>\uD83C\uDFAF Atenda primeiro</h3><div class="sub">Chamados que dependem do Jur\u00EDdico, na ordem do prazo do \u00F3rg\u00E3o. Se chegar um mais urgente, ele sobe para o topo.</div><div class="pend-lista">' +
+    meus.map(function(c, i){ var cl = c.prazo ? clsDias(c.prazo) : 'ok';
+      return '<div class="pend-card '+cl+'" onclick="go(null,null,\''+c.id+'\')"><div class="pc-top"><b>'+(i+1)+'\u00BA \u00B7 '+c.id+' \u00B7 '+esc(nf(c.filial))+' \u00B7 '+esc(c.orgao)+'</b><span class="prazo '+cl+'">'+(c.prazo ? c.prazo.slice(0,5) + ' \u00B7 ' + contagem(c.prazo) : 'sem prazo')+'</span></div>' +
+        '<div class="pc-pedido"><span>Por qu\u00EA:</span> '+porque(c)+(c.respJur ? ' \u00B7 respons\u00E1vel: '+esc(c.respJur) : '')+(naoLidos(c).length ? ' \u00B7 \uD83D\uDCAC coment\u00E1rio novo da filial' : '')+'</div></div>'; }).join('') + '</div></div>' : '';
+  var grupos = FAIXAS.map(function(f){
+    var g = l.filter(function(c){ return f.t(c.prazo ? dias(c.prazo) : null); });
+    return g.length ? '<div class="lbl faixa '+f.cls+'">'+f.nome+' ('+g.length+')</div>' + tabela(g, ['id','filial','orgao','prazo','acao','retorno','resp','status']) : '';
+  }).join('');
   return '<div class="ph"><div><h2>Fila de chamados</h2><p>Ordenada pelo prazo do \u00F3rg\u00E3o. O prazo do \u00F3rg\u00E3o \u00E9 o que vale.</p></div></div>' +
     '<div class="kpis"><div class="kpi"><div class="v" style="color:var(--red)">'+l.filter(function(c){return c.status==='aberto';}).length+'</div><div class="l">Novos, aguardando an\u00E1lise</div></div>' +
     '<div class="kpi"><div class="v" style="color:var(--amber)">'+venc+'</div><div class="l">Prazo em at\u00E9 3 dias</div></div>' +
     '<div class="kpi"><div class="v" style="color:var(--blue)">'+l.filter(function(c){return c.status==='analise';}).length+'</div><div class="l">Em an\u00E1lise</div></div>' +
     '<div class="kpi"><div class="v">'+l.filter(function(c){return c.status==='aguard_filial';}).length+'</div><div class="l">Aguardando filial</div></div></div>' +
-    '<div class="card">'+tabela(l, ['id','filial','orgao','prazo','retorno','status'])+'</div>';
+    alertaComentarios(chamados) + atenda +
+    '<div class="card"><h3>Todos em andamento, por faixa de prazo</h3><div class="sub">Dentro de cada faixa: prazo do \u00F3rg\u00E3o mais pr\u00F3ximo primeiro</div>' + (grupos || '<div class="empty">Nenhum chamado em andamento.</div>') + '</div>';
 }
 function jEncerrados(){
   var l = chamados.filter(function(c){ return c.status==='encerrado'; }).sort(recentes);
@@ -878,14 +1015,99 @@ function barras(pares, cor){
   var max = pares[0][1];
   return pares.map(function(p){ return '<div class="bar-row"><span class="nm" title="'+esc(p[0])+'">'+esc(p[0])+'</span><div class="bar"><span style="width:'+(p[1]/max*100)+'%;background:'+(cor||'var(--red)')+'"></span></div><span class="nu">'+p[1]+'</span></div>'; }).join('');
 }
+// ----- Filtros do painel (valem para todos os quadros, para os tempos e para o Excel "conforme o filtro") -----
+var filtrosP = {filial:'', de:'', ate:'', orgao:'', resultado:'', unidade:'', status:''};
+var RES_FILTRO = [['multa','Com multa'],['semmulta','Sem multa'],['apreensao','Com apreens\u00E3o'],['notificacao','Com notifica\u00E7\u00E3o'],['visita','Apenas visita sem notifica\u00E7\u00E3o']];
+function passaRes(c, r){ if (!r) return true; if (GRUPO_RESULTADO[r]) return GRUPO_RESULTADO[r].teste(c); return c.resultados.indexOf(r) >= 0; }
+function noPeriodo(c){ var d = iso(c.data); return (!filtrosP.de || d >= filtrosP.de) && (!filtrosP.ate || d <= filtrosP.ate); }
+function listaPainel(soPeriodo){
+  var f = filtrosP;
+  return chamados.filter(function(c){
+    if (!noPeriodo(c)) return false;
+    if (soPeriodo) return true;
+    return (!f.filial || c.filial===f.filial) && (!f.orgao || c.orgao===f.orgao) && (!f.status || c.status===f.status) && (!f.unidade || c.unidade===f.unidade) && passaRes(c, f.resultado);
+  });
+}
+function orgaosUsados(){ var s = {}; ORGAOS.concat(chamados.map(function(c){ return c.orgao; })).forEach(function(o){ if (o) s[o] = 1; }); return Object.keys(s).sort(); }
+function filtrosPainelHtml(){
+  var s = function(k, list, ph){ return '<select onchange="filtrosP.'+k+'=this.value;render()"><option value="">'+ph+'</option>'+list.map(function(o){ var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; return '<option value="'+esc(v)+'"'+(filtrosP[k]===v?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
+  var dt = function(k, lbl){ return '<label class="fdt">'+lbl+'<input type="date" value="'+esc(filtrosP[k])+'" onchange="filtrosP.'+k+'=this.value;render()"></label>'; };
+  var ativos = Object.keys(filtrosP).some(function(k){ return filtrosP[k]; });
+  return '<div class="card"><div class="filters">' + s('filial', FILIAIS.map(function(f){ return [f, nf(f)]; }), 'Todas as filiais') + dt('de', 'Visita de') + dt('ate', 'at\u00E9') +
+    s('orgao', orgaosUsados(), 'Todos os \u00F3rg\u00E3os') + s('resultado', RES_FILTRO, 'Todos os resultados') + s('unidade', UNIDADES, 'Todos os locais') +
+    s('status', Object.keys(STATUS).map(function(k){ return [k, STATUS[k]]; }), 'Todos os status') +
+    (ativos ? '<button class="btn sm" onclick="filtrosP={filial:\'\',de:\'\',ate:\'\',orgao:\'\',resultado:\'\',unidade:\'\',status:\'\'};render()">Limpar filtros</button>' : '') + '</div></div>';
+}
+
+// ----- Tempos e prazos: visita x abertura x retornos (filial / Jur\u00EDdico) x prazo do \u00F3rg\u00E3o x conclus\u00E3o -----
+function diaDe(t){ var d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function difD(a, b){ return a && b ? Math.round((b - a) / 864e5) : null; }
+function tempos(c){
+  var visita = pBR(c.data), abertura = c.criado ? diaDe(c.criado) : null;
+  var concl = c.respOrgaoEm ? diaDe(c.respOrgaoEm) : (c.encerradoEm ? diaDe(c.encerradoEm) : null);
+  var lado = {filial:{n:0, soma:0, atrasos:0, diasAtraso:0}, juridico:{n:0, soma:0, atrasos:0, diasAtraso:0}};
+  c.retornos.forEach(function(r){
+    var L = lado[r.para]; if (!L) return;
+    var fim = r.respondido ? pBR(r.respondido) : (c.status === 'encerrado' ? null : HOJE);
+    if (!fim) return;
+    if (r.respondido) { L.n++; L.soma += Math.max(0, difD(pBR(r.enviado), fim)); }
+    var at = difD(pBR(r.prazo), fim); if (at > 0) { L.atrasos++; L.diasAtraso += at; }
+  });
+  var aposPrazo = null, perdido = false;
+  if (c.prazo) {
+    var fimP = concl || (c.status !== 'encerrado' && c.status !== 'respondido' ? HOJE : null);
+    if (fimP) { aposPrazo = difD(pBR(c.prazo), fimP); perdido = aposPrazo > 0; }
+  }
+  var onde = !perdido ? '' : lado.filial.diasAtraso > lado.juridico.diasAtraso ? 'Filial' : lado.juridico.diasAtraso > lado.filial.diasAtraso ? 'Jur\u00EDdico'
+           : lado.filial.diasAtraso ? 'Filial e Jur\u00EDdico' : 'Sem atraso nos retornos internos (an\u00E1lise ou protocolo)';
+  return { visitaAbertura: abertura ? Math.max(0, difD(visita, abertura)) : null,
+           horasAnalise: c.inicioAnalise && c.criado ? Math.max(0, (new Date(c.inicioAnalise) - new Date(c.criado)) / 36e5) : null,
+           respFilial: lado.filial.n ? lado.filial.soma / lado.filial.n : null, respJur: lado.juridico.n ? lado.juridico.soma / lado.juridico.n : null,
+           lado: lado, conclusao: concl, aposPrazo: aposPrazo, perdido: perdido, onde: onde, total: concl ? difD(visita, concl) : null };
+}
+function media(arr){ var v = arr.filter(function(x){ return x !== null && x !== undefined && !isNaN(x); }); return v.length ? v.reduce(function(a, b){ return a + b; }, 0) / v.length : null; }
+function fmtN(x, un){ return x === null ? '\u2014' : String(Math.round(x * 10) / 10).replace('.', ',') + (un || ''); }
+function secaoTempos(L){
+  var T = L.map(function(c){ return {c:c, t:tempos(c)}; });
+  var soma = function(f){ return T.reduce(function(s, x){ return s + f(x); }, 0); };
+  var perdidos = T.filter(function(x){ return x.t.perdido; });
+  var kpi = function(v, l, cor){ return '<div class="kpi"><div class="v"'+(cor ? ' style="color:'+cor+'"' : '')+'>'+v+'</div><div class="l">'+l+'</div></div>'; };
+  var grupo = function(chave){ var m = {}; T.forEach(function(x){ var k = chave(x); if (!k) return; (m[k] = m[k] || []).push(x); }); return m; };
+  var linhaGrupo = function(nome, g){
+    return '<tr><td><b>'+esc(nome)+'</b></td><td>'+g.length+'</td><td>'+fmtN(media(g.map(function(x){ return x.t.visitaAbertura; })), ' d')+'</td>' +
+      '<td>'+fmtN(media(g.map(function(x){ return x.t.respFilial; })), ' d')+'</td><td>'+g.reduce(function(s, x){ return s + x.t.lado.filial.atrasos; }, 0)+'</td>' +
+      '<td>'+fmtN(media(g.map(function(x){ return x.t.respJur; })), ' d')+'</td><td>'+g.reduce(function(s, x){ return s + x.t.lado.juridico.atrasos; }, 0)+'</td>' +
+      '<td>'+g.filter(function(x){ return x.t.perdido; }).length+'</td></tr>'; };
+  var cab = '<thead><tr><th></th><th>Chamados</th><th>Visita \u2192 abertura</th><th>Resposta da filial (m\u00E9dia)</th><th>Retornos da filial atrasados</th><th>Resposta do Jur\u00EDdico (m\u00E9dia)</th><th>Retornos do Jur\u00EDdico atrasados</th><th>Prazos do \u00F3rg\u00E3o perdidos</th></tr></thead>';
+  var gf = grupo(function(x){ return nf(x.c.filial); }), gr = grupo(function(x){ return x.c.respJur; });
+  return '<div class="lbl">Tempos e prazos \u00B7 quem demora mais</div>' +
+    '<div class="kpis k5">' + kpi(fmtN(media(T.map(function(x){ return x.t.visitaAbertura; })), ' dia(s)'), 'M\u00E9dia entre a visita e a abertura do chamado') +
+      kpi(fmtN(media(T.map(function(x){ return x.t.horasAnalise; })), ' h'), 'M\u00E9dia entre a abertura e o in\u00EDcio da an\u00E1lise do Jur\u00EDdico') +
+      kpi(fmtN(media(T.map(function(x){ return x.t.respFilial; })), ' dia(s)'), 'Resposta da filial ao Jur\u00EDdico \u00B7 ' + soma(function(x){ return x.t.lado.filial.atrasos; }) + ' retorno(s) atrasado(s)', 'var(--amber)') +
+      kpi(fmtN(media(T.map(function(x){ return x.t.respJur; })), ' dia(s)'), 'Resposta do Jur\u00EDdico \u00E0 filial \u00B7 ' + soma(function(x){ return x.t.lado.juridico.atrasos; }) + ' retorno(s) atrasado(s)', 'var(--blue)') +
+      kpi(perdidos.length, 'Prazos do \u00F3rg\u00E3o perdidos', 'var(--red)') + '</div>' +
+    '<div class="card"><h3>Por filial</h3><div class="sub">Tempo m\u00E9dio em dias \u00B7 retornos atrasados = respondidos (ou ainda pendentes) depois do prazo interno</div><div class="tbl-wrap"><table class="t">'+cab+'<tbody>' +
+      (Object.keys(gf).sort().map(function(k){ return linhaGrupo(k, gf[k]); }).join('') || '<tr><td colspan="8" class="empty">Sem chamados no filtro.</td></tr>') + '</tbody></table></div></div>' +
+    (Object.keys(gr).length ? '<div class="card"><h3>Por respons\u00E1vel do Jur\u00EDdico</h3><div class="sub">Quem do Jur\u00EDdico analisou cada chamado</div><div class="tbl-wrap"><table class="t">'+cab+'<tbody>' +
+      Object.keys(gr).sort().map(function(k){ return linhaGrupo(k, gr[k]); }).join('') + '</tbody></table></div></div>' : '') +
+    '<div class="card"><h3>Prazos do \u00F3rg\u00E3o perdidos \u00B7 por que perdemos</h3><div class="sub">Compara o prazo do \u00F3rg\u00E3o com a data em que o Jur\u00EDdico respondeu ao \u00F3rg\u00E3o (ou encerrou) e mostra em qual etapa houve atraso</div>' +
+      (perdidos.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>\u00D3rg\u00E3o</th><th>Visita</th><th>Prazo do \u00F3rg\u00E3o</th><th>Conclu\u00EDdo em</th><th>Dias ap\u00F3s o prazo</th><th>Atraso da filial</th><th>Atraso do Jur\u00EDdico</th><th>Onde atrasou</th></tr></thead><tbody>' +
+        perdidos.sort(function(a, b){ return b.t.aposPrazo - a.t.aposPrazo; }).map(function(x){ var c = x.c, t = x.t;
+          return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+esc(nf(c.filial))+'</td><td>'+esc(c.orgao)+'</td><td>'+c.data+'</td><td>'+c.prazo+'</td><td>'+(t.conclusao ? fmtBR(t.conclusao) : '<span class="prazo venc">em aberto</span>')+'</td>' +
+            '<td><b>'+t.aposPrazo+'</b></td><td>'+t.lado.filial.diasAtraso+' d</td><td>'+t.lado.juridico.diasAtraso+' d</td><td>'+esc(t.onde)+'</td></tr>'; }).join('') + '</tbody></table></div>'
+        : '<div class="empty">\u2705 Nenhum prazo do \u00F3rg\u00E3o perdido no filtro atual.</div>') + '</div>';
+}
+
 function cPainel(){
+  var chamados = listaPainel();   // a partir daqui o painel usa s\u00F3 os chamados do filtro atual
   var com = function(r){ return chamados.filter(function(c){ return c.resultados.indexOf(r)>=0; }); };
   var multas = chamados.filter(function(c){ return c.multa; });
   var total = multas.reduce(function(s,c){ return s + c.multa.valor; }, 0);
   var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
   var card = function(n, t, sub, body){ return '<div class="card foco-card" style="margin:0"><h3><span class="n">'+n+'</span>'+t+'</h3><div class="sub">'+sub+'</div>'+body+'</div>'; };
-  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><div class="btns"><button class="btn" id="btn_exp" onclick="exportarPainel()">\u2B07 Exportar painel (Excel)</button><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div></div>' +
-    '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas</div></div>' +
+  return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><div class="btns"><button class="btn" id="btn_exp" onclick="exportarPainel(\'filtro\')">\u2B07 Excel conforme o filtro</button><button class="btn" id="btn_exp_tudo" onclick="exportarPainel(\'tudo\')">\u2B07 Excel da base completa (per\u00EDodo)</button><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div></div>' +
+    filtrosPainelHtml() +
+    '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas'+(chamados.length !== window.chamados.length ? ' (no filtro)' : '')+'</div></div>' +
     (function(){ var at = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
       return '<div class="kpi click" onclick="filtros.status=\'\';go(null,\'todos\')"><div class="v" style="color:var(--red)">'+at.length+'</div><div class="l">Retornos internos atrasados'+(at.length ? ' ('+at.map(function(c){ return c.id; }).join(', ')+')' : '')+'</div></div>'; })() +
     '<div class="kpi"><div class="v" style="color:var(--blue)">'+abertos.length+'</div><div class="l">Em andamento</div></div>' +
@@ -899,7 +1121,8 @@ function cPainel(){
     card(5, 'N\u00E3o conformidades mais apontadas', 'Por n\u00FAmero de ocorr\u00EAncias', barras(contar(chamados, function(c){ return c.ncs; }), 'var(--amber)')) +
     card(6, '\u00D3rg\u00E3os que aplicaram multa', multas.length+' multas \u00B7 '+brl(total), barras(contar(multas, function(c){ return c.orgao; }), '#7B0B18') +
       '<div class="multa-list">'+multas.map(function(c){ return '<div><b>'+c.id+'</b> \u00B7 '+esc(nf(c.filial))+' \u00B7 '+brl(c.multa.valor)+' \u2014 '+esc(c.multa.motivo)+'</div>'; }).join('')+'</div>') +
-    '</div>' +
+    card(7, 'Motivos das multas', multas.length+' multas \u00B7 por motivo informado', barras(contar(multas, function(c){ return c.multa.motivo || 'N\u00E3o informado'; }), '#7B0B18')) +
+    '</div>' + secaoTempos(chamados) +
     '<div class="foco-grid" style="grid-template-columns:2fr 1fr;margin-top:1rem">' +
     '<div class="card" style="margin:0"><h3>Visitas por filial</h3><div class="sub">Onde os \u00F3rg\u00E3os mais est\u00E3o presentes</div>'+barras(contar(chamados, function(c){ return nf(c.filial); }), 'var(--green)')+'</div>' +
     '<div class="card" style="margin:0"><h3>Visitas por local</h3><div class="sub">Loja, Loja do Mall, CD e Obra</div>'+barras(contar(chamados, function(c){ return c.unidade; }), 'var(--slate)')+'</div></div>' +
@@ -918,8 +1141,8 @@ function cTodos(){
 function cLiberacoes(){
   var l = chamados.filter(function(c){ return c.libPend; });
   return '<div class="ph"><div><h2>Libera\u00E7\u00F5es de reenvio</h2><p>Filial e Jur\u00EDdico podem trocar at\u00E9 '+LIMITE_ENVIOS+' envios cada. Depois disso, s\u00F3 o Compliance libera novos envios, sempre de '+LIMITE_ENVIOS+' em '+LIMITE_ENVIOS+'.</p></div></div>' +
-    '<div class="card">' + (l.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>\u00D3rg\u00E3o</th><th>Pedido por</th><th>Motivo</th><th>Envios (J \u2192 F / F \u2192 J)</th></tr></thead><tbody>' +
-      l.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+esc(nf(c.filial))+'</td><td>'+esc(c.orgao)+'</td><td>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'Filial')+' \u00B7 '+c.libPend.data+'</td><td>'+esc(c.libPend.motivo)+'</td><td>'+c.envios.juridico+'/'+c.limite+' \u00B7 '+c.envios.filial+'/'+c.limite+'</td></tr>'; }).join('') +
+    '<div class="card">' + (l.length ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Chamado</th><th>Filial</th><th>\u00D3rg\u00E3o</th><th>Pedido por</th><th>Motivo</th><th>Envios (J \u2192 F / F \u2192 J)</th><th>Responder at\u00E9 (24h)</th></tr></thead><tbody>' +
+      l.map(function(c){ return '<tr class="row" onclick="go(null,null,\''+c.id+'\')"><td><b>'+c.id+'</b></td><td>'+esc(nf(c.filial))+'</td><td>'+esc(c.orgao)+'</td><td>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'Filial')+' \u00B7 '+c.libPend.data+'</td><td>'+esc(c.libPend.motivo)+'</td><td>'+c.envios.juridico+'/'+c.limite+' \u00B7 '+c.envios.filial+'/'+c.limite+'</td><td>'+prazoLibTxt(c.libPend)+'</td></tr>'; }).join('') +
       '</tbody></table></div>' : '<div class="empty">Nenhum pedido de libera\u00E7\u00E3o pendente.</div>') + '</div>';
 }
 function cCadastros(){
@@ -942,6 +1165,63 @@ async function remCad(k, i){
   if (r.error) return erroDb(r.error, 'cadastro');
   await carregarTudo(); toast('Item removido.'); render();
 }
+// ----- Registro de auditoria: quem entrou, viu, alterou (antes/depois) e saiu \u00B7 filtros por filial, datas, ID e protocolo -----
+var filtrosA = {filial:'', de:'', ate:'', id:'', protocolo:'', acao:'', quem:''}, _audit = null, _auditBuscando = false;
+var ACOES_AUD = [['entrou','Entrou'],['saiu','Saiu (bot\u00E3o Sair)'],['fechou o app','Fechou o app'],['visualizou','Visualizou chamado'],['criou','Criou registro'],['alterou','Alterou registro'],['exportou','Exportou / baixou']];
+var TABELA_AUD = {chamados:'Chamado', eventos:'Hist\u00F3rico', retornos:'Retorno interno', liberacoes:'Libera\u00E7\u00E3o de reenvio', multas_lojista:'Multa ao lojista', anexos:'Anexo', comentarios:'Coment\u00E1rio', perfis:'Conta de acesso', filiais:'Filial', listas:'Cadastro'};
+function curto(v){ if (v === null || v === undefined || v === '') return '\u2014'; var s = typeof v === 'object' ? JSON.stringify(v) : String(v); return s.length > 80 ? s.slice(0, 80) + '\u2026' : s; }
+function detAud(a){
+  var d = a.detalhes || {};
+  if (a.acao === 'alterou') return Object.keys(d).map(function(k){ return k + ': ' + curto(d[k].antes) + ' \u2192 ' + curto(d[k].depois); }).join(' \u00B7 ');
+  if (a.acao === 'criou') return a.tabela === 'eventos' || a.tabela === 'comentarios' ? curto(d.texto) : a.tabela === 'anexos' ? curto(d.nome) : a.tabela === 'perfis' ? curto(d.email) + ' (' + curto(d.papel) + ')' : a.tabela === 'chamados' ? 'Chamado aberto \u00B7 ' + curto(d.orgao) : '';
+  return d && Object.keys(d).length ? Object.keys(d).map(function(k){ return k + ': ' + curto(d[k]); }).join(' \u00B7 ') : '';
+}
+function cAuditoria(){
+  var inp = function(k, ph, tipo){ return '<input'+(tipo ? ' type="'+tipo+'"' : '')+' value="'+esc(filtrosA[k])+'" placeholder="'+ph+'" onchange="filtrosA.'+k+'=this.value.trim()" onkeydown="if(event.key===\'Enter\'){filtrosA.'+k+'=this.value.trim();buscarAuditoria()}">'; };
+  var linhas = (_audit || []).map(function(a){
+    return '<tr><td style="white-space:nowrap">'+fmtDH(a.quando)+'</td><td><b>'+esc(a.nome || '\u2014')+'</b><br><span style="font-size:.66rem">'+esc(a.email || '')+(a.papel ? ' \u00B7 '+esc(NOME_PAPEL_CURTO[a.papel] || a.papel) : '')+'</span></td>' +
+      '<td>'+esc(a.acao)+'</td><td>'+esc(TABELA_AUD[a.tabela] || a.tabela || '\u2014')+'</td><td>'+(a.chamado_id ? '<a href="#" onclick="go(\'compliance\',null,\''+esc(a.chamado_id)+'\');return false">'+esc(a.chamado_id)+'</a>' : '\u2014')+'</td>' +
+      '<td>'+esc(a.filial ? nf(a.filial) : '\u2014')+'</td><td>'+esc(a.protocolo || '\u2014')+'</td><td style="font-size:.68rem;max-width:420px">'+esc(detAud(a))+'</td></tr>'; }).join('');
+  return '<div class="ph"><div><h2>Registro de auditoria</h2><p>Tudo o que acontece no app: quem entrou, o que visualizou, o que criou ou alterou (antes \u2192 depois) e quando saiu. Os registros n\u00E3o podem ser alterados nem apagados.</p></div>' +
+    '<div class="btns"><button class="btn" id="btn_aud" onclick="exportarAuditoria()">\u2B07 Excel do resultado</button></div></div>' +
+    '<div class="card"><div class="filters">' +
+      '<select onchange="filtrosA.filial=this.value"><option value="">Todas as filiais</option>'+FILIAIS_TODAS.map(function(f){ return '<option value="'+esc(f)+'"'+(filtrosA.filial===f?' selected':'')+'>'+esc(nf(f))+'</option>'; }).join('')+'</select>' +
+      '<label class="fdt">De'+inp('de', '', 'date')+'</label><label class="fdt">at\u00E9'+inp('ate', '', 'date')+'</label>' +
+      inp('id', 'ID do chamado (ex.: FIS-0001)') + inp('protocolo', 'Protocolo do \u00F3rg\u00E3o') + inp('quem', 'Nome ou e-mail') +
+      '<select onchange="filtrosA.acao=this.value"><option value="">Todas as a\u00E7\u00F5es</option>'+ACOES_AUD.map(function(o){ return '<option value="'+o[0]+'"'+(filtrosA.acao===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>' +
+      '<button class="btn pri sm" onclick="buscarAuditoria()">Buscar</button></div></div>' +
+    '<div class="card"><h3>Resultado</h3><div class="sub">'+(_auditBuscando ? 'Buscando\u2026' : _audit ? _audit.length + ' registro(s)' + (_audit.length >= 3000 ? ' \u00B7 mostrando os 3.000 mais recentes, refine o filtro' : '') : '')+'</div>' +
+      (linhas ? '<div class="tbl-wrap"><table class="t"><thead><tr><th>Quando</th><th>Quem</th><th>A\u00E7\u00E3o</th><th>Onde</th><th>Chamado</th><th>Filial</th><th>Protocolo</th><th>Detalhes</th></tr></thead><tbody>'+linhas+'</tbody></table></div>'
+             : '<div class="empty">'+(_auditBuscando ? 'Carregando\u2026' : 'Nenhum registro encontrado.')+'</div>') + '</div>';
+}
+async function buscarAuditoria(){
+  var f = filtrosA, q = sb.from('auditoria').select('*').order('quando', {ascending:false}).limit(3000);
+  if (f.filial) q = q.eq('filial', f.filial);
+  if (f.de) q = q.gte('quando', f.de + 'T00:00:00-03:00');
+  if (f.ate) q = q.lte('quando', f.ate + 'T23:59:59-03:00');
+  if (f.id) q = q.ilike('chamado_id', '%' + f.id + '%');
+  if (f.protocolo) q = q.ilike('protocolo', '%' + f.protocolo + '%');
+  if (f.acao) q = q.eq('acao', f.acao);
+  if (f.quem) { var w = f.quem.replace(/[,()%*]/g, ' ').trim(); if (w) q = q.or('nome.ilike.*' + w + '*,email.ilike.*' + w + '*'); }
+  _auditBuscando = true; if (tela.compliance === 'auditoria' && !sel) render();
+  var r = await q;
+  _auditBuscando = false;
+  if (r.error) { _audit = []; erroDb(r.error, 'auditoria'); } else _audit = r.data;
+  if (perfil === 'compliance' && tela.compliance === 'auditoria' && !sel) render();
+}
+async function exportarAuditoria(){
+  if (!_audit || !_audit.length) return toast('Busque os registros antes de exportar.');
+  var btn = $('btn_aud'); btn.disabled = true;
+  try {
+    await carregarSheetJS();
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_audit.map(function(a){ return {'Quando':fmtDH(a.quando), 'Nome':a.nome || '', 'E-mail':a.email || '', 'Perfil':NOME_PAPEL_CURTO[a.papel] || a.papel || '',
+      'A\u00E7\u00E3o':a.acao, 'Onde':TABELA_AUD[a.tabela] || a.tabela || '', 'Chamado':a.chamado_id || '', 'Filial':a.filial ? nf(a.filial) : '', 'Protocolo':a.protocolo || '', 'Detalhes':detAud(a)}; })), 'Auditoria');
+    XLSX.writeFile(wb, 'Auditoria_Fiscalizacao_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.xlsx');
+    reg('exportou', null, {tipo:'auditoria', linhas:_audit.length});
+  } catch (e) { toast('N\u00E3o foi poss\u00EDvel exportar: ' + (e && e.message ? e.message : e)); }
+  btn.disabled = false;
+}
 // ----- Backup e sistema (backup autom\u00E1tico di\u00E1rio no Supabase + "manter ativo" pelo GitHub + download em Excel) -----
 function fmtDH(t){ if (!t) return '\u2014'; var d = new Date(t); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2); }
 function cSistema(){
@@ -949,7 +1229,8 @@ function cSistema(){
     '<div class="card"><h3>Situa\u00E7\u00E3o</h3><div class="sub">Atualizada ao abrir esta tela</div><div id="sis_status"><div class="empty">Carregando\u2026</div></div></div>' +
     '<div class="card"><h3>Baixar backup completo</h3><div class="sub">Gera um arquivo Excel com todas as tabelas, uma aba por tabela</div>' +
     '<div class="btns"><button class="btn green" id="btn_bkp" onclick="baixarBackup()">Baixar backup em Excel</button></div>' +
-    '<div class="box"><b>Como funciona:</b> todo dia \u00E0s 03h o pr\u00F3prio Supabase faz uma c\u00F3pia de todas as tabelas (guarda 30 dias de c\u00F3pias di\u00E1rias e 1 por m\u00EAs durante 12 meses). ' +
+    '<div class="box"><b>Como funciona:</b> todo dia \u00E0s 03h o pr\u00F3prio Supabase faz uma c\u00F3pia de todas as tabelas. Guarda <b>todas as c\u00F3pias di\u00E1rias dos \u00FAltimos 12 meses</b> e, depois disso, 1 c\u00F3pia por m\u00EAs <b>para sempre</b>. ' +
+    'Al\u00E9m disso, nada \u00E9 apagado pelo app: anexos, coment\u00E1rios e hist\u00F3rico n\u00E3o podem ser exclu\u00EDdos, e toda altera\u00E7\u00E3o fica no Registro de auditoria. ' +
     'Duas vezes por dia o GitHub manda um sinal de atividade, para o plano gratuito nunca pausar o banco por 7 dias sem uso. Se o sinal falhar, o GitHub avisa por e-mail.</div></div>';
 }
 async function carregarSistema(){
@@ -965,8 +1246,11 @@ function carregarSheetJS(){
   return window.XLSX ? Promise.resolve() : new Promise(function(ok, falha){ var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = falha; document.head.appendChild(s); });
 }
 // ----- Exportar o painel de monitoramento em Excel (resumo, foco do processo e lista de chamados) -----
-async function exportarPainel(){
-  var btn = $('btn_exp'); if (btn) { btn.disabled = true; btn.textContent = 'Gerando Excel\u2026'; }
+// modo 'filtro' = s\u00F3 o que est\u00E1 filtrado no painel; modo 'tudo' = todas as linhas da base no per\u00EDodo escolhido
+async function exportarPainel(modo){
+  var btn = $(modo === 'tudo' ? 'btn_exp_tudo' : 'btn_exp'), rotulo = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Gerando Excel\u2026'; }
+  var chamados = modo === 'tudo' ? listaPainel(true) : listaPainel();
   try {
     await carregarSheetJS();
     var com = function(r){ return chamados.filter(function(c){ return c.resultados.indexOf(r)>=0; }); };
@@ -984,7 +1268,10 @@ async function exportarPainel(){
       {'Indicador':'Multas aplicadas (quantidade)', 'Valor':multas.length},
       {'Indicador':'Multas aplicadas (R$)', 'Valor':multas.reduce(function(s,c){ return s + c.multa.valor; }, 0)},
       {'Indicador':'Exportado em', 'Valor':fmtDH(new Date())},
-      {'Indicador':'Exportado por', 'Valor':(EU && EU.nome) || ''}
+      {'Indicador':'Exportado por', 'Valor':(EU && EU.nome) || ''},
+      {'Indicador':'Tipo de exporta\u00E7\u00E3o', 'Valor':modo === 'tudo' ? 'Base completa (todas as linhas do per\u00EDodo)' : 'Conforme o filtro do painel'},
+      {'Indicador':'Per\u00EDodo (data da visita)', 'Valor':(filtrosP.de ? br(filtrosP.de) : 'in\u00EDcio') + ' a ' + (filtrosP.ate ? br(filtrosP.ate) : 'hoje')},
+      {'Indicador':'Filtros', 'Valor':modo === 'tudo' ? '\u2014' : ['filial','orgao','resultado','unidade','status'].filter(function(k){ return filtrosP[k]; }).map(function(k){ return k + ': ' + (k==='filial' ? nf(filtrosP[k]) : filtrosP[k]); }).join(' \u00B7 ') || 'nenhum'}
     ]);
     add('1 Apreens\u00E3o por \u00F3rg\u00E3o', tab(contar(com('apreensao'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
     add('2 Notifica\u00E7\u00E3o por \u00F3rg\u00E3o', tab(contar(com('notificacao'), function(c){ return c.orgao; }), '\u00D3rg\u00E3o'));
@@ -995,15 +1282,38 @@ async function exportarPainel(){
     add('Visitas por filial', tab(contar(chamados, function(c){ return nf(c.filial); }), 'Filial'));
     add('Visitas por local', tab(contar(chamados, function(c){ return c.unidade; }), 'Local'));
     add('Multas a lojistas', chamados.filter(function(c){ return c.multaLojista; }).map(function(c){ var m = c.multaLojista; return {'Chamado':c.id, 'Filial':nf(c.filial), 'Lojista':c.lojista, 'Motivo':m.motivo, 'Proposto (R$)':m.valor, 'Confirmado (R$)':m.valorFinal != null ? m.valorFinal : '', 'Situa\u00E7\u00E3o':ML_ST[m.status]}; }));
-    add('Chamados', chamados.slice().sort(recentes).map(function(c){ var p = pendente(c); return {
-      'Chamado':c.id, 'Filial':nf(c.filial), 'Local':c.unidade, 'Lojista / Obra':c.lojista || c.obra || '', '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
-      'Data':c.data, 'Fiscal':c.fiscal, 'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc, 'Protocolo do \u00F3rg\u00E3o':c.protocolo,
-      'Prazo do \u00F3rg\u00E3o':c.prazo, 'N\u00E3o conformidades':c.ncs.join(', '), 'Status':STATUS[c.status], 'Desfecho':c.desfecho,
-      'Multa (R$)':c.multa ? c.multa.valor : '', 'Retorno pendente':(p && c.status!=='encerrado') ? NOME_SETOR[p.para] + ' at\u00E9 ' + p.prazo : '' }; }));
-    XLSX.writeFile(wb, 'Painel_Fiscalizacao_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.xlsx');
-    toast('Painel exportado em Excel.');
+    add('7 Motivos das multas', tab(contar(multas, function(c){ return c.multa.motivo || 'N\u00E3o informado'; }), 'Motivo'));
+    var dh = function(t){ return t ? fmtDH(t) : ''; };
+    // todas as informa\u00E7\u00F5es registradas no chamado + os tempos calculados
+    add('Chamados', chamados.slice().sort(recentes).map(function(c){ var p = pendente(c), t = tempos(c), m = c.multaLojista; return {
+      'Chamado':c.id, 'Filial':nf(c.filial), 'Local':c.unidade, 'Lojista do Mall':c.lojista, 'Obra / RT':c.obra, '\u00D3rg\u00E3o':c.orgao, 'Motivo':c.motivo, 'Forma':c.forma,
+      'Data da visita':c.data, 'Chamado aberto em':dh(c.criado), 'Fiscal':c.fiscal, 'Quem recebeu':c.recebeu, 'Quem acompanhou':c.acompanhou,
+      'Resultado':c.resultados.map(function(r){ return RESULTADOS[r]; }).join(', '), 'N\u00BA documento':c.doc, 'Protocolo do \u00F3rg\u00E3o':c.protocolo,
+      'Prazo do \u00F3rg\u00E3o':c.prazo, 'N\u00E3o conformidades':c.ncs.join(', '), 'O que o fiscal avaliou':c.relato, 'Corrigido no ato':c.noAto, 'Itens apreendidos':c.apreensao,
+      'Status':STATUS[c.status], 'Respons\u00E1vel no Jur\u00EDdico':c.respJur, 'In\u00EDcio da an\u00E1lise':dh(c.inicioAnalise), 'Respondido ao \u00F3rg\u00E3o em':dh(c.respOrgaoEm), 'Encerrado em':dh(c.encerradoEm), 'Desfecho':c.desfecho,
+      'Multa (R$)':c.multa ? c.multa.valor : '', 'Motivo da multa':c.multa ? c.multa.motivo : '',
+      'Multa ao lojista (proposta R$)':m ? m.valor : '', 'Multa ao lojista (confirmada R$)':m && m.valorFinal != null ? m.valorFinal : '', 'Multa ao lojista (situa\u00E7\u00E3o)':m ? ML_ST[m.status] : '',
+      'Envios Jur\u00EDdico \u2192 Filial':c.envios.juridico, 'Envios Filial \u2192 Jur\u00EDdico':c.envios.filial, 'Limite de envios':c.limite,
+      'Retorno pendente':(p && c.status!=='encerrado') ? NOME_SETOR[p.para] + ' at\u00E9 ' + p.prazo : '',
+      'Dias visita \u2192 abertura':t.visitaAbertura, 'Horas abertura \u2192 an\u00E1lise':t.horasAnalise === null ? '' : Math.round(t.horasAnalise * 10) / 10,
+      'Resposta da filial (m\u00E9dia dias)':t.respFilial === null ? '' : Math.round(t.respFilial * 10) / 10, 'Retornos da filial atrasados':t.lado.filial.atrasos, 'Dias de atraso da filial':t.lado.filial.diasAtraso,
+      'Resposta do Jur\u00EDdico (m\u00E9dia dias)':t.respJur === null ? '' : Math.round(t.respJur * 10) / 10, 'Retornos do Jur\u00EDdico atrasados':t.lado.juridico.atrasos, 'Dias de atraso do Jur\u00EDdico':t.lado.juridico.diasAtraso,
+      'Dias visita \u2192 conclus\u00E3o':t.total === null ? '' : t.total, 'Dias ap\u00F3s o prazo do \u00F3rg\u00E3o':t.aposPrazo === null ? '' : t.aposPrazo, 'Prazo do \u00F3rg\u00E3o perdido':t.perdido ? 'Sim' : (c.prazo ? 'N\u00E3o' : ''), 'Onde atrasou':t.onde,
+      'Anexos':c.anexos.length, 'Coment\u00E1rios':c.comentarios.length }; }));
+    add('Prazos perdidos', chamados.filter(function(c){ return tempos(c).perdido; }).map(function(c){ var t = tempos(c); return {'Chamado':c.id, 'Filial':nf(c.filial), '\u00D3rg\u00E3o':c.orgao, 'Visita':c.data, 'Prazo do \u00F3rg\u00E3o':c.prazo,
+      'Conclu\u00EDdo em':t.conclusao ? fmtBR(t.conclusao) : 'em aberto', 'Dias ap\u00F3s o prazo':t.aposPrazo, 'Dias de atraso da filial':t.lado.filial.diasAtraso, 'Dias de atraso do Jur\u00EDdico':t.lado.juridico.diasAtraso, 'Onde atrasou':t.onde}; }));
+    var linhas = function(fn){ var out = []; chamados.forEach(function(c){ fn(c).forEach(function(o){ out.push(o); }); }); return out; };
+    add('Hist\u00F3rico', linhas(function(c){ return c.eventos.map(function(e){ return {'Chamado':c.id, 'Filial':nf(c.filial), 'Data':e.data, 'Perfil':NOME_PAPEL_CURTO[e.papel] || e.papel, 'Quem':e.autor, 'O que foi feito':e.texto}; }); }));
+    add('Retornos internos', linhas(function(c){ return c.retornos.map(function(r){ var at = r.respondido ? difD(pBR(r.prazo), pBR(r.respondido)) : null;
+      return {'Chamado':c.id, 'Filial':nf(c.filial), 'De':NOME_SETOR[r.de], 'Para':NOME_SETOR[r.para], 'Enviado em':r.enviado, 'Retornar at\u00E9':r.prazo, 'Respondido em':r.respondido || '', 'Dias de atraso':at > 0 ? at : 0}; }); }));
+    add('Coment\u00E1rios', linhas(function(c){ return c.comentarios.map(function(m){ return {'Chamado':c.id, 'Filial':nf(c.filial), 'Quando':dh(m.criado_em), 'Perfil':NOME_PAPEL_CURTO[m.papel], 'Quem':m.autor, 'Coment\u00E1rio':m.texto,
+      'Lido pelo Jur\u00EDdico em':dh(m.lido_juridico_em), 'Lido pela filial em':dh(m.lido_filial_em)}; }); }));
+    add('Anexos', linhas(function(c){ return c.anexos.map(function(a){ return {'Chamado':c.id, 'Filial':nf(c.filial), 'Arquivo':a.nome, 'Tipo':CAT_ANEXO[a.categoria] || a.categoria, 'Enviado por':a.autor, 'Quando':dh(a.criado_em), 'Tamanho':tamanhoTxt(a.tamanho)}; }); }));
+    XLSX.writeFile(wb, (modo === 'tudo' ? 'Base_Fiscalizacao_' : 'Painel_Fiscalizacao_') + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.xlsx');
+    reg('exportou', null, {tipo: modo === 'tudo' ? 'base completa' : 'painel (filtro)', linhas: chamados.length});
+    toast('Excel gerado com ' + chamados.length + ' chamado(s).');
   } catch (e) { toast('N\u00E3o foi poss\u00EDvel exportar: ' + (e && e.message ? e.message : e)); }
-  if (btn) { btn.disabled = false; btn.textContent = '\u2B07 Exportar painel (Excel)'; }
+  if (btn) { btn.disabled = false; btn.textContent = rotulo; }
 }
 async function baixarBackup(){
   var btn = $('btn_bkp'); btn.disabled = true; btn.textContent = 'Gerando backup\u2026';
@@ -1016,7 +1326,7 @@ async function baixarBackup(){
       XLSX.utils.book_append_sheet(wb, linhas.length ? XLSX.utils.json_to_sheet(linhas) : XLSX.utils.aoa_to_sheet([['(sem registros)']]), t.slice(0,31));
     });
     XLSX.writeFile(wb, 'Backup_Fiscalizacao_' + new Date().toISOString().slice(0,16).replace(/[-:T]/g,'') + '.xlsx');
-    toast('Backup baixado (' + Object.keys(dados).length + ' tabelas).');
+    toast('Backup baixado (' + Object.keys(dados).length + ' tabelas).'); reg('exportou', null, {tipo:'backup completo'});
   } catch (e) { toast('N\u00E3o foi poss\u00EDvel gerar o backup: ' + (e && e.message ? e.message : e)); }
   btn.disabled = false; btn.textContent = 'Baixar backup em Excel';
 }
@@ -1145,7 +1455,8 @@ function detalhe(c){
     '<h2 style="margin-top:.35rem">'+esc(c.orgao)+'</h2><p>Filial '+esc(nf(c.filial))+' \u00B7 aberto em '+c.data+'</p></div><div>'+badge(c.status)+'</div></div>' +
     prazoBanner(c) +
     '<div class="det"><div>' + fluxoRetorno(c) + '<div class="card"><h3>Dados da fiscaliza\u00E7\u00E3o</h3><div class="sub">'+(edit ? 'Modo de edi\u00E7\u00E3o do Compliance' : 'Registro enviado pela filial')+'</div>'+info+'</div>' + cardAnexos(c) +
-    '<div class="card"><h3>Hist\u00F3rico do chamado</h3><div class="sub">Tudo o que foi feito, por quem e quando</div><div class="tl">' +
+    cardComentarios(c) +
+    '<div class="card"><h3>Hist\u00F3rico do chamado</h3><div class="sub">Registro autom\u00E1tico de tudo o que foi feito, por quem e quando</div><div class="tl">' +
       c.eventos.map(function(e){ return '<div class="ev '+e.papel+'"><div class="eh"><b>'+esc(e.autor)+'</b> \u00B7 '+e.data+'</div><div class="et">'+esc(e.texto)+'</div></div>'; }).join('') + '</div></div></div>' +
     '<div class="card acoes">'+acoes(c)+'</div></div>';
 }
@@ -1189,19 +1500,24 @@ var LADO = {filial:'Filial \u2192 Jur\u00EDdico', juridico:'Jur\u00EDdico \u2192
 function podeEnviar(c, lado){ return c.envios[lado] < c.limite; }
 function contador(c, lado){
   var usados = c.envios[lado], rest = c.limite - usados;
-  return '<div class="env '+(rest<=1?'ult':'')+'">Envios '+LADO[lado]+': <b>'+usados+' de '+c.limite+'</b>'+(rest===1 ? ' \u00B7 este \u00E9 o \u00FAltimo envio antes de precisar do Compliance' : '')+'</div>';
+  return '<div class="env '+(rest<=1?'ult':'')+'">Envios '+LADO[lado]+': <b>'+usados+' de '+c.limite+'</b>'+(rest===1 ? ' \u00B7 este \u00E9 o \u00FAltimo envio antes de precisar do Compliance' : '') +
+    '<br><span style="font-size:.66rem">Limite de '+c.limite+' envios por setor. Se exceder, contate o Compliance: ao atingir o limite aparece o bot\u00E3o para solicitar a libera\u00E7\u00E3o de reenvio (o Compliance responde em at\u00E9 24h).</span></div>';
 }
+// libera\u00E7\u00E3o de reenvio: o Compliance responde em at\u00E9 24h
+function prazoLib(l){ return l && l.em ? new Date(new Date(l.em).getTime() + 864e5) : null; }
+function prazoLibTxt(l){ var p = prazoLib(l); if (!p) return ''; var atras = Date.now() > p.getTime();
+  return '<span class="prazo '+(atras ? 'venc' : 'urg')+'">Compliance responde at\u00E9 '+fmtDH(p)+(atras ? ' \u00B7 atrasado' : '')+'</span>'; }
 function contadorTxt(c){ return '<b>Envios entre setores:</b> Jur\u00EDdico \u2192 Filial '+c.envios.juridico+'/'+c.limite+' \u00B7 Filial \u2192 Jur\u00EDdico '+c.envios.filial+'/'+c.limite+(c.limite>LIMITE_ENVIOS ? ' \u00B7 limite ampliado pelo Compliance' : ''); }
 function bloqueio(c, lado){
-  if (c.libPend) return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Libera\u00E7\u00E3o '+(c.libPend.por===lado ? 'solicitada' : 'j\u00E1 solicitada pelo '+(c.libPend.por==='juridico'?'Jur\u00EDdico':'filial'))+' ao Compliance em '+c.libPend.data+'. Aguardando resposta.</div>';
-  return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Para enviar de novo, o Compliance precisa liberar o reenvio.</div>' +
+  if (c.libPend) return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Libera\u00E7\u00E3o '+(c.libPend.por===lado ? 'solicitada' : 'j\u00E1 solicitada pelo '+(c.libPend.por==='juridico'?'Jur\u00EDdico':'filial'))+' ao Compliance em '+c.libPend.data+'. Aguardando resposta.<br>'+prazoLibTxt(c.libPend)+'</div>';
+  return '<div class="env bloq"><b>Limite de '+c.limite+' envios atingido.</b><br>Para enviar de novo, contate o Compliance: solicite abaixo a libera\u00E7\u00E3o de reenvio. O Compliance responde em at\u00E9 24h.</div>' +
     '<div class="f" style="margin-top:.5rem"><textarea id="a_lib" placeholder="Por que \u00E9 preciso enviar de novo?"></textarea></div>' +
     '<div class="btns"><button class="btn" onclick="acao(\''+c.id+'\',\'pedir_lib_'+lado+'\')">Solicitar libera\u00E7\u00E3o ao Compliance</button></div>';
 }
 function libAcaoCompliance(c){
   if (!c.libPend) return '';
   return '<div class="ml-acao" style="background:var(--green-l);border-color:rgba(95,122,69,.35)"><h4>Libera\u00E7\u00E3o de reenvio solicitada</h4>' +
-    '<p style="font-size:.72rem;color:var(--txt2);margin-bottom:.5rem">Pedido do <b>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'ADM da filial')+'</b> em '+c.libPend.data+':<br>"'+esc(c.libPend.motivo)+'"</p>' +
+    '<p style="font-size:.72rem;color:var(--txt2);margin-bottom:.5rem">Pedido do <b>'+(c.libPend.por==='juridico'?'Jur\u00EDdico':'ADM da filial')+'</b> em '+c.libPend.data+':<br>"'+esc(c.libPend.motivo)+'"</p><div style="margin-bottom:.5rem">'+prazoLibTxt(c.libPend)+'</div>' +
     '<div class="box" style="margin:0 0 .6rem">'+contadorTxt(c)+'</div>' +
     '<div class="f"><label>Observa\u00E7\u00E3o</label><textarea id="lib_obs" placeholder="Obrigat\u00F3ria se n\u00E3o liberar"></textarea></div>' +
     '<div class="btns"><button class="btn green" onclick="acao(\''+c.id+'\',\'liberar\')">Liberar +'+LIMITE_ENVIOS+' envios por setor</button><button class="btn" onclick="acao(\''+c.id+'\',\'nao_liberar\')">N\u00E3o liberar</button></div></div>';
@@ -1226,9 +1542,16 @@ function acoes(c){
         (jur.length ? '<select id="a_resp"><option value="">Selecione</option>'+opts(jur, EU && EU.papel==='juridico' ? EU.nome : '')+'</select>' : '<input id="a_resp" placeholder="Nome de quem vai analisar">') + '</div>' +
         '<div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'assumir\')">Iniciar an\u00E1lise</button></div>';
     } else if (c.respJur) h += '<div class="box" style="margin-top:0"><b>Respons\u00E1vel no Jur\u00EDdico:</b> '+esc(c.respJur)+'</div>';
-    h += '<h4>Solicitar \u00E0 filial</h4>' + (podeEnviar(c,'juridico') ?
-      contador(c,'juridico') + '<div class="f" style="margin-top:.5rem"><textarea id="a_sol" placeholder="Documentos ou informa\u00E7\u00F5es necess\u00E1rias"></textarea></div>' +
-      '<div class="f"><label>Filial deve retornar at\u00E9 <span class="req">*</span></label><input id="a_ret" value="'+prazoRetorno(c, hojeBR(), 2)+'"><div class="hint">'+(c.prazo ? 'Precisa ser antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+'), para dar tempo de protocolar.' : 'Sem prazo do \u00F3rg\u00E3o registrado: confirme o prazo com a filial.')+'</div></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'solicitar\')">Enviar solicita\u00E7\u00E3o</button></div>'
+    // visita sem notifica\u00E7\u00E3o / notifica\u00E7\u00E3o sem desdobramento: o Jur\u00EDdico pode s\u00F3 registrar ci\u00EAncia e encerrar
+    var soVisita = c.resultados.length === 1 && c.resultados[0] === 'sem_doc';
+    var soNotif = c.resultados.length === 1 && c.resultados[0] === 'notificacao' && !c.multa;
+    if (soVisita || soNotif) h += '<div class="ml-acao" style="background:var(--blue-l,#eef3fb);border-color:rgba(60,90,150,.3)"><h4>Encerramento simples</h4>' +
+      '<p style="font-size:.72rem;color:var(--txt2);margin-bottom:.5rem">'+(soVisita ? 'Visita sem notifica\u00E7\u00E3o.' : 'Notifica\u00E7\u00E3o sem multa nem apreens\u00E3o.')+' Voc\u00EA pode s\u00F3 abrir, olhar e encerrar, ou fazer questionamentos \u00E0 filial (abaixo, em "Devolver \u00E0 filial").</p>' +
+      '<div class="f"><textarea id="a_obsenc" placeholder="Observa\u00E7\u00E3o (opcional)"></textarea></div>' +
+      '<div class="btns"><button class="btn blue" onclick="acao(\''+id+'\',\'encerrar_simples\')">'+(soVisita ? 'Registrar ci\u00EAncia da visita e encerrar' : 'Encerrar: notifica\u00E7\u00E3o sem desdobramento')+'</button></div></div>';
+    h += '<h4>Devolver \u00E0 filial</h4><p style="font-size:.7rem;color:var(--txt2);margin:-.2rem 0 .5rem">Retorna o chamado para a filial com o que ela precisa enviar ou responder.</p>' + (podeEnviar(c,'juridico') ?
+      contador(c,'juridico') + '<div class="f" style="margin-top:.5rem"><textarea id="a_sol" placeholder="Documentos, informa\u00E7\u00F5es ou questionamentos para a filial"></textarea></div>' +
+      '<div class="f"><label>Filial deve retornar at\u00E9 <span class="req">*</span></label><input id="a_ret" value="'+prazoRetorno(c, hojeBR(), 2)+'"><div class="hint">'+(c.prazo ? 'Data sugerida de forma estrat\u00E9gica: deixa tempo para o Jur\u00EDdico analisar e protocolar antes do prazo do \u00F3rg\u00E3o ('+c.prazo.slice(0,5)+').' : 'Sem prazo do \u00F3rg\u00E3o registrado: confirme o prazo com a filial.')+'</div></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'solicitar\')">Devolver \u00E0 filial</button></div>'
       : bloqueio(c,'juridico'));
     h += '<h4>Protocolo do \u00F3rg\u00E3o</h4><div class="f"><input id="a_prot" value="'+esc(c.protocolo)+'" placeholder="N\u00BA do protocolo / processo no \u00F3rg\u00E3o"></div><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'protocolo\')">Salvar protocolo</button></div>';
     h += '<h4>Resposta ao \u00F3rg\u00E3o</h4><div class="btns"><button class="btn" onclick="acao(\''+id+'\',\'responder\')">Registrar resposta protocolada</button></div>';
@@ -1254,7 +1577,7 @@ function acao(id, tipo){
     if (fsResp.length) enviarAnexos(c, fsResp, 'resposta_filial').then(function(n){ toast(n + ' anexo(s) enviado(s) com a resposta.'); render(); }); }
   if (tipo==='pedir_lib_filial' || tipo==='pedir_lib_juridico'){
     var lado = tipo.slice(10); if (!val('a_lib')) return toast('Explique por que precisa enviar de novo.');
-    c.libPend = {por:lado, data:hojeBR(), motivo:val('a_lib')}; addEv(c, lado, 'Limite de '+c.limite+' envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: '+val('a_lib')); toast('Pedido de libera\u00E7\u00E3o enviado ao Compliance.');
+    c.libPend = {por:lado, data:hojeBR(), em:new Date().toISOString(), motivo:val('a_lib')}; addEv(c, lado, 'Limite de '+c.limite+' envios atingido. Libera\u00E7\u00E3o solicitada ao Compliance: '+val('a_lib')); toast('Pedido de libera\u00E7\u00E3o enviado ao Compliance.');
   }
   if (tipo==='liberar'){ c._decisaoLib = {id:c.libPend._id, status:'liberada', obs:val('lib_obs')}; c.limite += LIMITE_ENVIOS; addEv(c,'compliance','Reenvio liberado: +'+LIMITE_ENVIOS+' envios para cada setor (novo limite: '+c.limite+')'+(val('lib_obs') ? '. '+val('lib_obs') : '.')); c.libPend = null; toast('Reenvio liberado. A regra de 2 envios continua valendo.'); }
   if (tipo==='nao_liberar'){ if (!val('lib_obs')) return toast('Explique por que n\u00E3o vai liberar.'); c._decisaoLib = {id:c.libPend._id, status:'negada', obs:val('lib_obs')}; addEv(c,'compliance','Reenvio n\u00E3o liberado: '+val('lib_obs')); c.libPend = null; toast('Pedido de reenvio negado.'); }
@@ -1270,6 +1593,12 @@ function acao(id, tipo){
   if (tipo==='protocolo'){ var np = val('a_prot'); if (np === (c.protocolo||'')) return toast('Protocolo n\u00E3o foi alterado.');
     addEv(c,'juridico', np ? 'Protocolo do \u00F3rg\u00E3o registrado: ' + np + (c.protocolo ? ' (antes: ' + c.protocolo + ')' : '') + '.' : 'Protocolo do \u00F3rg\u00E3o removido (era ' + c.protocolo + ').'); c.protocolo = np; toast('Protocolo salvo.'); }
   if (tipo==='responder'){ fecharPendente(c,'juridico'); addEv(c,'juridico','Resposta protocolada no \u00F3rg\u00E3o dentro do prazo.'); c.status='respondido'; toast('Resposta registrada.'); }
+  if (tipo==='encerrar_simples'){
+    var ds = c.resultados[0]==='sem_doc' ? 'Visita sem notifica\u00E7\u00E3o \u2014 ci\u00EAncia registrada' : 'Notifica\u00E7\u00E3o sem desdobramento (apenas informativa)';
+    if (!c.respJur && EU && EU.papel==='juridico') c.respJur = EU.nome;
+    c.desfecho = ds; c.status = 'encerrado'; fecharPendente(c,'juridico'); fecharPendente(c,'filial');
+    addEv(c,'juridico','Desfecho: '+ds+(val('a_obsenc') ? '. Observa\u00E7\u00E3o: '+val('a_obsenc') : '')+'. Filial informada.'); toast('Chamado encerrado.');
+  }
   if (tipo==='encerrar'){
     var d = val('a_desf');
     if (d==='Multa aplicada'){ var v = parseFloat(val('a_mv').replace(/[^\d,]/g,'').replace(',','.')); if (!v) return toast('Informe o valor da multa.'); c.multa = {valor:v, motivo: val('a_mm') || 'N\u00E3o informado'}; if (c.resultados.indexOf('multa')<0) c.resultados.push('multa'); }
