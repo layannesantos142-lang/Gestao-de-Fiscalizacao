@@ -426,10 +426,28 @@ async function carregarTudo(){
 
 // ---------- Anexos (Supabase Storage, bucket privado "anexos"; nada \u00E9 apagado) ----------
 var CAT_ANEXO = {geral:'Anexo', abertura:'Abertura do chamado', resposta_filial:'Resposta da filial', mall:'Loja do Mall', juridico:'Jur\u00EDdico'};
+// fotos grandes s\u00E3o reduzidas (m\u00E1x. 2000 px, JPEG) antes de enviar, para economizar espa\u00E7o; PDFs e documentos v\u00E3o como est\u00E3o
+function reduzirFoto(fl){
+  if (!/^image\/(jpeg|png|webp|heic|heif)$/.test(fl.type) || fl.size < 600 * 1024) return Promise.resolve(fl);
+  return new Promise(function(ok){
+    var img = new Image(), url = URL.createObjectURL(fl);
+    img.onload = function(){
+      var esc_ = Math.min(1, 2000 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * esc_); cv.height = Math.round(img.height * esc_);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      cv.toBlob(function(b){
+        if (!b || b.size >= fl.size) return ok(fl);
+        ok(new File([b], fl.name.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'}));
+      }, 'image/jpeg', 0.82);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); ok(fl); };
+    img.src = url;
+  });
+}
 async function enviarAnexos(c, files, categoria){
   var ok = 0;
   for (var i=0;i<files.length;i++){
-    var fl = files[i];
+    var fl = await reduzirFoto(files[i]);
     if (fl.size > 20*1024*1024) { toast('"' + fl.name + '" passa de 20 MB e n\u00E3o foi enviado.'); continue; }
     var limpo = fl.name.normalize('NFD').replace(/[\u0300-\u036F]/g,'').replace(/[^\w.\-]+/g,'_');
     var caminho = c.id + '/' + Date.now() + '_' + limpo;
@@ -728,6 +746,7 @@ async function iniciar(){
   await carregarTudo();
   if (EU.papel === 'compliance' && FILIAIS.indexOf(FILIAL_USUARIO) < 0) FILIAL_USUARIO = TODAS;
   render(); ouvirMudancas();
+  if (EU.papel === 'compliance') verificarEspaco();
   reg(_veioDoLogin ? 'entrou' : 'abriu o app (sess\u00E3o salva)', null, {navegador: navigator.userAgent.slice(0, 120)});
 }
 function opts(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(''); }
@@ -1106,7 +1125,7 @@ function cPainel(){
   var abertos = chamados.filter(function(c){ return c.status!=='encerrado'; });
   var card = function(n, t, sub, body){ return '<div class="card foco-card" style="margin:0"><h3><span class="n">'+n+'</span>'+t+'</h3><div class="sub">'+sub+'</div>'+body+'</div>'; };
   return '<div class="ph"><div><h2>Painel de monitoramento</h2><p>Todas as fiscaliza\u00E7\u00F5es que est\u00E3o monitorando a Ferreira Costa \u00B7 atualizado em tempo real</p></div><div class="btns"><button class="btn" id="btn_exp" onclick="exportarPainel(\'filtro\')">\u2B07 Excel conforme o filtro</button><button class="btn" id="btn_exp_tudo" onclick="exportarPainel(\'tudo\')">\u2B07 Excel da base completa (per\u00EDodo)</button><button class="btn green" onclick="go(null,\'todos\')">Ver todos os chamados</button></div></div>' +
-    filtrosPainelHtml() +
+    avisoEspaco() + filtrosPainelHtml() +
     '<div class="kpis k5"><div class="kpi"><div class="v">'+chamados.length+'</div><div class="l">Fiscaliza\u00E7\u00F5es registradas'+(chamados.length !== window.chamados.length ? ' (no filtro)' : '')+'</div></div>' +
     (function(){ var at = abertos.filter(function(c){ var p = pendente(c); return p && dias(p.prazo) < 0; });
       return '<div class="kpi click" onclick="filtros.status=\'\';go(null,\'todos\')"><div class="v" style="color:var(--red)">'+at.length+'</div><div class="l">Retornos internos atrasados'+(at.length ? ' ('+at.map(function(c){ return c.id; }).join(', ')+')' : '')+'</div></div>'; })() +
@@ -1229,7 +1248,9 @@ function cSistema(){
     '<div class="card"><h3>Situa\u00E7\u00E3o</h3><div class="sub">Atualizada ao abrir esta tela</div><div id="sis_status"><div class="empty">Carregando\u2026</div></div></div>' +
     '<div class="card"><h3>Baixar backup completo</h3><div class="sub">Gera um arquivo Excel com todas as tabelas, uma aba por tabela</div>' +
     '<div class="btns"><button class="btn green" id="btn_bkp" onclick="baixarBackup()">Baixar backup em Excel</button></div>' +
-    '<div class="box"><b>Como funciona:</b> todo dia \u00E0s 03h o pr\u00F3prio Supabase faz uma c\u00F3pia de todas as tabelas. Guarda <b>todas as c\u00F3pias di\u00E1rias dos \u00FAltimos 12 meses</b> e, depois disso, 1 c\u00F3pia por m\u00EAs <b>para sempre</b>. ' +
+    '<div class="box"><b>Como funciona:</b> todo dia \u00E0s 03h o pr\u00F3prio Supabase faz uma c\u00F3pia de todas as tabelas. Guarda <b>as c\u00F3pias di\u00E1rias dos \u00FAltimos 30 dias</b> e <b>1 c\u00F3pia por m\u00EAs para sempre</b> (a c\u00F3pia de dezembro fecha o ano). ' +
+    'A <b>auditoria</b> registra todas as mudan\u00E7as de todos os dias e nunca \u00E9 apagada \u2014 com ela d\u00E1 para saber como qualquer chamado estava em qualquer data, sem ocupar espa\u00E7o com 365 c\u00F3pias. ' +
+    '<b>Todo in\u00EDcio de m\u00EAs, baixe o backup em Excel e salve na rede/SharePoint da FC</b> (c\u00F3pia fora do Supabase). ' +
     'Al\u00E9m disso, nada \u00E9 apagado pelo app: anexos, coment\u00E1rios e hist\u00F3rico n\u00E3o podem ser exclu\u00EDdos, e toda altera\u00E7\u00E3o fica no Registro de auditoria. ' +
     'Duas vezes por dia o GitHub manda um sinal de atividade, para o plano gratuito nunca pausar o banco por 7 dias sem uso. Se o sinal falhar, o GitHub avisa por e-mail.</div></div>';
 }
@@ -1240,8 +1261,32 @@ async function carregarSistema(){
   var s = r.data || {}, b = (s.backups||[])[0], hb = b ? (Date.now() - new Date(b.lote)) / 36e5 : 999, hs = s.ultimo_sinal ? (Date.now() - new Date(s.ultimo_sinal)) / 36e5 : 999;
   var linha = function(ok, txt){ return '<div class="env '+(ok?'':'bloq')+'" style="margin-bottom:.5rem;'+(ok?'background:var(--green-l)':'')+'">'+(ok?'\u2705 ':'\u26A0\uFE0F ')+txt+'</div>'; };
   el.innerHTML = linha(hb < 30, b ? '\u00DAltimo backup autom\u00E1tico: <b>'+fmtDH(b.lote)+'</b> ('+b.tabelas+' tabelas, '+b.linhas+' linhas) \u00B7 '+(s.backups.length)+' c\u00F3pia(s) guardada(s)' : 'Nenhum backup autom\u00E1tico encontrado') +
-    linha(hs < 30, s.ultimo_sinal ? '\u00DAltimo sinal do "manter ativo": <b>'+fmtDH(s.ultimo_sinal)+'</b> \u00B7 '+s.sinais_7d+' sinal(is) nos \u00FAltimos 7 dias' : 'Nenhum sinal do "manter ativo" ainda');
+    linha(hs < 30, s.ultimo_sinal ? '\u00DAltimo sinal do "manter ativo": <b>'+fmtDH(s.ultimo_sinal)+'</b> \u00B7 '+s.sinais_7d+' sinal(is) nos \u00FAltimos 7 dias' : 'Nenhum sinal do "manter ativo" ainda') +
+    (function(){ var dd = s.ultimo_download ? (Date.now() - new Date(s.ultimo_download)) / 864e5 : 999;
+      return linha(dd <= 31, s.ultimo_download ? '\u00DAltimo backup baixado para fora do Supabase: <b>'+fmtDH(s.ultimo_download)+'</b>'+(dd > 31 ? ' \u00B7 j\u00E1 passou de 1 m\u00EAs, baixe um novo e salve na rede da FC' : '') : 'Nenhum backup baixado ainda \u00B7 baixe abaixo e salve na rede/SharePoint da FC'); })() +
+    espacoHtml(s);
+  _espaco = s;
 }
+// ----- Espa\u00E7o: plano gratuito do Supabase = 500 MB de banco e 1 GB de arquivos (anexos) -----
+var LIMITE_BANCO = 500 * 1048576, LIMITE_ARQ = 1024 * 1048576, _espaco = null;
+function mb(b){ return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',') + ' MB'; }
+function pctEspaco(s){ return s && s.banco_bytes != null ? Math.max(s.banco_bytes / LIMITE_BANCO, (s.anexos_bytes || 0) / LIMITE_ARQ) : 0; }
+function barraEspaco(nome, usado, limite, obs){
+  var p = Math.min(100, usado / limite * 100), cor = p >= 85 ? 'var(--red)' : p >= 70 ? 'var(--amber)' : 'var(--green)';
+  return '<div style="margin:.6rem 0"><div style="display:flex;justify-content:space-between;font-size:.74rem"><b>'+nome+'</b><span>'+mb(usado)+' de '+mb(limite)+' \u00B7 <b style="color:'+cor+'">'+p.toFixed(1).replace('.', ',')+'%</b></span></div>' +
+    '<div class="bar" style="height:10px;margin-top:.25rem"><span style="width:'+Math.max(p, 1)+'%;background:'+cor+'"></span></div>'+(obs ? '<div class="hint">'+obs+'</div>' : '')+'</div>';
+}
+function espacoHtml(s){
+  if (s.banco_bytes == null) return '';
+  var p = pctEspaco(s);
+  return '<div class="card" style="margin:.8rem 0 0"><h3>Espa\u00E7o utilizado</h3><div class="sub">Plano gratuito do Supabase \u00B7 alerta em 70% (amarelo) e 85% (vermelho)</div>' +
+    barraEspaco('Banco de dados', s.banco_bytes, LIMITE_BANCO, 'Inclui chamados, hist\u00F3rico, coment\u00E1rios, auditoria ('+mb(s.auditoria_bytes || 0)+') e c\u00F3pias de backup ('+mb(s.backup_bytes || 0)+').') +
+    barraEspaco('Anexos', s.anexos_bytes || 0, LIMITE_ARQ, (s.anexos_qtd || 0)+' arquivo(s). Fotos s\u00E3o reduzidas automaticamente ao anexar.') +
+    (p >= 0.7 ? '<div class="env bloq" style="margin-top:.5rem"><b>Aten\u00E7\u00E3o ao espa\u00E7o.</b> Antes de chegar a 100%, \u00E9 preciso passar o projeto para o plano Pro do Supabase (8 GB de banco e 100 GB de arquivos, cerca de US$ 25/m\u00EAs). Nada \u00E9 apagado para liberar espa\u00E7o.</div>' : '') + '</div>';
+}
+// o Compliance v\u00EA um aviso no painel quando o espa\u00E7o passar de 70%
+async function verificarEspaco(){ var r = await sb.rpc('status_sistema'); if (!r.error) { _espaco = r.data; if (perfil === 'compliance' && !sel) render(); } }
+function avisoEspaco(){ var p = pctEspaco(_espaco); return p >= 0.7 ? '<div class="env bloq" style="margin-bottom:1rem"><b>\u26A0\uFE0F Espa\u00E7o do Supabase em '+(p*100).toFixed(0)+'%.</b> Veja "Backup e sistema" \u2014 ser\u00E1 preciso passar para o plano Pro antes de lotar.</div>' : ''; }
 function carregarSheetJS(){
   return window.XLSX ? Promise.resolve() : new Promise(function(ok, falha){ var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = falha; document.head.appendChild(s); });
 }
