@@ -278,10 +278,12 @@ var HOJE = (function(){ var d = new Date(); return new Date(d.getFullYear(), d.g
 var FILIAL_USUARIO = '';
 var FILIAIS = [], FILIAIS_TODAS = [], SETORES = [], ORGAOS = [], MOTIVOS = [], NCS = [], FILIAL_NOME = {};
 // filial pelo n\u00FAmero + nome (ex.: "2 \u00B7 Imbiribeira")
-function nf(cod){ return cod ? cod + (FILIAL_NOME[cod] ? ' \u00B7 ' + FILIAL_NOME[cod] : '') : '\u2014'; }
+function nf(cod){ if (cod === '*') return 'Todas as filiais'; return cod ? cod + (FILIAL_NOME[cod] ? ' \u00B7 ' + FILIAL_NOME[cod] : '') : '\u2014'; }
 function optsF(list, v){ return list.map(function(o){ return '<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+esc(nf(o))+'</option>'; }).join(''); }
 // chamados que a conta de filial enxerga (o banco j\u00E1 filtra pelo que o Compliance liberou); Compliance "vendo como" filtra pela filial escolhida
-function meusChamados(){ return chamados.filter(function(c){ return (EU && EU.papel === 'filial') ? true : c.filial === FILIAL_USUARIO; }); }
+// FILIAL_USUARIO = '*' -> Compliance vendo todas as filiais de uma vez
+var TODAS = '*';
+function meusChamados(){ return chamados.filter(function(c){ return (EU && EU.papel === 'filial') || FILIAL_USUARIO === TODAS ? true : c.filial === FILIAL_USUARIO; }); }
 var FORMAS = ['Presencial','Documental','Digital'];
 var UNIDADES = ['Loja','Loja do Mall','CD','Obra'];
 var LIMITE_ENVIOS = 2; // envios Filial <-> Jur\u00EDdico por lado; depois disso, s\u00F3 com libera\u00E7\u00E3o do Compliance
@@ -638,7 +640,7 @@ async function iniciar(){
   perfil = EU.papel; FILIAL_USUARIO = EU.filial || '';
   $('perfis').style.display = EU.papel === 'compliance' ? '' : 'none';
   await carregarTudo();
-  if (EU.papel === 'compliance' && FILIAIS.indexOf(FILIAL_USUARIO) < 0) FILIAL_USUARIO = FILIAIS[0] || '';
+  if (EU.papel === 'compliance' && FILIAIS.indexOf(FILIAL_USUARIO) < 0) FILIAL_USUARIO = TODAS;
   render(); ouvirMudancas();
 }
 function opts(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(''); }
@@ -662,8 +664,8 @@ function renderSide(){
   if (perfil==='juridico') items = [['fila','Fila de chamados', chamados.filter(function(c){return c.status!=='encerrado';}).length], ['encerrados','Encerrados']];
   if (perfil==='compliance') items = [['painel','Painel de monitoramento'], ['todos','Todos os chamados'], ['liberacoes','Libera\u00E7\u00F5es de reenvio', chamados.filter(function(c){ return c.libPend; }).length], ['usuarios','Contas de acesso', PERFIS.filter(function(p){ return p.papel==='pendente'; }).length], ['cadastros','Cadastros do app'], ['sistema','Backup e sistema']];
   var nome = EU && EU.nome ? EU.nome : u.nome, ini = nome.split(/\s+/).map(function(x){ return x[0]; }).join('').slice(0,2).toUpperCase();
-  var sub = (EU && EU.papel === perfil) ? 'Filial ' + nf(EU.filial) + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? 'Vendo como filial ' + nf(FILIAL_USUARIO) : u.sub;
-  var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()">'+optsF(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
+  var sub = (EU && EU.papel === perfil) ? 'Filial ' + nf(EU.filial) + ' \u00B7 Setor ' + (EU.setor||'\u2014') : perfil==='filial' ? (FILIAL_USUARIO === TODAS ? 'Vendo todas as filiais' : 'Vendo como filial ' + nf(FILIAL_USUARIO)) : u.sub;
+  var troca = (EU && EU.papel==='compliance' && perfil==='filial') ? '<div class="f" style="margin:.2rem 0 .7rem"><label>Ver como a filial</label><select onchange="FILIAL_USUARIO=this.value;render()"><option value="'+TODAS+'"'+(FILIAL_USUARIO===TODAS?' selected':'')+'>Todas as filiais</option>'+optsF(FILIAIS, FILIAL_USUARIO)+'</select></div>' : '';
   $('side').innerHTML = '<div class="who"><div class="av" style="background:'+u.cor+'">'+esc(ini)+'</div><div><b>'+esc(nome)+'</b><span>'+esc(sub)+'</span></div></div>' + troca +
     '<div class="nav">' + items.map(function(it){ return '<button class="'+(tela[perfil]===it[0] && !sel ? 'on':'')+'" onclick="filtroFilial=\'\';go(null,\''+it[0]+'\')">'+it[1]+(it[2] ? '<span class="cnt">'+it[2]+'</span>' : '')+'</button>'; }).join('') + '</div>' +
     '<div class="papel"><b>Papel neste app</b>'+u.papel+'</div>' +
@@ -701,7 +703,7 @@ function fInicio(){
   var meus = meusChamados();
   var pend = meus.filter(GRUPO_FILIAL.filial.teste);
   var kpi = function(k, cor){ return '<div class="kpi click" onclick="filtroFilial=\''+k+'\';go(null,\'meus\')"><div class="v" style="color:'+cor+'">'+meus.filter(GRUPO_FILIAL[k].teste).length+'</div><div class="l">'+GRUPO_FILIAL[k].nome+'</div></div>'; };
-  return '<div class="ph"><div><h2>Ol\u00E1! Filial '+esc(nf(FILIAL_USUARIO))+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
+  return '<div class="ph"><div><h2>'+(FILIAL_USUARIO===TODAS ? 'Todas as filiais' : 'Ol\u00E1! Filial '+esc(nf(FILIAL_USUARIO)))+'</h2><p>Registre cada fiscaliza\u00E7\u00E3o no mesmo dia, com ou sem documento entregue pelo fiscal.</p></div><button class="btn pri" onclick="go(null,\'novo\')">+ Abrir chamado de fiscaliza\u00E7\u00E3o</button></div>' +
     '<div class="kpis">' + kpi('aberto','var(--red)') + kpi('juridico','var(--blue)') + kpi('filial','var(--amber)') + kpi('encerrado','var(--green)') + '</div>' +
     '<div class="card"><h3>O Jur\u00EDdico est\u00E1 aguardando voc\u00EA' + (pend.length ? ' <span class="badge b-aguard_filial" style="vertical-align:middle">' + pend.length + ' pendente' + (pend.length>1?'s':'') + '</span>' : '') + '</h3>' +
     '<div class="sub">Solicita\u00E7\u00F5es de documentos ou informa\u00E7\u00F5es \u00B7 clique para abrir o chamado e responder</div>' +
@@ -713,7 +715,7 @@ function cartaoPendente(c){
   var p = pendente(c), cl = p ? clsDias(p.prazo) : 'ok';
   var pedido = ultimo(c, 'juridico').replace(/^Envio \d+\/\d+ \u00B7 /, '').replace(/^Solicitado \u00E0 filial( \(retornar at\u00E9 [^)]*\))?: /, '');
   return '<div class="pend-card ' + cl + '" onclick="go(null,null,\'' + c.id + '\')">' +
-    '<div class="pc-top"><b>' + c.id + ' \u00B7 ' + esc(c.orgao) + '</b>' + (p ? '<span class="prazo ' + cl + '">Responder at\u00E9 ' + p.prazo.slice(0,5) + ' \u00B7 ' + contagem(p.prazo) + '</span>' : '') + '</div>' +
+    '<div class="pc-top"><b>' + c.id + ' \u00B7 ' + (FILIAL_USUARIO === TODAS ? esc(nf(c.filial)) + ' \u00B7 ' : '') + esc(c.orgao) + '</b>' + (p ? '<span class="prazo ' + cl + '">Responder at\u00E9 ' + p.prazo.slice(0,5) + ' \u00B7 ' + contagem(p.prazo) + '</span>' : '') + '</div>' +
     '<div class="pc-pedido"><span>O Jur\u00EDdico pediu:</span> ' + esc(pedido || 'Retorno da filial') + '</div>' +
     '<div class="pc-rod"><span>Prazo do \u00F3rg\u00E3o: ' + (c.prazo ? c.prazo.slice(0,5) + ' \u00B7 ' + contagem(c.prazo) : 'n\u00E3o informado') + '</span><button class="btn pri sm" onclick="event.stopPropagation();go(null,null,\'' + c.id + '\')">Responder agora \u2192</button></div></div>';
 }
@@ -726,7 +728,8 @@ function fNovo(){
   return '<div class="ph"><div><h2>Abrir chamado de fiscaliza\u00E7\u00E3o</h2></div></div>' + LEMBRETES_POP +
   '<div class="card"><form id="fNovo" onsubmit="return enviarNovo(event)">' +
   '<div class="form-sec"><h4><span class="n">1</span>Identifica\u00E7\u00E3o</h4><div class="g2">' +
-    '<div class="f"><label>Filial</label><input value="'+esc(nf(FILIAL_USUARIO))+'" disabled></div>' +
+    (FILIAL_USUARIO===TODAS ? '<div class="f"><label>Filial <span class="req">*</span></label><select name="filialNovo" required><option value="">Selecione</option>'+optsF(FILIAIS)+'</select></div>'
+                            : '<div class="f"><label>Filial</label><input value="'+esc(nf(FILIAL_USUARIO))+'" disabled></div>') +
     '<div class="f"><label>Onde foi a fiscaliza\u00E7\u00E3o <span class="req">*</span></label><select name="unidade" required><option value="">Selecione</option>'+opts(UNIDADES)+'</select></div>' +
     '<div class="f"><label>Data da fiscaliza\u00E7\u00E3o <span class="req">*</span></label><input name="data" value="'+hojeBR()+'" required></div>' +
     '<div class="f"><label>Forma <span class="req">*</span></label><select name="forma">'+opts(FORMAS)+'</select></div></div>' +
@@ -805,7 +808,8 @@ function enviarNovo(e){
   if (res.indexOf('notificacao')>=0 && !temPrazo) { toast('Informe o prazo dado pelo \u00F3rg\u00E3o (dd/mm/aaaa). Ele \u00E9 crucial para o chamado.'); f.elements.prazo.focus(); return false; }
   var mv = parseFloat(g('multaValor').replace(/[^\d,]/g,'').replace(',','.'));
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(g('data'))) { toast('Data da fiscaliza\u00E7\u00E3o deve estar no formato dd/mm/aaaa.'); return false; }
-  if (!FILIAL_USUARIO) { toast('Seu usu\u00E1rio n\u00E3o tem filial definida.'); return false; }
+  var filialNovo = FILIAL_USUARIO === TODAS ? g('filialNovo') : FILIAL_USUARIO;
+  if (!filialNovo) { toast(FILIAL_USUARIO === TODAS ? 'Escolha a filial do chamado.' : 'Seu usu\u00E1rio n\u00E3o tem filial definida.'); return false; }
   // "Outro": usa o texto digitado
   var orgao = g('orgao') === '__outro' ? g('orgaoOutro') : g('orgao');
   if (!orgao) { toast('Escreva o nome do \u00F3rg\u00E3o fiscalizador.'); f.elements.orgaoOutro.focus(); return false; }
@@ -818,7 +822,7 @@ function enviarNovo(e){
     if (!g('areaTecQual')) { toast('Informe qual \u00E1rea t\u00E9cnica foi inclu\u00EDda.'); f.elements.areaTecQual.focus(); return false; }
     acomp += ' \u00B7 \u00C1rea t\u00E9cnica: ' + g('areaTecQual');
   } else acomp += ' \u00B7 Sem \u00E1rea t\u00E9cnica';
-  var c = mk({id:'(novo)', filial:FILIAL_USUARIO, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:orgao, motivo:motivo, forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:acomp,
+  var c = mk({id:'(novo)', filial:filialNovo, unidade:g('unidade'), lojista: g('unidade')==='Loja do Mall' ? g('lojista') : '', obra: g('unidade')==='Obra' ? g('obra') + (g('respTec') ? ' \u00B7 RT: ' + g('respTec') : '') : '', orgao:orgao, motivo:motivo, forma:g('forma'), data:g('data'), fiscal:g('fiscal'), recebeu:g('recebeu'), acompanhou:acomp,
     resultados:res, doc:g('doc'), protocolo:g('protocolo'), prazo:/^\d{2}\/\d{2}\/\d{4}$/.test(g('prazo')) ? g('prazo') : '', ncs:[].map.call(f.querySelectorAll('input[name=ncs]:checked'), function(i){ return i.value; }),
     noAto:g('noAto'), apreensao:g('apreensao'), relato:g('relato'), status:'aberto', desfecho:'', multa: res.indexOf('multa')>=0 && mv ? {valor:mv, motivo:g('multaMotivo')||'N\u00E3o informado'} : null});
   c.retornos = [rt('filial','juridico', hojeBR(), prazoRetorno(c, hojeBR(), 2))];
