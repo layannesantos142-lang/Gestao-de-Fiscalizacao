@@ -1046,7 +1046,7 @@ function cUsuarios(){
     '<div class="card"><h3>Criar conta</h3><div class="sub">Defina o perfil (o que a conta pode fazer) e as filiais que ela pode visualizar</div>' +
     '<div class="g3"><div class="f"><label>Filial <span class="req">*</span></label><select id="nu_filial"><option value="">Selecione</option>'+optsF(FILIAIS_TODAS)+'</select></div>' +
     '<div class="f"><label>Setor <span class="req">*</span></label><select id="nu_setor"><option value="">Selecione</option>'+opts(SETORES, 'Administrativo')+'</select></div>' +
-    '<div class="f"><label>Perfil <span class="req">*</span></label><select id="nu_papel"><option value="filial">'+NOME_PAPEL.filial+'</option><option value="juridico">'+NOME_PAPEL.juridico+'</option><option value="compliance">'+NOME_PAPEL.compliance+'</option></select></div></div>' +
+    '<div class="f"><label>Perfil <span class="req">*</span></label><select id="nu_papel" onchange="papelNovaConta()"><option value="filial">'+NOME_PAPEL.filial+'</option><option value="juridico">'+NOME_PAPEL.juridico+'</option><option value="compliance">'+NOME_PAPEL.compliance+'</option></select></div></div>' +
     '<div class="f" style="margin-top:.7rem"><label>Pode visualizar</label><div class="hint" style="margin:0 0 .35rem">Nenhuma marcada = padr\u00E3o do perfil (Filial v\u00EA s\u00F3 a pr\u00F3pria filial; Jur\u00EDdico e Compliance veem todas). Marque para ampliar ou restringir.</div>'+visCheckboxes('nu_vis', [])+'</div>' +
     '<div class="g3" style="margin-top:.7rem"><div class="f"><label>E-mail da pessoa <span class="req">*</span></label><input id="nu_email" type="email" placeholder="nome@ferreiracosta.com.br"></div>' +
     '<div class="f"><label>Nome da pessoa <span class="req">*</span></label><input id="nu_nome" placeholder="Nome e sobrenome"></div>' +
@@ -1062,7 +1062,15 @@ async function chamarAdmin(corpo){
   if (!dados || dados.erro) { toast(dados && dados.erro ? dados.erro : 'Erro ao falar com o servidor.'); return null; }
   return dados;
 }
+// Compliance sempre entra como 99 \u00B7 Corporativo (setor Compliance)
+var FILIAL_CORP = '99';
+function papelNovaConta(){
+  var comp = val('nu_papel') === 'compliance', f = $('nu_filial'), s = $('nu_setor');
+  if (comp) { f.value = FILIAL_CORP; if (SETORES.indexOf('Compliance') >= 0) s.value = 'Compliance'; }
+  f.disabled = comp; s.disabled = comp;
+}
 async function criarConta(){
+  if (val('nu_papel') === 'compliance') { $('nu_filial').value = FILIAL_CORP; if (SETORES.indexOf('Compliance') >= 0) $('nu_setor').value = 'Compliance'; }
   var filial = val('nu_filial'), setor = val('nu_setor'), papel = val('nu_papel'), senha = val('nu_senha'), email = val('nu_email').toLowerCase(), nome = val('nu_nome');
   if (!filial || !setor) return toast('Escolha a filial e o setor.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Informe um e-mail v\u00E1lido.');
@@ -1078,7 +1086,9 @@ async function criarConta(){
 }
 async function salvarUsuario(id){
   var papel = val('up_'+id), vis = lerVis('uv_'+id);
-  var r = await sb.from('perfis').update({papel:papel, filiais_visiveis: vis.length ? vis : null}).eq('id', id);
+  var mud = {papel:papel, filiais_visiveis: vis.length ? vis : null};
+  if (papel === 'compliance') { mud.filial = FILIAL_CORP; mud.setor = 'Compliance'; }
+  var r = await sb.from('perfis').update(mud).eq('id', id);
   if (r.error) return erroDb(r.error, 'conta');
   _editUser = null; await carregarTudo(); toast('Acesso atualizado.'); render();
 }
